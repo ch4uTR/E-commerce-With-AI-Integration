@@ -1,6 +1,8 @@
 using ECommerce.Data;
+using ECommerce.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +15,12 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddControllersWithViews();
+
+builder.Services.AddScoped<CartService>();
+builder.Services.AddScoped<ProductService>();
+builder.Services.AddScoped<CommentService>();
+builder.Services.AddScoped<OrderService>();
+
 
 var app = builder.Build();
 
