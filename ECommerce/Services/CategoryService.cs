@@ -1,5 +1,8 @@
 ﻿using ECommerce.Data;
+using ECommerce.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
 
 namespace ECommerce.Services
 {
@@ -14,8 +17,21 @@ namespace ECommerce.Services
 
         }
 
+        public async Task<List<Category>> GetAllMainCategoriesAsync()
+        {
 
-       
+            return await _context.Categories
+                                .Where(c => c.ParentCategoryId == null)
+                                .ToListAsync();
+
+           
+
+        }
+
+
+
+
+
 
 
 
