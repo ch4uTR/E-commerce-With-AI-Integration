@@ -5,13 +5,12 @@ namespace ECommerce.Services
     public class CartService
     {
         private readonly ApplicationDbContext _context;
-        private readonly ProductService _productService;
 
 
-        public CartService(ApplicationDbContext context, ProductService productService)
+        public CartService(ApplicationDbContext context)
         {
             _context = context;
-            _productService = productService;
+            
         }
 
 

@@ -6,12 +6,10 @@ namespace ECommerce.Services
     {
 
         private readonly ApplicationDbContext _context;
-        private readonly ProductService _productService;
 
-        public CommentService(ApplicationDbContext context, ProductService productService)
+        public CommentService(ApplicationDbContext context)
         {
             _context = context;
-            _productService = productService;
         }
 
 
