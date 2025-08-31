@@ -1,36 +1,25 @@
-using ECommerce.Models;
+﻿using Microsoft.AspNetCore.Mvc;
 using ECommerce.Services;
-using Microsoft.AspNetCore.Mvc;
-using System.Diagnostics;
 
 namespace ECommerce.Controllers
 {
-    public class HomeController : Controller
+    public class ProductController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
-
         private readonly ProductService _productService;
         private readonly CommentService _commentService;
         
 
-
-        public HomeController(ILogger<HomeController> logger, ProductService productService, CommentService commentService)
+        public ProductController(ProductService productService, CommentService commentService)
         {
-            _logger = logger;
             _productService = productService;
             _commentService = commentService;
         }
+
 
 
         public IActionResult Index()
         {
             return View();
         }
-
-
-
-  
-
-      
     }
 }
