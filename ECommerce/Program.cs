@@ -1,7 +1,9 @@
 using ECommerce.Data;
 using ECommerce.Models;
 using ECommerce.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 
 
@@ -13,8 +15,11 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
-    .AddEntityFrameworkStores<ApplicationDbContext>();
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
+    .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddDefaultTokenProviders();
+
+
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddScoped<CartService>();
@@ -23,6 +28,7 @@ builder.Services.AddScoped<CommentService>();
 builder.Services.AddScoped<OrderService>();
 builder.Services.AddScoped<CategoryService>();
 
+builder.Services.AddRazorPages();
 
 var app = builder.Build();
 
@@ -41,16 +47,65 @@ else
 app.UseHttpsRedirection();
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
+app.UseStaticFiles();
 app.MapStaticAssets();
+
+
+
+
+app.MapControllerRoute(
+    name: "admin",
+    pattern: "Admin/{controller=Home}/{action=Index}/{id?}",
+    defaults: new { area = "Admin" });
 
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
 
-app.MapRazorPages()
-   .WithStaticAssets();
+
+
+
+
+using (var scope = app.Services.CreateScope())
+{
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+
+    string[] roleNames = { "Admin", "User" };
+    foreach (var roleName in roleNames)
+    {
+        if (!await roleManager.RoleExistsAsync(roleName))
+        {
+            await roleManager.CreateAsync(new IdentityRole(roleName));
+        }
+    }
+
+
+    var adminUserEmail = "admin@ecommerce.com";
+    var adminUser = await userManager.FindByEmailAsync(adminUserEmail);
+
+    if (adminUser == null)
+    {
+        var newAdminUser = new ApplicationUser
+        {
+            UserName = adminUserEmail,
+            Email = adminUserEmail,
+            EmailConfirmed = true
+        };
+
+        var createResult = await userManager.CreateAsync(newAdminUser, "Admin.123");
+        if (createResult.Succeeded)
+        {
+            await userManager.AddToRoleAsync(newAdminUser, "Admin");
+        }
+
+    }
+}
+
+app.MapRazorPages();
 
 app.Run();

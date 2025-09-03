@@ -1,0 +1,106 @@
+﻿@model ProductCommentModel
+
+@{
+    var product = Model.Product;
+    var comments = Model.Comments ?? new List<Comment>();
+    var hasComments = comments.Any();
+    var categoryName = Model.CategoryName;
+}
+
+<div class="container mt-4">
+    <h3>Product Details</h3>
+
+
+    <div class="row">
+        <!-- SOL TARAF - Resim -->
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
+                <img class="card-img-top"
+                    src="@(string.IsNullOrEmpty(product.ExistingImageUrl) ? ViewBag.DefaultPath : product.ExistingImageUrl)"
+                    alt="@product.Name" style="max-height: 300px; object-fit: cover;">
+                <div class="card-body text-center">
+                    <h5 class="card-title">@product.Name</h5>
+                    <p class="card-text text-success fw-bold">@product.Price.ToString("C2")</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SAĞ TARAF - Tablo ve Butonlar -->
+        <div class="col-md-8">
+            <div class="table-responsive">
+                <table class="table table-secondary table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Property</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>ID</strong></td>
+                            <td>@product.Id</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Name</strong></td>
+                            <td>@product.Name</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Price</strong></td>
+                            <td class="text-success fw-bold">@product.Price.ToString("C2")</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Description</strong></td>
+                            <td>@product.Description</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Category</strong></td>
+                            <td>@categoryName</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Actions</strong></td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a class="btn btn-warning btn-sm" asp-controller="Product" asp-action="Edit"
+                                       asp-route-id="@product.Id">✏️ Edit</a>
+                                    <form asp-action="Delete" asp-route-id="@product.Id" method="post"
+                                        style="display:contents;">
+                                        <button type="submit" class="btn btn-danger btn-sm"
+                                            onclick="return confirm ('❗ Are you sure ?')">☠️ Delete</button>
+                                    </form>
+                                    <a class="btn btn-primary btn-sm" asp-action="Index">📋 Products</a>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container mt-4">
+    <h4>Comments (@comments.Count)</h4>
+
+    <div class="list-group">
+        @if (hasComments)
+        {
+            @foreach (var comment in comments)
+            {
+                <div class="list-group-item">
+                    <h6 class="mb-1">@comment.User?.FirstName ?? "Unknown User" <small class="text-muted">@comment.CreatedAt:g</small></h6>
+                    <p class="mb-1">@comment.Text</p>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="list-group-item text-muted">
+                No comments yet.
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Optional: Bootstrap spacing -->
+<br>
+

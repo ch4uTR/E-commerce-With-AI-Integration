@@ -1,0 +1,50 @@
+﻿@model List<Product>
+
+
+
+<div class="container my-4">
+    <div class="row">
+
+        
+        @foreach (var p in Model)
+        {
+            <div class="col-md-4 mb-3">
+                <div class="card">
+                    <img src="@p.ImageUrl" class="card-img-top" alt="@p.Name">
+                    <div class="card-body">
+                        <h5 class="card-title">@p.Name</h5>
+                        <p class="card-text">@p.Price ₺</p>
+                        <a asp-action="Details" asp-route-id="@p.Id" class="btn btn-primary">Details</a>
+                    </div>
+                </div>
+            </div>
+        }
+
+
+    </div>
+
+    <nav aria-label="...">
+        <ul class="pagination justify-content-center">
+            <li class="page-item @(ViewBag.CurrentPage == 1 ? "disabled" : "")">
+                <a class="page-link" asp-action="Index" asp-route-pageNumber="@(ViewBag.CurrentPage - 1)">Previous</a>
+            </li>
+
+            @{
+                int maxPages = 3;
+                int startPage = Math.Max(1, ViewBag.CurrentPage - 1);
+                int endPage = Math.Min(ViewBag.TotalPages, startPage + maxPages - 1);
+
+                for (int i = startPage; i <= endPage; i++)
+                {
+                    <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                        <a class="page-link" asp-action="Index" asp-route-pageNumber="@i">@i</a>
+                    </li>
+                }
+
+            }
+
+            <li class="page-item @(ViewBag.CurrentPage == ViewBag.TotalPages ? "disabled" : "")">
+                <a class="page-link" asp-action="Index" asp-route-pageNumber="@(ViewBag.CurrentPage + 1)">Next</a>
+            </li>
+        </ul>
+    </nav>

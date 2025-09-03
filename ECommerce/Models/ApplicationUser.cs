@@ -14,7 +14,7 @@ namespace ECommerce.Models
         public DateTime? LastModifiedAt { get; set; }
 
         public ICollection<Order>? Orders { get; set; } = new List<Order>();
-
+            
         public ICollection<Comment> Comments { get; set; } = new List<Comment>();
 
 

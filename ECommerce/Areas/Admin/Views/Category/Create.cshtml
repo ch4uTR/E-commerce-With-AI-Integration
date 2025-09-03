@@ -1,0 +1,43 @@
+﻿@model ECommerce.Models.DTOs.CategoryRequest
+
+
+
+<div class="card shadow-lg border-0 rounded-3 mt-5">
+    <div class="card-header bg-success text-white">
+        Create New Category
+    </div>
+
+    <div class="card-body">
+        <form method="post" asp-controller="Category" asp-action="Create" enctype="multipart/form-data">
+            <div class="mb-3">
+                <label asp-for="Name" class="form-label">Name</label>
+                <input asp-for="Name" class="form-control">
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="ParentCategoryId" class="form-label">Select a parent category, if needed</label>
+                <select asp-for="ParentCategoryId" asp-items="ViewBag.MainCategories" class="form-control">
+                    <option value="">Select a category</option>
+                </select>
+                <span asp-validation-for="ParentCategoryId" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="ImageFile" class="form-label">Upload a photo</label>
+                <input type="file" class="form-control-file" asp-for="ImageFile">
+            </div>
+
+            <div class="d-flex justify-content-between mt-4">
+                <button type="submit" class="btn btn-success">Create</button>
+                <a class="btn btn-secondary" asp-action="Index">Categories</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

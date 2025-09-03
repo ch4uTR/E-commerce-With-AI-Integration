@@ -1,0 +1,24 @@
+﻿@model List<Category>
+
+<div class="container my-4">
+    <div class="row">
+
+        @foreach (var p in Model)
+        {
+            <div class="col-md-4 mb-3">
+                <div class="card">
+                    <img src="@p.ImagePath" class="card-img-top" alt="@p.Name">
+                    <div class="card-body">
+                        <h5 class="card-title">@p.Name</h5>
+                        <p class="card-text">
+                            @(p.ParentCategory != null ? p.ParentCategory.Name : "Ana Kategori")
+                        </p>
+                        <a asp-action="Details" asp-route-id="@p.Id" class="btn btn-primary">Details</a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+    

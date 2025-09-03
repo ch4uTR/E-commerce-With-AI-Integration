@@ -1,0 +1,68 @@
+﻿@model ProductRequest
+
+<div class="container mt-4">
+    <h2>Edit The Product</h2>
+
+    <form method="post" asp-action="Edit" enctype="multipart/form-data" class="row">
+        <input asp-for="Id" type="hidden">
+
+        <!-- SOL TARAF - Resim ve Bilgiler -->
+        <div class="col-md-4">
+            <div class="card h-100">
+                <img class="card-img-top"
+                     src="@(string.IsNullOrEmpty(Model.ExistingImageUrl) ? ViewBag.DefaultImagePath : Model.ExistingImageUrl)"
+                     alt="@Model.Name"
+                     style="max-height: 250px; object-fit: cover;">
+                <div class="card-body">
+                    <h5 class="card-title">@Model.Name</h5>
+                    <p class="card-text">@Model.Price.ToString("C2")</p>
+                    <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-primary btn-sm">Details</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- SAĞ TARAF - Form -->
+        <div class="col-md-8">
+            <div class="mb-3">
+                <label asp-for="Name" class="form-label">Name</label>
+                <input asp-for="Name" class="form-control">
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Description" class="form-label">Description</label>
+                <textarea asp-for="Description" class="form-control"></textarea>
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Price" class="form-label">Price</label>
+                <input asp-for="Price" class="form-control">
+                <span asp-validation-for="Price" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="CategoryId" class="form-label">Category</label>
+                <select asp-for="CategoryId" asp-items="ViewBag.Categories" class="form-control">
+                    <option value="">-- Select Category --</option>
+                </select>
+                <span asp-validation-for="CategoryId" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="ImageFile" class="form-label">Upload a photo</label>
+                <input type="file" class="form-control" asp-for="ImageFile">
+                <small class="form-text text-muted">Leave empty to keep current image</small>
+            </div>
+
+            <div class="mb-3">
+                <button type="submit" class="btn btn-success">💾 Save Changes</button>
+                <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-secondary">❌ Cancel</a>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ECommerce.Services;
+using ECommerce.Models;
+using ECommerce.Models.DTOs;
 
 namespace ECommerce.Controllers
 {
@@ -17,9 +19,21 @@ namespace ECommerce.Controllers
 
 
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
+        {
+            var criteria = new ProductSearchCriteria();
+ 
+            var products = await _productService.GetProductsAsync(criteria);
+            return View(products);
+        }
+
+
+        public IActionResult Details()
         {
             return View();
         }
+
+
+
     }
 }

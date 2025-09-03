@@ -1,27 +1,24 @@
-﻿using ECommerce.Services;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using ECommerce.Services;
 using System.Threading.Tasks;
 
-
-namespace ECommerce.Componenets
+namespace ECommerce.ViewComponents
 {
-
-    
-    public class CategoryDropdownViewComponent : ViewComponent
-    {
+    public class CategoryListViewComponent : ViewComponent
+    {   
         private readonly CategoryService _categoryService;
 
-        public CategoryDropdownViewComponent(CategoryService categoryService)
+        public CategoryListViewComponent(CategoryService categoryService)
         {
             _categoryService = categoryService;
         }
+
+
 
         public async Task<IViewComponentResult> InvokeAsync()
         {
             var categories = await _categoryService.GetAllMainCategoriesAsync();
             return View(categories);
         }
-        
-
     }
 }
