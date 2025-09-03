@@ -33,7 +33,10 @@ namespace ECommerce.Controllers
             return View(categories);
         }
 
-
+        public IActionResult AccessDenied()
+        {
+            return View();
+        }
 
   
 

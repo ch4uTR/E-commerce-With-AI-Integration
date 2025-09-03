@@ -1,4 +1,5 @@
-﻿using ECommerce.Models.DTOs;
+﻿using ECommerce.Areas.Admin.Models;
+using ECommerce.Models.DTOs;
 using ECommerce.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -59,6 +60,60 @@ namespace ECommerce.Areas.Admin.Controllers
 
         }
 
+
+
+        [HttpGet]
+        public async Task<IActionResult> Edit(int id)
+        {
+            if (id <= 0) { return RedirectToAction("Index"); }
+
+            var category = await _categoryService.GetCategoryByIdAsync(id);
+            if (category == null) { RedirectToAction("Index"); }
+
+            CategoryRequest requestModel = new CategoryRequest
+            {
+                Id = category.Id,
+                Name = category.Name,
+                ExistingImageUrl = category.ImagePath,
+                ParentCategoryId = category.ParentCategoryId,
+            };
+
+            string defaultImagePath =  _categoryService.GetDefaultImagePath();
+            var mainCategories = await _categoryService.GetAllMainCategoriesAsync();
+
+            CategoryEditModel model = new CategoryEditModel
+            {
+                Request = requestModel,
+                DefaultImagePath = defaultImagePath,
+                MainCategories = mainCategories,
+            };
+
+            return View(model);
+        }
+
+
+        [HttpPost]
+        public async Task<IActionResult> Edit(CategoryEditModel editModel)
+        {
+            if (!ModelState.IsValid) {
+
+                editModel.MainCategories = await _categoryService.GetAllMainCategoriesAsync();
+                editModel.DefaultImagePath = _categoryService.GetDefaultImagePath();
+
+                return View(editModel); 
+            }
+
+
+            bool isEdited = await _categoryService.UpdateCategoryAsync(editModel.Request);
+
+            if (isEdited)
+            {
+                return RedirectToAction("Details", new {id = editModel.Request.Id });
+            }
+
+            ModelState.AddModelError("", "An Error Occured");
+            return RedirectToAction("Details", new { id = editModel.Request.Id });
+        }
 
     }
 }

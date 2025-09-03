@@ -1,5 +1,62 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model CategoryEditModel
+
+
 @{
+    var request = Model.Request;
+    var defaultImagePath = Model.DefaultImagePath;
+    var mainCategories = new SelectList(Model.MainCategories, "Id", "Name");
+}
+
+<div class="container mt-4">
+    <h2>Edit The Category</h2>
+
+    <form method="post" asp-action="Edit" enctype="multipart/form-data" class="row">
+        <input asp-for="@request.Id" type="hidden">
+
+        <!-- SOL TARAF - Resim ve Bilgiler -->
+        <div class="col-md-4">
+            <div class="card h-100">
+                <img class="card-img-top"
+                     src="@(string.IsNullOrEmpty(request.ExistingImageUrl) ? ViewBag.DefaultImagePath : request.ExistingImageUrl)"
+                     alt="@request.Name"
+                     style="max-height: 250px; object-fit: cover;">
+                <div class="card-body">
+                    <h5 class="card-title">@request.Name</h5>
+                    <a asp-action="Details" asp-route-id="@request.Id" class="btn btn-primary btn-sm">Details</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- SAĞ TARAF - Form -->
+        <div class="col-md-8">
+            <div class="mb-3">
+                <label asp-for="Request.Name" class="form-label">Name</label>
+                <input asp-for="Request.Name" class="form-control">
+                <span asp-validation-for="Request.Name" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Request.ParentCategoryId" class="form-label">Category</label>
+                <select asp-for="Request.ParentCategoryId" asp-items="@mainCategories" class="form-control">
+                    <option value="">-- Select Category --</option>
+                </select>
+                <span asp-validation-for="Request.ParentCategoryId" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Request.ImageFile" class="form-label">Upload a photo</label>
+                <input type="file" class="form-control" asp-for="Request.ImageFile">
+                <small class="form-text text-muted">Leave empty to keep current image</small>
+            </div>
+
+            <div class="mb-3">
+                <button type="submit" class="btn btn-success">💾 Save Changes</button>
+                <a asp-action="Details" asp-route-id="Request.Id" class="btn btn-secondary">❌ Cancel</a>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
 }

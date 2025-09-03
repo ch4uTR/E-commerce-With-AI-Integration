@@ -99,12 +99,12 @@ namespace ECommerce.Services
         }
 
 
-        public async Task<bool> UpdateCategoryAsync(CategoryRequest requestModel, int id)
+        public async Task<bool> UpdateCategoryAsync(CategoryRequest requestModel)
         {
             try
             {
 
-                var category = await _context.Categories.FirstOrDefaultAsync(p => p.Id == id);
+                var category = await _context.Categories.FirstOrDefaultAsync(p => p.Id == requestModel.Id);
                 if (category == null)
                 {
                     return false;
@@ -204,7 +204,7 @@ namespace ECommerce.Services
             return categories;
         }
 
-
+        public string GetDefaultImagePath() => "/Images/Category/NoPhotoImage.jpg";
 
 
 

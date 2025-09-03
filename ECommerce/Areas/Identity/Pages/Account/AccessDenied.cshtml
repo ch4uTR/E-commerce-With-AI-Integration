@@ -1,10 +1,15 @@
 ﻿@page
 @model AccessDeniedModel
 @{
-    ViewData["Title"] = "Access denied";
+    ViewData["Title"] = "Erişim Reddedildi";
 }
 
-<header>
-    <h1 class="text-danger">@ViewData["Title"]</h1>
-    <p class="text-danger">You do not have access to this resource.</p>
-</header>
+<section class="access-denied">
+    <div class="container text-center">
+        <h1 class="text-danger"><i class="fa fa-ban"></i> Erişim Reddedildi</h1>
+        <p>Bu sayfayı görüntülemek için gerekli yetkilere sahip değilsiniz.</p>
+        <a asp-area="" asp-controller="Home" asp-action="Index" class="btn btn-primary mt-3">
+            Ana Sayfaya Dön
+        </a>
+    </div>
+</section>
