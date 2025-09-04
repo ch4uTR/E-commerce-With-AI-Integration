@@ -1,66 +1,74 @@
 ﻿@model ProductRequest
 
 <div class="container mt-4">
-    <h2>Edit The Product</h2>
+    <div class="card p-4 shadow-sm rounded-4 border-0">
+        <h2 class="card-title text-center mb-4" style="color: #7fad39;">
+            <i class="fa fa-edit"></i> Edit The Product
+        </h2>
 
-    <form method="post" asp-action="Edit" enctype="multipart/form-data" class="row">
-        <input asp-for="Id" type="hidden">
+        <form method="post" asp-action="Edit" enctype="multipart/form-data" class="row g-3">
+            <input asp-for="Id" type="hidden">
 
-        <!-- SOL TARAF - Resim ve Bilgiler -->
-        <div class="col-md-4">
-            <div class="card h-100">
-                <img class="card-img-top"
-                     src="@(string.IsNullOrEmpty(Model.ExistingImageUrl) ? ViewBag.DefaultImagePath : Model.ExistingImageUrl)"
-                     alt="@Model.Name"
-                     style="max-height: 250px; object-fit: cover;">
-                <div class="card-body">
-                    <h5 class="card-title">@Model.Name</h5>
-                    <p class="card-text">@Model.Price.ToString("C2")</p>
-                    <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-primary btn-sm">Details</a>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 rounded-4 overflow-hidden shadow-sm">
+                    <img class="card-img-top"
+                         src="@(string.IsNullOrEmpty(Model.ExistingImageUrl) ? ViewBag.DefaultImagePath : Model.ExistingImageUrl)"
+                         alt="@Model.Name"
+                         style="max-height: 250px; object-fit: cover;">
+                    <div class="card-body text-center">
+                        <h5 class="card-title fw-bold">@Model.Name</h5>
+                        <p class="card-text text-muted">@Model.Price.ToString("C2")</p>
+                        <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-sm btn-outline-secondary">Details</a>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- SAĞ TARAF - Form -->
-        <div class="col-md-8">
-            <div class="mb-3">
-                <label asp-for="Name" class="form-label">Name</label>
-                <input asp-for="Name" class="form-control">
-                <span asp-validation-for="Name" class="text-danger"></span>
-            </div>
+            <div class="col-md-8">
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label asp-for="Name" class="form-label fw-bold">Name</label>
+                        <input asp-for="Name" class="form-control rounded-pill">
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                    </div>
 
-            <div class="mb-3">
-                <label asp-for="Description" class="form-label">Description</label>
-                <textarea asp-for="Description" class="form-control"></textarea>
-                <span asp-validation-for="Description" class="text-danger"></span>
-            </div>
+                    <div class="col-12">
+                        <label asp-for="Description" class="form-label fw-bold">Description</label>
+                        <textarea asp-for="Description" class="form-control rounded-3" rows="4"></textarea>
+                        <span asp-validation-for="Description" class="text-danger"></span>
+                    </div>
 
-            <div class="mb-3">
-                <label asp-for="Price" class="form-label">Price</label>
-                <input asp-for="Price" class="form-control">
-                <span asp-validation-for="Price" class="text-danger"></span>
-            </div>
+                    <div class="col-md-6">
+                        <label asp-for="Price" class="form-label fw-bold">Price</label>
+                        <input asp-for="Price" class="form-control rounded-pill">
+                        <span asp-validation-for="Price" class="text-danger"></span>
+                    </div>
 
-            <div class="mb-3">
-                <label asp-for="CategoryId" class="form-label">Category</label>
-                <select asp-for="CategoryId" asp-items="ViewBag.Categories" class="form-control">
-                    <option value="">-- Select Category --</option>
-                </select>
-                <span asp-validation-for="CategoryId" class="text-danger"></span>
-            </div>
+                    <div class="col-md-6">
+                        <label asp-for="CategoryId" class="form-label fw-bold">Category</label>
+                        <select asp-for="CategoryId" asp-items="ViewBag.Categories" class="form-control rounded-pill">
+                            <option value="">-- Select Category --</option>
+                        </select>
+                        <span asp-validation-for="CategoryId" class="text-danger"></span>
+                    </div>
 
-            <div class="mb-3">
-                <label asp-for="ImageFile" class="form-label">Upload a photo</label>
-                <input type="file" class="form-control" asp-for="ImageFile">
-                <small class="form-text text-muted">Leave empty to keep current image</small>
-            </div>
+                    <div class="col-12">
+                        <label asp-for="ImageFile" class="form-label fw-bold">Upload a photo</label>
+                        <input type="file" class="form-control rounded-pill" asp-for="ImageFile">
+                        <small class="form-text text-muted">Leave empty to keep current image</small>
+                    </div>
 
-            <div class="mb-3">
-                <button type="submit" class="btn btn-success">💾 Save Changes</button>
-                <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-secondary">❌ Cancel</a>
+                    <div class="col-12 mt-4 d-flex justify-content-end">
+                        <button type="submit" class="site-btn rounded-pill">
+                            <i class="fa fa-save"></i> Save Changes
+                        </button>
+                        <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-secondary rounded-pill">
+                            <i class="fa fa-times"></i> Cancel
+                        </a>
+                    </div>
+                </div>
             </div>
-        </div>
-    </form>
+        </form>
+    </div>
 </div>
 
 @section Scripts {

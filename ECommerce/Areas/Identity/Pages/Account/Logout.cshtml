@@ -1,21 +1,25 @@
 ﻿@page
 @model LogoutModel
+
 @{
-    ViewData["Title"] = "Log out";
+    ViewData["Title"] = "You have been logged out";
 }
 
-<header>
-    <h1>@ViewData["Title"]</h1>
-    @{
-        if (User.Identity?.IsAuthenticated ?? false)
-        {
-            <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Page("/", new { area = "" })" method="post">
-                <button type="submit" class="nav-link btn btn-link text-dark">Click here to Logout</button>
-            </form>
-        }
-        else
-        {
-            <p>You have successfully logged out of the application.</p>
-        }
-    }
-</header>
+<div class="d-flex justify-content-center align-items-center">
+        <div class="col-md-6 p-4 text-center">
+            <section>
+                <div class="mb-4">
+                    <h2 style="color: #7fad39;"><i class="fa fa-check-circle"></i> @ViewData["Title"]</h2>
+                </div>
+                <div>
+                    <p class="lead">You have successfully logged out of the application.</p>
+                </div>
+                <div class="mt-4">
+                    <a asp-area="" asp-controller="Home" asp-action="Index" class="site-btn">
+                        <i class="fa fa-home"></i> Go to Home Page
+                    </a>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>

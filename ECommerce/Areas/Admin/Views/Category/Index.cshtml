@@ -1,24 +1,84 @@
-﻿@model List<Category>
+﻿@model List<CategoryViewModel>
 
-<div class="container my-4">
-    <div class="row">
 
-        @foreach (var p in Model)
-        {
-            <div class="col-md-4 mb-3">
-                <div class="card">
-                    <img src="@p.ImagePath" class="card-img-top" alt="@p.Name">
-                    <div class="card-body">
-                        <h5 class="card-title">@p.Name</h5>
-                        <p class="card-text">
-                            @(p.ParentCategory != null ? p.ParentCategory.Name : "Ana Kategori")
-                        </p>
-                        <a asp-action="Details" asp-route-id="@p.Id" class="btn btn-primary">Details</a>
-                    </div>
-                </div>
-            </div>
-        }
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 style="color: #7fad39; margin-bottom: 0;">
+            <i class="fa fa-list"></i> Category List
+        </h2>
+        <a asp-action="Create" class="btn btn-success rounded-pill" style="background-color: #7fad39; border-color: #7fad39;">
+            <i class="fa fa-plus"></i> Create New Category
+        </a>
+    </div>
+
+    <div class="modern-table-container">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Total Product<i class="fa fa-dollar mb-2"></i></th>
+                    <th>Total Revenue</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var category in Model)
+                {
+                    <tr>
+                        <td>@category.Name</td>
+                        <td>@category.TotalProductCount</td>
+                        <td>@category.TotalRevenue.ToString("N") </td>
+                        <td>
+                            <a asp-action="Edit" asp-route-id="@category.Id" class="btn-xs site-btn">  <i class="fa fa-pencil-square-o"></i> Edit  </a>
+                            <form asp-action="Delete" asp-route-id="@category.Id" method="post" style="display:inline">
+                                <button type="submit" class="btn-xs site-btn">  <i class="fa fa-trash-o"></i> Delete  </button>
+                            </form>
+                            <a asp-action="Details" asp-route-id="@category.Id" class="btn-xs site-btn">  <i class="fa fa-info-circle"></i> Details  </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
     </div>
 </div>
 
+
+<style>
+    .modern-table-container {
+        background-color: #ffffff;
+        border-radius: 1rem; /* 16px */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        overflow: hidden; /* İçerik taşmasını engeller ve köşelerin yuvarlatılmasına yardımcı olur */
+    }
+
+        /* Tablo başlık stili */
+        .modern-table-container .table thead th {
+            background-color: #7fad39;
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        /* Tablo satırlarına geçiş efekti */
+        .modern-table-container .table tbody tr:hover {
+            background-color: #f5f5f5; /* Hafif gri */
+        }
+
+        /* Buton gruplarını düzenleme */
+        .modern-table-container .btn-group {
+            border-radius: 0.5rem; /* 8px */
+        }
+
+        /* Tabloyu daha düzenli göstermek için */
+        .modern-table-container .table {
+            margin-bottom: 0;
+        }
+
+    .btn-xs {
+        padding: .25rem .5rem;
+        font-size: .75rem;
+        line-height: 1.5;
+        border-radius: .2rem;
+    }
+
+</style>
     

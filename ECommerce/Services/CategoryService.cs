@@ -207,7 +207,10 @@ namespace ECommerce.Services
         public string GetDefaultImagePath() => "/Images/Category/NoPhotoImage.jpg";
 
 
-
+        //public async Task<int> GetCategoryProductCountAsync(int id)
+        //{
+        //    var productCount = _context.Categories.
+        //}
 
 
 

@@ -1,6 +1,8 @@
+using ECommerce.Data;
 using ECommerce.Models;
 using ECommerce.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
 using System.Threading.Tasks;
 
@@ -9,27 +11,22 @@ namespace ECommerce.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-
-        private readonly ProductService _productService;
-        private readonly CommentService _commentService;
-        private readonly CategoryService _categoryService;
-        
+        private readonly ApplicationDbContext _context;
 
 
-        public HomeController(ILogger<HomeController> logger, ProductService productService, CommentService commentService, 
-            CategoryService categoryService)
+
+        public HomeController(ILogger<HomeController> logger, ApplicationDbContext context)
         {
             _logger = logger;
-            _productService = productService;
-            _commentService = commentService;
-            _categoryService = categoryService;
+            _context = context;
         }
 
 
         public async Task<IActionResult> Index()
         {
-            List<Category> categories = await _categoryService.GetAllMainCategoriesAsync();
-
+            List<Category> categories =  await _context.Categories
+                                                .Where(c => c.ParentCategoryId == null)
+                                                .ToListAsync();
             return View(categories);
         }
 
@@ -38,7 +35,8 @@ namespace ECommerce.Controllers
             return View();
         }
 
-  
+        
+       
 
       
     }

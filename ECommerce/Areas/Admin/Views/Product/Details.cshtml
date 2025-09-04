@@ -1,106 +1,91 @@
-﻿@model ProductCommentModel
+﻿@model ProductViewModel
 
 @{
-    var product = Model.Product;
     var comments = Model.Comments ?? new List<Comment>();
     var hasComments = comments.Any();
     var categoryName = Model.CategoryName;
 }
 
 <div class="container mt-4">
-    <h3>Product Details</h3>
+    <div class="card p-4 shadow-sm rounded-4 border-0">
+        <h3 class="card-title text-center mb-4" style="color: #7fad39;">
+            <i class="fa fa-info-circle"></i> Product Details
+        </h3>
 
-
-    <div class="row">
-        <!-- SOL TARAF - Resim -->
-        <div class="col-md-4 mb-3">
-            <div class="card h-100">
-                <img class="card-img-top"
-                    src="@(string.IsNullOrEmpty(product.ExistingImageUrl) ? ViewBag.DefaultPath : product.ExistingImageUrl)"
-                    alt="@product.Name" style="max-height: 300px; object-fit: cover;">
-                <div class="card-body text-center">
-                    <h5 class="card-title">@product.Name</h5>
-                    <p class="card-text text-success fw-bold">@product.Price.ToString("C2")</p>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card h-100 border-0 rounded-4 overflow-hidden shadow-sm">
+                    <img class="card-img-top"
+                         src="@(string.IsNullOrEmpty(Model.ImageUrl) ? ViewBag.DefaultPath : Model.ImageUrl)"
+                         alt="@Model.ProductName"
+                         style="max-height: 300px; object-fit: cover;">
+                    <div class="card-body text-center">
+                        <h5 class="card-title fw-bold">@Model.ProductName</h5>
+                        <p class="card-text fw-bold" style="color: #7fad39; font-size: 1.25rem;">@Model.Price.ToString("C2")</p>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- SAĞ TARAF - Tablo ve Butonlar -->
-        <div class="col-md-8">
-            <div class="table-responsive">
-                <table class="table table-secondary table-hover">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>Property</th>
-                            <th>Value</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><strong>ID</strong></td>
-                            <td>@product.Id</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Name</strong></td>
-                            <td>@product.Name</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Price</strong></td>
-                            <td class="text-success fw-bold">@product.Price.ToString("C2")</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Description</strong></td>
-                            <td>@product.Description</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Category</strong></td>
-                            <td>@categoryName</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Actions</strong></td>
-                            <td>
-                                <div class="btn-group" role="group">
-                                    <a class="btn btn-warning btn-sm" asp-controller="Product" asp-action="Edit"
-                                       asp-route-id="@product.Id">✏️ Edit</a>
-                                    <form asp-action="Delete" asp-route-id="@product.Id" method="post"
-                                        style="display:contents;">
-                                        <button type="submit" class="btn btn-danger btn-sm"
-                                            onclick="return confirm ('❗ Are you sure ?')">☠️ Delete</button>
+            <div class="col-md-8">
+                <div class="table-responsive rounded-4 shadow-sm overflow-hidden">
+                    <table class="table table-hover mb-0">
+                        <thead style="background-color: #7fad39; color: white;">
+                            <tr>
+                                <th>Property</th>
+                                <th>Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Name</strong></td>
+                                <td>@Model.ProductName</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Description</strong></td>
+                                <td>@Model.Description</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Category</strong></td>
+                                <td>@categoryName</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Price</strong></td>
+                                <td style="color: #7fad39; font-weight: bold;">@Model.Price.ToString("C2")</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Actions</strong></td>
+                                <td>
+                                    <a class="site-btn btn-xs" asp-controller="Product" asp-action="Edit"
+                                       asp-route-id="@Model.Id"><i class="fa fa-edit"></i> Edit</a>
+                                    <form asp-action="Delete" asp-route-id="@Model.Id" method="post"
+                                          class="d-inline me-2" onsubmit="return confirm('Are you sure you want to delete this product?');">
+                                        <button type="submit" class="site-btn btn-xs ">
+                                            <i class="fa fa fa-trash-o"></i> Delete
+                                        </button>
                                     </form>
-                                    <a class="btn btn-primary btn-sm" asp-action="Index">📋 Products</a>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                                    <a class="site-btn btn-xs" asp-action="Index">
+                                        <i class="fa fa-list"></i> Products
+                                    </a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
 <div class="container mt-4">
-    <h4>Comments (@comments.Count)</h4>
+    <div class="card p-4 shadow-sm rounded-4 border-0">
+        <h4 class="card-title" style="color: #7fad39;">
+            <i class="fa fa-comments"></i> Comments (<span class="badge bg-secondary">@comments.Count
 
-    <div class="list-group">
-        @if (hasComments)
-        {
-            @foreach (var comment in comments)
-            {
-                <div class="list-group-item">
-                    <h6 class="mb-1">@comment.User?.FirstName ?? "Unknown User" <small class="text-muted">@comment.CreatedAt:g</small></h6>
-                    <p class="mb-1">@comment.Text</p>
-                </div>
-            }
-        }
-        else
-        {
-            <div class="list-group-item text-muted">
-                No comments yet.
-            </div>
-        }
-    </div>
-</div>
-
-<!-- Optional: Bootstrap spacing -->
-<br>
-
+<style>
+.btn-xs {
+    padding: .25rem .5rem;
+    font-size: .75rem;
+    line-height: 1.5;
+    border-radius: .2rem;
+}
+</style>

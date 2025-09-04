@@ -1,0 +1,74 @@
+﻿@model AdminDashboardViewModel
+
+
+<div class="container">
+    <div class="row justify-content-center align-items-stretch">
+        <div class="col-12 col-md-3 ">
+            <div class="dashboard-card h-100 text-center">
+                <h3>@Model.TotalRevenuLast30Days.ToString("N")</h3>
+                <i class="fa fa-dollar mb-2"></i>
+                <p>Total Revenue This Month</p>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-3 ">
+            <div class="dashboard-card h-100 text-center">
+                <h3>@Model.TotalOrderCountLast30Days</h3>
+                <i class="fa fa-shopping-cart mb-2"></i>
+                <p>Total Order Count This Month</p>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-3 ">
+            <div class="dashboard-card h-100 text-center">
+                <h3>@Model.TotalUser</h3>
+                <i class="fa fa-users mb-2"></i>
+                <p>Total User</p>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-3 ">
+            <div class="dashboard-card h-100 text-center">
+                <h3>@Model.TotalUserRegisteredLast30Days</h3>
+                <i class="fa fa-user-plus mb-2"></i>
+                <p>New User Count Registered This Month</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<style>
+.dashboard-card {
+    border: 2px solid #7fad39; 
+    border-radius: 12px;       
+    padding: 10px !important;  
+    margin-bottom: 15px;       
+    background-color: #f8f9fa; 
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
+    transition: transform 0.2s; 
+}
+
+.dashboard-card:hover {
+    transform: translateY(-3px); 
+}
+
+.dashboard-card i {
+    font-size: 1.2rem; 
+    color: #7fad39;   
+    margin-bottom: 8px;
+}
+
+.dashboard-card h3 {
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+.dashboard-card p {
+    font-size: 0.9rem;
+    color: #555;
+}
+</style>
+

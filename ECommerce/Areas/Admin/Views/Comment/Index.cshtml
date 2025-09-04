@@ -1,0 +1,120 @@
+﻿@model List<Comment>
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 style="color: #7fad39; margin-bottom: 0;">
+            <i class="fa fa-comments"></i> Comment List
+        </h2>
+    </div>
+
+    <div class="modern-table-container">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Comment Text</th>
+                    <th>User</th>
+                    <th>Product</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="comment-table-body">
+                @foreach (var comment in Model)
+                {
+                    <tr>
+                        <td>@comment.Text</td>
+                        <td>@comment.User?.UserName</td>
+                        <td>
+                            @if (comment.Product != null)
+                            {
+                                <a href="/Product/Details/@comment.ProductId">@comment.Product.Name</a>
+                            }
+                        </td>
+                        <td>@comment.CreatedAt.ToShortDateString()</td>
+                        <td>
+                            @if (comment.IsApproved)
+                            {
+                                <span class="badge bg-success">Approved</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-warning text-dark">Pending</span>
+                            }
+                            @if (comment.IsDeleted)
+                            {
+                                <span class="badge bg-danger">Deleted</span>
+                            }
+                        </td>
+                        <td>
+                            <form asp-action="Approve" asp-route-id="@comment.Id" method="post" style="display:inline;">
+                                <button type="submit" class="btn-xs site-btn"> <i class="fa fa-check"></i> Approve </button>
+                            </form>
+                            <form asp-action="Delete" asp-route-id="@comment.Id" method="post" style="display:inline;">
+                                <button type="submit" class="btn-xs site-btn"> <i class="fa fa-trash-o"></i> Delete </button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="d-flex justify-content-center mt-4">
+        <nav>
+            <ul class="pagination">
+            </ul>
+        </nav>
+    </div>
+</div>
+
+<style>
+    /* Stil tanımlamalarınız buraya */
+    .modern-table-container {
+        background-color: #ffffff;
+        border-radius: 1rem;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+
+        .modern-table-container .table thead th {
+            background-color: #7fad39;
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .modern-table-container .table tbody tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        .modern-table-container .table {
+            margin-bottom: 0;
+        }
+
+    .btn-xs {
+        padding: .25rem .5rem;
+        font-size: .75rem;
+        line-height: 1.5;
+        border-radius: .2rem;
+    }
+
+    .site-btn {
+        display: inline-block;
+        font-size: 14px;
+        color: #ffffff;
+        padding: 10px 20px;
+        background: #7fad39;
+        border: none;
+        border-radius: 50px;
+        text-transform: uppercase;
+        font-weight: 700;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+
+        .site-btn:hover {
+            background: #6a962e;
+            color: #ffffff;
+            text-decoration: none;
+        }
+</style>

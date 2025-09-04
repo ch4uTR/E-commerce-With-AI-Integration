@@ -1,48 +1,58 @@
 ﻿@model ECommerce.Models.DTOs.ProductRequest
 
-<div class="card shadow-lg border-0 rounded-3 mt-5">
-    <div class="card-header bg-success text-white">
-        Create New Product
-    </div>
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card p-4 shadow-sm rounded-4 border-0">
+                <div class="card-header border-0 rounded-4 text-center mb-4" style="background-color: #7fad39; color: white;">
+                    <h3 class="mb-0">
+                        <i class="fa fa-plus-circle"></i> Create New Product
+                    </h3>
+                </div>
 
-    <div class="card-body">
-        <form method="post" asp-controller="Product" asp-action="Create" enctype="multipart/form-data">
-            <div class="mb-3">
-                <label asp-for="Name" class="form-label">Name</label>
-                <input asp-for="Name" class="form-control">
-                <span asp-validation-for="Name" class="text-danger"></span>
-            </div>
+                <div class="card-body">
+                    <form method="post" asp-controller="Product" asp-action="Create" enctype="multipart/form-data">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Name" class="form-label">Name</label>
+                                <input asp-for="Name" class="form-control rounded-pill">
+                                <span asp-validation-for="Name" class="text-danger"></span>
+                            </div>
 
-            <div class="mb-3">
-                <label asp-for="Description" class="form-label">Description</label>
-                <textarea asp-for="Description" class="form-control"> </textarea>
-                <span asp-validation-for="Description" class="text-danger"></span>
-            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Price" class="form-label">Price</label>
+                                <input asp-for="Price" type="number" class="form-control rounded-pill">
+                                <span asp-validation-for="Price" class="text-danger"></span>
+                            </div>
+                        </div>
 
-            <div class="mb-3">
-                <label asp-for="Price" class="form-label">Price</label>
-                <input asp-for="Price" type="number" class="form-control">
-                <span asp-validation-for="Price" class="text-danger"></span>
-            </div>
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label">Description</label>
+                            <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
 
-            <div class="mb-3">
-                <label asp-for="CategoryId" class="form-label">Category</label>
-                <select asp-for="CategoryId" asp-items="ViewBag.Categories" class="form-control">
-                    <option value="">Select a category</option>
-                </select>
-                <span asp-validation-for="CategoryId" class="text-danger"></span>
-            </div>
+                        <div class="mb-3">
+                            <label asp-for="CategoryId" class="form-label">Category</label>
+                            <select asp-for="CategoryId" asp-items="ViewBag.Categories" class="form-control rounded-pill">
+                                <option value="">Select a category</option>
+                            </select>
+                            <span asp-validation-for="CategoryId" class="text-danger"></span>
+                        </div>
 
-            <div class="mb-3">
-                <label asp-for="ImageFile" class="form-label">Upload a photo</label>
-                <input type="file" class="form-control-file" asp-for="ImageFile">
-            </div>
+                        <div class="mb-3">
+                            <label asp-for="ImageFile" class="form-label">Upload a photo</label>
+                            <input type="file" class="form-control" asp-for="ImageFile">
+                        </div>
 
-            <div class="d-flex justify-content-between mt-4">
-                <button type="submit" class="btn btn-success">Create</button>
-                <a class="btn btn-secondary" asp-action="Index">Products</a>
+                        <div class="d-flex justify-content-end mt-4 gap-2">
+    <button type="submit" class="site-btn btn-xs">Create</button>
+    <a class="site-btn btn-xs" asp-action="Index">Products</a>          
+</div
+                    </form>
+                </div>
             </div>
-        </form>
+        </div>
     </div>
 </div>
 
@@ -51,3 +61,12 @@
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
 }
+
+<style>
+.btn-xs {
+padding: .25rem .5rem;
+font-size: .75rem;
+line-height: 1.5;
+border-radius: .2rem;
+}
+</style>

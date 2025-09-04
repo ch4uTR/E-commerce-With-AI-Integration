@@ -33,7 +33,6 @@ builder.Services.ConfigureApplicationCookie(options =>
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddScoped<CartService>();
-builder.Services.AddScoped<ProductService>();
 builder.Services.AddScoped<CommentService>();
 builder.Services.AddScoped<OrderService>();
 builder.Services.AddScoped<CategoryService>();

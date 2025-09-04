@@ -1,6 +1,5 @@
 ﻿@model CategoryEditModel
 
-
 @{
     var request = Model.Request;
     var defaultImagePath = Model.DefaultImagePath;
@@ -8,53 +7,63 @@
 }
 
 <div class="container mt-4">
-    <h2>Edit The Category</h2>
+    <div class="card p-4 shadow-sm rounded-4 border-0">
+        <h2 class="card-title text-center mb-4" style="color: #7fad39;">
+            <i class="fa fa-edit"></i> Edit The Category
+        </h2>
 
-    <form method="post" asp-action="Edit" enctype="multipart/form-data" class="row">
-        <input asp-for="@request.Id" type="hidden">
+        <form method="post" asp-action="Edit" enctype="multipart/form-data" class="row g-3">
+            <input asp-for="@request.Id" type="hidden">
 
-        <!-- SOL TARAF - Resim ve Bilgiler -->
-        <div class="col-md-4">
-            <div class="card h-100">
-                <img class="card-img-top"
-                     src="@(string.IsNullOrEmpty(request.ExistingImageUrl) ? ViewBag.DefaultImagePath : request.ExistingImageUrl)"
-                     alt="@request.Name"
-                     style="max-height: 250px; object-fit: cover;">
-                <div class="card-body">
-                    <h5 class="card-title">@request.Name</h5>
-                    <a asp-action="Details" asp-route-id="@request.Id" class="btn btn-primary btn-sm">Details</a>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 rounded-4 overflow-hidden shadow-sm">
+                    <img class="card-img-top"
+                         src="@(string.IsNullOrEmpty(request.ExistingImageUrl) ? defaultImagePath : request.ExistingImageUrl)"
+                         alt="@request.Name"
+                         style="max-height: 250px; object-fit: cover;">
+                    <div class="card-body text-center">
+                        <h5 class="card-title fw-bold">@request.Name</h5>
+                        <a asp-action="Details" asp-route-id="@request.Id" class="btn btn-outline-secondary rounded-pill">
+                            <i class="fa fa-info-circle"></i> Details
+                        </a>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- SAĞ TARAF - Form -->
-        <div class="col-md-8">
-            <div class="mb-3">
-                <label asp-for="Request.Name" class="form-label">Name</label>
-                <input asp-for="Request.Name" class="form-control">
-                <span asp-validation-for="Request.Name" class="text-danger"></span>
-            </div>
+            <div class="col-md-8">
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label asp-for="Request.Name" class="form-label fw-bold">Name</label>
+                        <input asp-for="Request.Name" class="form-control rounded-pill">
+                        <span asp-validation-for="Request.Name" class="text-danger"></span>
+                    </div>
 
-            <div class="mb-3">
-                <label asp-for="Request.ParentCategoryId" class="form-label">Category</label>
-                <select asp-for="Request.ParentCategoryId" asp-items="@mainCategories" class="form-control">
-                    <option value="">-- Select Category --</option>
-                </select>
-                <span asp-validation-for="Request.ParentCategoryId" class="text-danger"></span>
-            </div>
+                    <div class="col-12">
+                        <label asp-for="Request.ParentCategoryId" class="form-label fw-bold">Parent Category</label>
+                        <select asp-for="Request.ParentCategoryId" asp-items="@mainCategories" class="form-control rounded-pill">
+                            <option value="">-- Select Category --</option>
+                        </select>
+                        <span asp-validation-for="Request.ParentCategoryId" class="text-danger"></span>
+                    </div>
 
-            <div class="mb-3">
-                <label asp-for="Request.ImageFile" class="form-label">Upload a photo</label>
-                <input type="file" class="form-control" asp-for="Request.ImageFile">
-                <small class="form-text text-muted">Leave empty to keep current image</small>
-            </div>
+                    <div class="col-12">
+                        <label asp-for="Request.ImageFile" class="form-label fw-bold">Upload a photo</label>
+                        <input type="file" class="form-control rounded-pill" asp-for="Request.ImageFile">
+                        <small class="form-text text-muted">Leave empty to keep current image</small>
+                    </div>
 
-            <div class="mb-3">
-                <button type="submit" class="btn btn-success">💾 Save Changes</button>
-                <a asp-action="Details" asp-route-id="Request.Id" class="btn btn-secondary">❌ Cancel</a>
+                    <div class="col-12 mt-4 d-flex justify-content-end gap-2">
+                        <button type="submit" class="site-btn rounded-pill" style="background-color: #7fad39; border-color: #7fad39;">
+                            <i class="fa fa-save"></i> Save Changes
+                        </button>
+                        <a asp-action="Details" asp-route-id="@request.Id" class="btn btn-outline-secondary rounded-pill">
+                            <i class="fa fa-times"></i> Cancel
+                        </a>
+                    </div>
+                </div>
             </div>
-        </div>
-    </form>
+        </form>
+    </div>
 </div>
 
 @section Scripts {

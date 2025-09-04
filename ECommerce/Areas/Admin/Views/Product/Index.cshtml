@@ -1,50 +1,170 @@
-﻿@model List<Product>
+﻿@model List<ProductViewModel>
 
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 style="color: #7fad39; margin-bottom: 0;">
+            <i class="fa fa-list"></i> Product List
+        </h2>
 
-
-<div class="container my-4">
-    <div class="row">
-
-        
-        @foreach (var p in Model)
-        {
-            <div class="col-md-4 mb-3">
-                <div class="card">
-                    <img src="@p.ImageUrl" class="card-img-top" alt="@p.Name">
-                    <div class="card-body">
-                        <h5 class="card-title">@p.Name</h5>
-                        <p class="card-text">@p.Price ₺</p>
-                        <a asp-action="Details" asp-route-id="@p.Id" class="btn btn-primary">Details</a>
-                    </div>
-                </div>
+        <div class="d-flex align-items-center gap-3">
+            <div class="filter__sort">
+                <span>Sort By</span>
+                <select>
+                    <option value="0">Default</option>
+                    <option value="1">Price: Low to High</option>
+                    <option value="2">Price: High to Low</option>
+                    <option value="3">Total Sold: High to Low</option>
+                    <option value="4">Total Sold: High to Low</option>
+                </select>
             </div>
-        }
-
-
+            <div class="filter__found">
+                <h6><span id="product-count"></span> Products listed</h6>
+            </div>
+            <a asp-action="Create" class="btn btn-success rounded-pill" style="background-color: #7fad39; border-color: #7fad39;">
+                <i class="fa fa-plus"></i> Create New Product
+            </a>
+        </div>
     </div>
 
-    <nav aria-label="...">
-        <ul class="pagination justify-content-center">
-            <li class="page-item @(ViewBag.CurrentPage == 1 ? "disabled" : "")">
-                <a class="page-link" asp-action="Index" asp-route-pageNumber="@(ViewBag.CurrentPage - 1)">Previous</a>
-            </li>
-
-            @{
-                int maxPages = 3;
-                int startPage = Math.Max(1, ViewBag.CurrentPage - 1);
-                int endPage = Math.Min(ViewBag.TotalPages, startPage + maxPages - 1);
-
-                for (int i = startPage; i <= endPage; i++)
+    <div class="modern-table-container">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Category</th>
+                    <th>Price <i class="fa fa-dollar"></i></th>
+                    <th>Total Sold</th>
+                    <th>Total Revenue</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="product-table-body">
+                @foreach (var product in Model)
                 {
-                    <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
-                        <a class="page-link" asp-action="Index" asp-route-pageNumber="@i">@i</a>
-                    </li>
+                    <tr>
+                        <td>@product.ProductName</td>
+                        <td>@product.CategoryName</td>
+                        <td>@product.Price.ToString("N")</td>
+                        <td>@product.TotalSoldQuantity</td>
+                        <td>@product.TotalRevenue.ToString("N")</td>
+                        <td>
+                            <a asp-action="Edit" asp-route-id="@product.Id" class="btn-xs site-btn"> <i class="fa fa-pencil-square-o"></i> Edit </a>
+                            <form asp-action="Delete" asp-route-id="@product.Id" method="post" style="display:inline">
+                                <button type="submit" class="btn-xs site-btn"> <i class="fa fa-trash-o"></i> Delete </button>
+                            </form>
+                            <a asp-action="Details" asp-route-id="@product.Id" class="btn-xs site-btn"> <i class="fa fa-info-circle"></i> Details </a>
+                        </td>
+                    </tr>
                 }
+            </tbody>
+        </table>
+    </div>
 
-            }
+    <div class="d-flex justify-content-center mt-4">
+        <nav>
+            <ul class="pagination">
+            </ul>
+        </nav>
+    </div>
+</div>
 
-            <li class="page-item @(ViewBag.CurrentPage == ViewBag.TotalPages ? "disabled" : "")">
-                <a class="page-link" asp-action="Index" asp-route-pageNumber="@(ViewBag.CurrentPage + 1)">Next</a>
-            </li>
-        </ul>
-    </nav>
+@section SidebarContent {
+    <div class="sidebar__item">
+        <h4>Price</h4>
+        <div class="price-range-wrap">
+            <div class="price-range ui-slider ui-corner-all ui-slider-horizontal ui-widget ui-widget-content"
+                 data-min=@ViewBag.MinPrice data-max=@ViewBag.MaxPrice>
+                <div class="ui-slider-range ui-corner-all ui-widget-header"></div>
+                <span tabindex="0" class="ui-slider-handle ui-corner-all ui-state-default"></span>
+                <span tabindex="0" class="ui-slider-handle ui-corner-all ui-state-default"></span>
+            </div>
+            <div class="range-slider">
+                <div class="price-input">
+                    <input type="number" id="minamount" placeholder="Min">
+                    <input type="number" id="maxamount" placeholder="Max">
+                    <button id="apply-price-filter" class="btn site-btn mt-2">Apply</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        $(document).ready(function() {
+            // Slider ve input elementlerini seç
+            var priceRange = $('.price-range');
+            var minPriceInput = $('#minamount');
+            var maxPriceInput = $('#maxamount');
+            var applyFilterBtn = $('#apply-price-filter');
+
+            // HTML'den dinamik min ve max değerlerini al
+            var minVal = priceRange.data('min');
+            var maxVal = priceRange.data('max');
+
+            // Input kutularının başlangıç değerlerini ayarla
+            minPriceInput.val(minVal);
+            maxPriceInput.val(maxVal);
+
+            // Slider'ı başlat ve değerleri dinamik olarak ata
+            priceRange.slider({
+                range: true,
+                min: minVal,
+                max: maxVal,
+                values: [minVal, maxVal],
+                slide: function(event, ui) {
+                    minPriceInput.val(ui.values[0]);
+                    maxPriceInput.val(ui.values[1]);
+                }
+            });
+
+            // Input kutularının değerleri değiştiğinde slider'ı güncelle
+            minPriceInput.on('input', function() {
+                var newMinVal = parseFloat($(this).val());
+                var currentMax = priceRange.slider("values", 1);
+                priceRange.slider("values", [newMinVal, currentMax]);
+            });
+
+            maxPriceInput.on('input', function() {
+                var newMaxVal = parseFloat($(this).val());
+                var currentMin = priceRange.slider("values", 0);
+                priceRange.slider("values", [currentMin, newMaxVal]);
+            });
+
+            // Uygula butonuna basıldığında filtreleme işlemini başlat
+
+        });
+    </script>
+
+}
+
+
+<style>
+    .modern-table-container {
+        background-color: #ffffff;
+        border-radius: 1rem;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+
+        .modern-table-container .table thead th {
+            background-color: #7fad39;
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .modern-table-container .table tbody tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        .modern-table-container .table {
+            margin-bottom: 0;
+        }
+
+    .btn-xs {
+        padding: .25rem .5rem;
+        font-size: .75rem;
+        line-height: 1.5;
+        border-radius: .2rem;
+    }
+
+</style>
