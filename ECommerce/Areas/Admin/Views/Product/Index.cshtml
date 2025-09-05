@@ -1,4 +1,10 @@
 ﻿@model List<ProductViewModel>
+@{
+    int totalCount = ViewBag.TotalCount;
+    int currentPage = ViewBag.CurrentPage;
+    int pageSize = ViewBag.PageSize;
+    int totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+}
 
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -18,7 +24,7 @@
                 </select>
             </div>
             <div class="filter__found">
-                <h6><span id="product-count"></span> Products listed</h6>
+                <h6><span id="product-count"></span> @totalCount Products listed</h6>
             </div>
             <a asp-action="Create" class="btn btn-success rounded-pill" style="background-color: #7fad39; border-color: #7fad39;">
                 <i class="fa fa-plus"></i> Create New Product
@@ -61,8 +67,26 @@
     </div>
 
     <div class="d-flex justify-content-center mt-4">
-        <nav>
+        <nav aria-label="Page navigation">
             <ul class="pagination">
+                <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                    <a class="page-link" href="#" onclick="fetchProducts(@(currentPage - 1))" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+
+                @for (int i = 1; i <= totalPages; i++)
+                {
+                    <li class="page-item @(i == currentPage ? "active" : "")">
+                        <a class="page-link" href="#" onclick="fetchProducts(@i)">@i</a>
+                    </li>
+                }
+
+                <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                    <a class="page-link" href="#" onclick="fetchProducts(@(currentPage + 1))" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
             </ul>
         </nav>
     </div>
@@ -89,51 +113,6 @@
     </div>
 
 
-    <script>
-        $(document).ready(function() {
-            // Slider ve input elementlerini seç
-            var priceRange = $('.price-range');
-            var minPriceInput = $('#minamount');
-            var maxPriceInput = $('#maxamount');
-            var applyFilterBtn = $('#apply-price-filter');
-
-            // HTML'den dinamik min ve max değerlerini al
-            var minVal = priceRange.data('min');
-            var maxVal = priceRange.data('max');
-
-            // Input kutularının başlangıç değerlerini ayarla
-            minPriceInput.val(minVal);
-            maxPriceInput.val(maxVal);
-
-            // Slider'ı başlat ve değerleri dinamik olarak ata
-            priceRange.slider({
-                range: true,
-                min: minVal,
-                max: maxVal,
-                values: [minVal, maxVal],
-                slide: function(event, ui) {
-                    minPriceInput.val(ui.values[0]);
-                    maxPriceInput.val(ui.values[1]);
-                }
-            });
-
-            // Input kutularının değerleri değiştiğinde slider'ı güncelle
-            minPriceInput.on('input', function() {
-                var newMinVal = parseFloat($(this).val());
-                var currentMax = priceRange.slider("values", 1);
-                priceRange.slider("values", [newMinVal, currentMax]);
-            });
-
-            maxPriceInput.on('input', function() {
-                var newMaxVal = parseFloat($(this).val());
-                var currentMin = priceRange.slider("values", 0);
-                priceRange.slider("values", [currentMin, newMaxVal]);
-            });
-
-            // Uygula butonuna basıldığında filtreleme işlemini başlat
-
-        });
-    </script>
 
 }
 
@@ -168,3 +147,43 @@
     }
 
 </style>
+
+
+<script>
+    function fetchProducts(pageNumber) {
+        const url = '@Url.Action("GetProductDetailsJSON", "Product", new { page = "PAGE_NUM_PLACEHOLDER" })'
+            .replace("PAGE_NUM_PLACEHOLDER", pageNumber);
+
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                const tableBody = document.getElementById('product-table-body');
+                tableBody.innerHTML = '';
+
+                data.data.forEach(product => {
+                    const row = `
+                        <tr>
+                            <td>${product.productName}</td>
+                            <td>${product.categoryName}</td>
+                            <td>${product.price}</td>
+                            <td>${product.totalSoldQuantity}</td>
+                            <td>${product.totalRevenue}</td>
+                            <td>
+                                <a href="/Admin/Product/Edit/${product.id}" class="btn-xs site-btn">
+                                    <i class="fa fa-pencil-square-o"></i> Edit
+                                </a>
+                                <form action="/Admin/Product/Delete/${product.id}" method="post" style="display:inline">
+                                    <button type="submit" class="btn-xs site-btn">
+                                        <i class="fa fa-trash-o"></i> Delete
+                                    </button>
+                                </form>
+                                <a href="/Admin/Product/Details/${product.id}" class="btn-xs site-btn">
+                                    <i class="fa fa-info-circle"></i> Details
+                                </a>
+                            </td>
+                        </tr>`;
+                    tableBody.innerHTML += row;
+                });
+            });
+    }
+</script>

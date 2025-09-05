@@ -52,6 +52,7 @@ namespace ECommerce.Areas.Admin.Controllers
         [HttpGet]
         public async Task<IActionResult> Index([FromQuery] ProductSearchCriteria criteria, int page = 1, int size = 20)
         {
+            criteria ??= new ProductSearchCriteria();
             
             var productsViewModels = await GetFilteredAndPagedProductsAsync(criteria, page, size);
 
@@ -64,6 +65,9 @@ namespace ECommerce.Areas.Admin.Controllers
 
             ViewBag.MinPrice = minPrice;
             ViewBag.MaxPrice = maxPrice;
+            ViewBag.TotalCount = totalCount;
+            ViewBag.CurrentPage = page;
+            ViewBag.PageSize = size;
 
             return View(productsViewModels);
         }
@@ -76,6 +80,8 @@ namespace ECommerce.Areas.Admin.Controllers
 
             // Toplam ürün sayısını hesapla
             var totalCount = await _context.Products.CountAsync();
+
+            
 
             // JSON verisini döndür
             return Json(new
@@ -232,6 +238,9 @@ namespace ECommerce.Areas.Admin.Controllers
         public async Task<List<ProductViewModel>> GetFilteredAndPagedProductsAsync(ProductSearchCriteria criteria, int pageNumber, int pageSize)
         {
             // Veritabanı sorgusunu başlat
+
+            criteria ??= new ProductSearchCriteria();
+
             var query = _context.Products.AsQueryable();
 
             // Filtreleme işlemleri

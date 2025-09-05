@@ -26,7 +26,7 @@ namespace ECommerce.Areas.Admin.Controllers
             _webHostEnvironment = webHostEnvironment;
         }
 
-
+        [HttpGet]
 
         public async Task<IActionResult> Index(int page = 1, int size = 20)
         {
