@@ -12,15 +12,15 @@
             <i class="fa fa-list"></i> Product List
         </h2>
 
-        <div class="d-flex align-items-center gap-3">
+        <div class="d-flex align-items-center>
             <div class="filter__sort">
                 <span>Sort By</span>
-                <select>
-                    <option value="0">Default</option>
-                    <option value="1">Price: Low to High</option>
-                    <option value="2">Price: High to Low</option>
-                    <option value="3">Total Sold: High to Low</option>
-                    <option value="4">Total Sold: High to Low</option>
+                <select id="sort-select">
+                    <option value="default">Default</option>
+                    <option value="priceasc">Price: Low to High</option>
+                    <option value="pricedesc">Price: High to Low</option>
+                    <option value="totalsolddesc">Total Sold: High to Low</option>
+                    <option value="totalsoldasc">Total Sold: High to Low</option>
                 </select>
             </div>
             <div class="filter__found">
@@ -106,7 +106,7 @@
                 <div class="price-input">
                     <input type="number" id="minamount" placeholder="Min">
                     <input type="number" id="maxamount" placeholder="Max">
-                    <button id="apply-price-filter" class="btn site-btn mt-2">Apply</button>
+                    <button id="apply-price-filter" class="btn site-btn mt-2" onclick="">Apply</button>
                 </div>
             </div>
         </div>
@@ -148,26 +148,51 @@
 
 </style>
 
+@section Scripts {
+    <script>
+        function fetchProducts(pageNumber = 1, sortBy = 'default', minPrice, maxPrice, categoryId, searchTerm) {
+            // 1. Filter objesi
+            const filter = {
+                page: pageNumber,
+                sortBy: sortBy,
+                minPrice: minPrice,
+                maxPrice: maxPrice,
+                categoryId: categoryId,
+                searchTerm: searchTerm
+            };
 
-<script>
-    function fetchProducts(pageNumber) {
-        const url = '@Url.Action("GetProductDetailsJSON", "Product", new { page = "PAGE_NUM_PLACEHOLDER" })'
-            .replace("PAGE_NUM_PLACEHOLDER", pageNumber);
+            // 2. Query string'e çevir
+            const params = new URLSearchParams();
+            for (const key in filter) {
+                if (filter[key] !== undefined && filter[key] !== null && filter[key] !== "") {
+                    params.append(key, filter[key]);
+                }
+            }
 
-        fetch(url)
-            .then(response => response.json())
-            .then(data => {
-                const tableBody = document.getElementById('product-table-body');
-                tableBody.innerHTML = '';
+            // 3. URL oluştur - Razor syntax'ı değiştir
+            const baseUrl = '/Admin/Product/GetProductDetailsJSON';
+            const url = `${baseUrl}?${params.toString()}`;
+            console.log(url);
 
-                data.data.forEach(product => {
-                    const row = `
-                        <tr>
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return response.json();
+                })
+                .then(data => {
+                    const tableBody = document.getElementById('product-table-body');
+                    tableBody.innerHTML = '';
+
+                    const productCountElement = document.getElementById('product-count');
+                    productCountElement.textContent = data.totalCount || 0;
+
+                    data.data.forEach(product => {
+                        const row = `<tr>
                             <td>${product.productName}</td>
                             <td>${product.categoryName}</td>
-                            <td>${product.price}</td>
+                            <td>${product.price.toLocaleString()}</td>
                             <td>${product.totalSoldQuantity}</td>
-                            <td>${product.totalRevenue}</td>
+                            <td>${product.totalRevenue.toLocaleString()}</td>
                             <td>
                                 <a href="/Admin/Product/Edit/${product.id}" class="btn-xs site-btn">
                                     <i class="fa fa-pencil-square-o"></i> Edit
@@ -182,8 +207,84 @@
                                 </a>
                             </td>
                         </tr>`;
-                    tableBody.innerHTML += row;
+                        tableBody.innerHTML += row;
+                    });
+
+                    // Pagination'ı da güncelle
+                    updatePagination(data.currentPage, data.totalCount, data.pageSize, sortBy);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
                 });
+        }
+
+        function updatePagination(currentPage, totalCount, pageSize, sortBy) {
+            const totalPages = Math.ceil(totalCount / pageSize);
+            const paginationContainer = document.querySelector('.pagination');
+
+            if (!paginationContainer) return;
+
+            paginationContainer.innerHTML = '';
+
+            // Previous button
+            const prevLi = document.createElement('li');
+            prevLi.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`;
+            prevLi.innerHTML = `<a class="page-link" href="#" onclick="fetchProducts(${currentPage - 1}, '${encodeURIComponent(sortBy)}')" aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+            </a>`;
+            paginationContainer.appendChild(prevLi);
+
+            // Page numbers
+            for (let i = 1; i <= totalPages; i++) {
+                const pageLi = document.createElement('li');
+                pageLi.className = `page-item ${i === currentPage ? 'active' : ''}`;
+                pageLi.innerHTML = `<a class="page-link" href="#" onclick="fetchProducts(${i}, '${encodeURIComponent(sortBy)}')">${i}</a>`;
+                paginationContainer.appendChild(pageLi);
+            }
+
+            // Next button
+            const nextLi = document.createElement('li');
+            nextLi.className = `page-item ${currentPage === totalPages ? 'disabled' : ''}`;
+            nextLi.innerHTML = `<a class="page-link" href="#" onclick="fetchProducts(${currentPage + 1}, '${encodeURIComponent(sortBy)}')" aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+            </a>`;
+            paginationContainer.appendChild(nextLi);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const sortSelect = document.getElementById('sort-select');
+
+            const applyPriceFilterBtn = document.getElementById('apply-price-filter');
+            const minAmountInput = document.getElementById('minamount');
+            const maxAmountInput = document.getElementById('maxamount');
+
+
+
+            sortSelect.addEventListener('change', (event) => {
+                const selectedSortBy = event.target.value;
+
+                const minPrice = minAmountInput.value || undefined;
+                const maxPrice = maxAmountInput.value || undefined;
+
+
+                console.log(selectedSortBy);
+                fetchProducts(1, selectedSortBy, minPrice, maxPrice); // İlk sayfaya geri dön ve sırala
             });
-    }
-</script>
+
+            // Sayfa yüklendiğinde ürün sayısını güncelle
+            const productCountElement = document.getElementById('product-count');
+            if (productCountElement && !productCountElement.textContent.trim()) {
+                const totalCountFromViewBag = @ViewBag.TotalCount;
+                productCountElement.textContent = totalCountFromViewBag || 0;
+            }
+        });
+
+        $(document).ready(function() {
+            $('#sort-select').on('change', function() {
+                const selectedSortBy = $(this).val();
+                console.log('jQuery ile seçilen değer:', selectedSortBy);
+                fetchProducts(1, selectedSortBy);
+            });
+        });
+    </script>
+}

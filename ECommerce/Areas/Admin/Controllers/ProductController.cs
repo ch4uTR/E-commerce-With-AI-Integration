@@ -29,32 +29,13 @@ namespace ECommerce.Areas.Admin.Controllers
         }
 
 
-        //[HttpGet]
-        //public async Task<IActionResult> Index(int page = 1, int size = 20)
-        //{
-        //    var products = await GetProductsAsync(pageNumber : page, pageSize : size);
-        //    if (products == null)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    List<ProductViewModel> productsViewModels = new List<ProductViewModel>();
-        //    foreach (var product in products)
-        //    {
-        //        var productViewModel = await GetProductDetailsAsync(product.Id);
-        //        productsViewModels.Add(productViewModel);
-        //    }
-
-        //    return View(productsViewModels);
-        //}
-
 
         [HttpGet]
-        public async Task<IActionResult> Index([FromQuery] ProductSearchCriteria criteria, int page = 1, int size = 20)
+        public async Task<IActionResult> Index()
         {
-            criteria ??= new ProductSearchCriteria();
+            ProductSearchCriteria criteria = new ProductSearchCriteria();
             
-            var productsViewModels = await GetFilteredAndPagedProductsAsync(criteria, page, size);
+            var productsViewModels = await GetFilteredAndPagedProductsAsync(criteria);
 
           
             var totalCount = await _context.Products.CountAsync();
@@ -66,17 +47,22 @@ namespace ECommerce.Areas.Admin.Controllers
             ViewBag.MinPrice = minPrice;
             ViewBag.MaxPrice = maxPrice;
             ViewBag.TotalCount = totalCount;
-            ViewBag.CurrentPage = page;
-            ViewBag.PageSize = size;
+            ViewBag.CurrentPage = criteria.Page;
+            ViewBag.PageSize = criteria.Size;
 
             return View(productsViewModels);
         }
 
+
+
+        /*     -----------------------------------------------------------------------------------------------------------------------------------*/
+        /*     -----------------------------------------------------------------------------------------------------------------------------------*/
+
         [HttpGet]
-        public async Task<IActionResult> GetProductDetailsJSON([FromQuery] ProductSearchCriteria criteria, int page = 1, int size = 20)
+        public async Task<IActionResult> GetProductDetailsJSON([FromQuery] ProductSearchCriteria criteria)
         {
             // Yine aynı metodu çağır
-            var productsViewModels = await GetFilteredAndPagedProductsAsync(criteria, page, size);
+            var productsViewModels = await GetFilteredAndPagedProductsAsync(criteria);
 
             // Toplam ürün sayısını hesapla
             var totalCount = await _context.Products.CountAsync();
@@ -88,11 +74,14 @@ namespace ECommerce.Areas.Admin.Controllers
             {
                 data = productsViewModels,
                 totalCount = totalCount,
-                currentPage = page,
-                pageSize = size
+                currentPage = criteria.Page,
+                pageSize = criteria.Size
             });
         }
 
+
+        /*     -----------------------------------------------------------------------------------------------------------------------------------*/
+        /*     -----------------------------------------------------------------------------------------------------------------------------------*/
 
         [HttpGet]
         public async Task<IActionResult> Create()
@@ -235,54 +224,58 @@ namespace ECommerce.Areas.Admin.Controllers
 
 
 
-        public async Task<List<ProductViewModel>> GetFilteredAndPagedProductsAsync(ProductSearchCriteria criteria, int pageNumber, int pageSize)
+        public async Task<List<ProductViewModel>> GetFilteredAndPagedProductsAsync(ProductSearchCriteria criteria)
         {
-            // Veritabanı sorgusunu başlat
 
-            criteria ??= new ProductSearchCriteria();
 
-            var query = _context.Products.AsQueryable();
+            var filteredQuery = _context.Products.AsQueryable();
 
-            // Filtreleme işlemleri
             if (criteria.MinPrice.HasValue)
-            {
-                query = query.Where(p => p.Price >= criteria.MinPrice);
-            }
+                filteredQuery = filteredQuery.Where(p => p.Price >= criteria.MinPrice);
+
             if (criteria.MaxPrice.HasValue)
-            {
-                query = query.Where(p => p.Price <= criteria.MaxPrice);
-            }
+                filteredQuery = filteredQuery.Where(p => p.Price <= criteria.MaxPrice);
+
             if (criteria.CategoryId.HasValue)
+                filteredQuery = filteredQuery.Where(p => p.CategoryId == criteria.CategoryId);
+
+            var totalCount = await filteredQuery.CountAsync();
+
+            if (!string.IsNullOrEmpty(criteria.SortBy)) 
             {
-                query = query.Where(p => p.CategoryId == criteria.CategoryId);
+                switch (criteria.SortBy?.ToLowerInvariant())
+                {
+                    case "priceasc":
+                        filteredQuery = filteredQuery.OrderBy(p => p.Price);
+                        break;
+                    case "pricedesc":
+                        filteredQuery = filteredQuery.OrderByDescending(p => p.Price);
+                        break;
+                    case "totalsoldasc":
+                        filteredQuery = filteredQuery.OrderBy(p => p.OrderItems.Sum(oi => oi.Quantity));
+                        break;
+                    case "totalsolddesc":
+                        filteredQuery = filteredQuery.OrderByDescending(p => p.OrderItems.Sum(oi => oi.Quantity));
+                        break;
+                    default:
+                        filteredQuery = filteredQuery.OrderBy(p => p.Id);
+                        break;
+                }
             }
 
-            // Sıralama işlemleri
-            switch (criteria.SortBy?.ToLowerInvariant())
+            else
             {
-                case "priceasc":
-                    query = query.OrderBy(p => p.Price);
-                    break;
-                case "pricedesc":
-                    query = query.OrderByDescending(p => p.Price);
-                    break;
-                case "totalsoldasc":
-                    query = query.OrderBy(p => p.OrderItems.Sum(oi => oi.Quantity));
-                    break;
-                case "totalsolddesc":
-                     query = query.OrderByDescending(p => p.OrderItems.Sum(oi => oi.Quantity));
-                    break;
-                default:
-                    query = query.OrderBy(p => p.Id);
-                    break;
+                filteredQuery = filteredQuery.OrderBy(p => p.Id);
             }
+                
 
-            // İlişkili verileri sorguya dahil et (Tek sorgu için)
-            query = query.Include(p => p.Category)
-                         .Include(p => p.OrderItems);
+
+                // İlişkili verileri sorguya dahil et (Tek sorgu için)
+                filteredQuery = filteredQuery.Include(p => p.Category)
+                             .Include(p => p.OrderItems);
 
             // Sayfalama işlemleri
-            var pagedQuery = query.Skip((pageNumber - 1) * pageSize).Take(pageSize);
+            var pagedQuery = filteredQuery.Skip((criteria.Page - 1) * criteria.Size).Take(criteria.Size);
 
             // Sonucu ViewModel listesine dönüştür
             var productsViewModels = await pagedQuery.Select(p => new ProductViewModel
@@ -337,33 +330,7 @@ namespace ECommerce.Areas.Admin.Controllers
         }
 
 
-        public async Task<IActionResult> GetProductDetailsJSON(int page = 1, int size = 20)
-        {
-            var products = await GetProductsAsync(pageNumber: page, pageSize: size);
-            if (products == null)
-            {
-                return NotFound();
-            }
-
-            List<ProductViewModel> productsViewModels = new List<ProductViewModel>();
-            foreach (var product in products)
-            {
-                var productViewModel = await GetProductDetailsAsync(product.Id);
-                productsViewModels.Add(productViewModel);
-            }
-
-            var totalCount = await _context.Products.CountAsync();
-
-
-            return Json(new
-            {
-                data = productsViewModels,
-                totalCount = totalCount,
-                currentPage = page,
-                pageSize = size
-            });
-        }
-
+      
 
         public async Task<List<Product?>> GetProductsAsync(int pageNumber, int pageSize)
         {
@@ -568,20 +535,19 @@ namespace ECommerce.Areas.Admin.Controllers
             {
                 switch (criteria.SortBy)
                 {
-                    case "PriceAsc":
+                    case "priceasc":
                         query = query.OrderBy(p => p.Price);
                         break;
 
-                    case "PriceDesc":
+                    case "pricedesc":
                         query = query.OrderByDescending(p => p.Price);
                         break;
 
-                    case "CreatDateAsc":
-                        query = query.OrderBy(p => p.CreatedAt);
+                    case "totalsoldasc":
+                        query = query.OrderBy(p => p.OrderItems.Sum(oi => oi.Quantity));
                         break;
-
-                    case "CreatedDateDesc":
-                        query = query.OrderByDescending(p => p.CreatedAt);
+                    case "totalsolddesc":
+                        query = query.OrderByDescending(p => p.OrderItems.Sum(oi => oi.Quantity));
                         break;
 
                     default:
