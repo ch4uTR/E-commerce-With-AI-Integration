@@ -26,6 +26,8 @@ namespace ECommerce.Data
 
         public DbSet<OrderStatus> OrderStatuses { get; set; }
 
+        public DbSet<DiscountCoupon> Coupons { get; set; }
+
 
 
 
