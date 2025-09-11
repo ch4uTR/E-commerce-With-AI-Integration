@@ -8,10 +8,8 @@
 <section class="shoping-cart spad">
     <div class="container">
         
-        @if(itemCount == 0)
-        {
-
-
+            
+        <div id="empty-cart-div" style="display:@(itemCount == 0 ? "block" : "none")">
 
             <div class="d-flex justify-content-center align-items-center">
                 <div class="col-md-6 p-4 text-center">
@@ -59,11 +57,13 @@
 
             </div>
 
-        }
 
-        else{
+        </div>
 
-        <div class="row">
+
+
+        <div id="cart-table-div" style="display:@(itemCount > 0 ? "block" : "none")">
+            <div class="row">
             <div class="col-lg-12">
                 <div class="shoping__cart__table">
                     <table>
@@ -76,11 +76,12 @@
                                 <th></th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="cart-table-body">
 
                             @foreach (var item in Model)
                             {
                                 <tr>
+                                    <input type="hidden" class="product-id" value="@item.ProductId">
                                     <td class="shoping__cart__item">
                                         <img class="product-img" src="@item.Product.ImageUrl" alt="">
                                         <h5>@item.Product.Name</h5>
@@ -108,7 +109,7 @@
                 </div>
             </div>
         </div>
-        <div class="row">
+            <div class="row">
             <div class="col-lg-12">
                 <div class="shoping__cart__btns">
                     <a href="#" class="primary-btn cart-btn">CONTINUE SHOPPING</a>
@@ -140,9 +141,9 @@
                 </div>
             </div>
         </div>
-        
-        }
-    
+
+        </div>
+
     </div>
 </section>
 <!-- Shoping Cart Section End -->
@@ -162,10 +163,24 @@
 @section Scripts{
 
 
-
+    
     <script>
+
+
+
+
+
+
+
+
+
+        ////////////////////////////   SAYFA YÜKLENDİĞİNDE ///////////////////////////777
+
+
         document.addEventListener("DOMContentLoaded", function(){
 
+
+            ////////////////////// TOPLAM TUTARI GÖSTER /////////////////////
             const totalSpans = document.querySelectorAll(".cart-total");
 
             fetch("/Cart/GetCartDetailsJSON")
@@ -178,26 +193,169 @@
                 .catch(err => console.error(err));
 
 
+        });
 
-           //  const quantityInputs = document.querySelectorAll(".item-count");
-           // quantityInputs.forEach(qInput => qInput.addEventListener("change", async() => {
-            
-           //     const quantity = qInput.textContent;
+        /////////////////////////////////////////////////////////////////////////////////////
 
-           //     fetch("/Cart/Update")
-           
-           
-           // })
+        ///////////////////////// Miktar değiştirildiğinde /////////////////////////////
+        //// Butona Basılınca///////////
+
+        document.addEventListener("click", function(event){
+
+            if (event.target.classList.contains("inc") || event.target.classList.contains("dec")){
+
+                //miktarı değiştir
+                const row = event.target.closest("tr");
+                const productId = row.querySelector(".product-id").value;
+                const quantity = row.querySelector(".item-count").value;
+
+                fetch("/Cart/UpdateCartItem", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({ProductId: productId, Quantity: quantity})
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.message){
+                        Swal.fire({
+                            title: "Başarılı!",
+                            text: data.message,
+                            icon: "success",
+                            timer: 500,
+                            showConfirmButton: false
+                        })
+                    }
+                    window.updateCartDiv();
+                })
+                
+
+                .catch(error => {
+                    console.error(error);
+                    Swal.fire({
+                        title: "Hata!",
+                        text: "Miktar değişikliği gerçekleştirilemedi",
+                        icon: "error"
+                    })
+                });
+
+                //görünümü değiştir
+
+                // row.innerHTML = ``;
+                // fetch("/Cart/")
+
+
+
+            }
+
+        });
+
+        /////// Miktar Girilince///////////////
+
+        document.addEventListener("change", function(event){
+
+            if (event.target.classList.contains("item-count")){
+
+
+                const row = event.target.closest("tr");
+                const productId = row.querySelector(".product-id").value;
+                const quantity = row.querySelector(".item-count").value;
+
+                fetch("/Cart/UpdateCartItem", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({ProductId: productId, Quantity: quantity})
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.message){
+                        Swal.fire({
+                            title: "Başarılı!",
+                            text: data.message,
+                            icon: "success",
+                            timer: 500,
+                            showConfirmButton: false
+                        })
+                    }
+                    window.updateCartDiv();
+                })
+                .catch(error => {
+                    console.error(error);
+                    Swal.fire({
+                        title: "Hata!",
+                        text: "Miktar değişikliği gerçekleştirilemedi",
+                        icon: "error"
+                    })
+                });
+
+            }
 
 
         });
 
-
-
+        ///////////////////////////////////////////////////////////////////////////////////////////
        
+ 
+        ///Tabloyu yenileme Fonksiyonu /////
+
+        // function refreshCartTable(){
+        //     fetch("/Cart/GetAllCartItemsJSON")
+        //         .then(res => res.json())
+        //         .then(data => {
+
+        //             const emptyDiv = document.querySelector("#empty-cart-div");
+        //             const tableDiv = document.querySelector("#cart-table-div");
 
 
-        
+        //             if (data.isEmpty){
+        //                 emptyDiv.style.display = "block";
+        //                 tableDiv.style.display = "none";
+        //             }
+
+        //             else{
+
+        //                 emptyDiv.style.display = "none";
+        //                 tableDiv.style.display = "block";
+
+        //                 const tbody = document.querySelector("#cart-table-body");
+        //                 tbody.innerHTML = ``;
+
+        //                 data.data.forEach(item => {
+
+        //                     const row = `
+        //                     <tr>
+        //                             <input type="hidden" class="product-id" value="${item.ProductId}">
+        //                             <td class="shoping__cart__item">
+        //                                 <img class="product-img" src="${item.Product.ImageUrl}" alt="">
+        //                                 <h5>${item.Product.Name}</h5>
+        //                             </td>
+        //                             <td class="shoping__cart__price">
+        //                                 $${item.UnitPrice}
+        //                             </td>
+        //                             <td class="shoping__cart__quantity">
+        //                                 <div class="quantity">
+        //                                     <div class="pro-qty">
+        //                                         <input class="item-count" type="text" value="${item.Quantity}">
+        //                                     </div>
+        //                                 </div>
+        //                             </td>
+        //                             <td class="shoping__cart__total">
+        //                                 $${item.UnitPrice* item.Quantity}
+        //                             </td>
+        //                             <td class="shoping__cart__item__close">
+        //                                 <span class="icon_close"></span>
+        //                             </td>
+        //                         </tr>`;
+
+        //                         tbody.innerHTML += row;
+
+        //                 });
+
+        //             }
+
+
+
+        //         });
+        // }
 
 
 

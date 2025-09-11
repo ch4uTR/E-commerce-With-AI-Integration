@@ -282,6 +282,21 @@
 
 
             //SEPET BİLGİLERİNİ GETİR/////////////////////////////////
+            
+            window.updateCartDiv();
+
+            ///////////////////////////////////////////////////////
+
+            
+
+
+
+           
+            
+        });
+         ////////////////   SEPET BİLGİLERİNİ GETİR FONKSİYONU    /////////////////
+         window.updateCartDiv = function(){
+                //SEPET BİLGİLERİNİ GETİR/////////////////////////////////
             const cartCount = document.getElementById("cart-count");
             const cartTotal = document.getElementById("cart-total");
 
@@ -300,17 +315,7 @@
                     cartTotal.textContent = `$${data.totalCost}`;
                 })
                 .catch(err => console.error(err));
-
-            ///////////////////////////////////////////////////////
-
-            
-
-
-
-           
-            
-        });
-
+           }
 
 
 

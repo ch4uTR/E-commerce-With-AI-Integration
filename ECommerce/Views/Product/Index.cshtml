@@ -213,10 +213,12 @@
                             title: "Başarılı!",
                             text: data.message,
                             icon: "success",
-                            timer: 2000,
+                            timer: 500,
                             showConfirmButton: false
                         });
                     }
+                    window.updateCartDiv();
+
                 })
                 .catch(err => {
                     console.error(err);
@@ -226,6 +228,10 @@
                         icon: "error"
                     });
                 });
+
+
+                    
+
 
             });
 
@@ -237,49 +243,8 @@
 
 
 
-            //////////////       SEPETE ÜRÜN EKLEME /////////////////
-            // const cartButtons = document.querySelectorAll(".add-to-cart-btn");
-            
-            // cartButtons.forEach(button => {
-            //     button.addEventListener("click", (event) => {
-            //         event.preventDefault();
-
-            //         const productItem = button.closest(".product__item");
-            //         const productId = productItem.querySelector(".product-id").value;
-
-            //         console.log("Sepete eklendi ", productId);
-
-            //         fetch("/Cart/AddItemToCart", {
-            //             method: "POST",
-            //             headers: { "Content-Type": "application/json" },
-            //             body: JSON.stringify({ ProductId: productId })
-            //             })
-            //         .then(response => response.json())
-            //         .then(data => {
-            //             console.log("Sepet güncellendi", data);
-            //             if(data.message){
-            //                 Swal.fire({
-            //                     title: "Başarılı!",
-            //                     text: data.message,
-            //                     icon: "success",
-            //                     timer: 2000,
-            //                     showConfirmButton: false
-            //                 });
-            //             }
-            //         })
-            //         .catch(error => {
-            //                console.error(error);
-            //                Swal.fire({
-            //                    title: "Hata!",
-            //                    text: "Ürün eklenemedi",
-            //                    icon: "error"
-            //                })
-            //         });
-
-            //     });
-            
-
-            /////////////////////////////////////////////////////////////////////////
+           ///// SEPET KISMINI GÜNCELLE ////
+           
 
 
 

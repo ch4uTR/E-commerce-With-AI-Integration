@@ -244,10 +244,11 @@
                                 title: "Başarılı!",
                                 text: data.message,
                                 icon: "success",
-                                timer: 2000,
+                                timer: 500,
                                 showConfirmButton: false
                             });
                         }
+                        window.updateCartDiv();
                     })
                     .catch(error => {
                            console.error(error);

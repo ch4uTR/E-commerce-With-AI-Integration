@@ -1,4 +1,5 @@
-﻿using ECommerce.Data;
+﻿using Azure.Core;
+using ECommerce.Data;
 using ECommerce.Models;
 using ECommerce.Models.DTOs;
 using Microsoft.AspNetCore.Authorization;
@@ -21,7 +22,7 @@ namespace ECommerce.Controllers
         }
         public async Task<IActionResult> Index()
         {
-           
+
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             var cart = await _context.Carts.FirstOrDefaultAsync(c => c.UserId == userId);
@@ -58,18 +59,19 @@ namespace ECommerce.Controllers
 
             if (product == null) { return NotFound(); }
 
-            if (cart == null) 
-            { 
+            if (cart == null)
+            {
                 cart = new Cart { UserId = userId };
                 await _context.Carts.AddAsync(cart);
                 await _context.SaveChangesAsync();
-            };
+            }
+            ;
 
             var cartItem = await _context.CartItems
                                 .Where(ci => ci.CartId == cart.Id)
                                 .FirstOrDefaultAsync(ci => ci.ProductId == request.ProductId);
-             
-                  
+
+
             if (cartItem == null)
             {
                 cartItem = new CartItem
@@ -116,6 +118,7 @@ namespace ECommerce.Controllers
             {
                 _context.CartItems.Remove(cartItem);
                 await _context.SaveChangesAsync();
+                return Ok(new { message = "Ürün başarıyla sepetinizden çıkarıldı!" });
             }
 
             cartItem.Quantity = request.Quantity;
@@ -123,7 +126,7 @@ namespace ECommerce.Controllers
             await _context.SaveChangesAsync();
 
 
-            return Ok();
+            return Ok(new { message = "Ürün miktarı başarıyla değiştirildi!" });
         }
 
 
@@ -131,12 +134,12 @@ namespace ECommerce.Controllers
         public async Task<IActionResult> GetCartDetailsJSON()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            decimal  totalCost = 0;
+            decimal totalCost = 0;
             var totalProducts = 0;
 
             if (string.IsNullOrEmpty(userId))
             {
-                return Json(new { TotalProducts = 0, TotalCost =0 });
+                return Json(new { TotalProducts = 0, TotalCost = 0 });
             }
 
             var cart = await _context.Carts.FirstOrDefaultAsync(c => c.UserId == userId);
@@ -155,7 +158,7 @@ namespace ECommerce.Controllers
                                     .Include(ci => ci.Product)
                                     .ToListAsync();
 
-            totalProducts = cartItems.Any()?  cartItems.Count() : 0;
+            totalProducts = cartItems.Any() ? cartItems.Count() : 0;
             if (totalProducts == 0)
             {
                 totalCost = 0;
@@ -166,6 +169,33 @@ namespace ECommerce.Controllers
             }
 
             return Json(new { TotalProducts = totalProducts, TotalCost = totalCost });
+
+
+        }
+
+
+        [HttpGet]
+        public async Task<IActionResult> GEtAllCartItemsJSON()
+        {
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var cart = await _context.Carts.FirstOrDefaultAsync(c => c.UserId == userId);
+
+            var cartItems = await _context.CartItems
+                                    .Where(ci => ci.Cart.UserId == userId)
+                                    .Include(ci => ci.Product)
+                                    .ToListAsync();
+
+            if (cartItems.Count() == 0)
+            {
+                return Json(new { isEmpty = true });
+
+            }
+            else
+            {
+                return Json(new { isEmpty = false, data = cartItems });
+            }
 
 
         }

@@ -119,6 +119,7 @@ namespace ECommerce.Controllers
                 Id = p.Id,
                 ProductName = p.Name,
                 CategoryName = p.Category.Name,
+                ImageUrl = p.ImageUrl,
                 Price = p.Price,
                 TotalSoldQuantity = p.OrderItems.Sum(oi => oi.Quantity),
                 TotalRevenue = p.OrderItems.Sum(oi => oi.Quantity * oi.UnitPrice)
