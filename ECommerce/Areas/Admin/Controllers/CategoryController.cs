@@ -2,7 +2,6 @@
 using ECommerce.Data;
 using ECommerce.Models;
 using ECommerce.Models.DTOs;
-using ECommerce.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -219,6 +218,7 @@ namespace ECommerce.Areas.Admin.Controllers
                     ImagePath = relativePath
                 };
 
+                category.GenerateSlug();
                 _context.Categories.Add(category);
                 await _context.SaveChangesAsync();
                 return true;
@@ -305,6 +305,7 @@ namespace ECommerce.Areas.Admin.Controllers
                 }
 
                 category.Name = requestModel.Name;
+                category.GenerateSlug();
                 category.ParentCategoryId = requestModel.ParentCategoryId;
 
                 if (!string.IsNullOrEmpty(relativePath))

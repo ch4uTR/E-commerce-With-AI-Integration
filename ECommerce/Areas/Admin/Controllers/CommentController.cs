@@ -1,6 +1,7 @@
 ﻿using ECommerce.Data;
 using ECommerce.Models;
 using ECommerce.Models.DTOs;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
@@ -8,6 +9,7 @@ using System.Threading.Tasks;
 namespace ECommerce.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [Authorize(Roles = "Admin")]
     public class CommentController : Controller
     {
         ApplicationDbContext _context;
@@ -62,6 +64,9 @@ namespace ECommerce.Areas.Admin.Controllers
             return true;
         }
 
+
+
+        
 
         public async Task<List<Comment>> GetCommentsAsync(CommentFilterModel filter, int page = 1, int size = 20)
         {

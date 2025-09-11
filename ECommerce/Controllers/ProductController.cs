@@ -1,10 +1,11 @@
-﻿using ECommerce.Data;
+﻿using ECommerce.Areas.Admin.Models;
+using ECommerce.Data;
 using ECommerce.Models;
 using ECommerce.Models.DTOs;
-using ECommerce.Services;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Web;
 
 namespace ECommerce.Controllers
 {
@@ -22,19 +23,177 @@ namespace ECommerce.Controllers
 
 
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(ProductSearchCriteria? criteria)
         {
-            var criteria = new ProductSearchCriteria();
- 
-            var products = await GetProductsAsync(criteria);
-            var saleStats = await GetProductSalesStatsAsync(1);
-            return View(products);
+            criteria ??= new ProductSearchCriteria();
+
+            var productsViewModels = await GetFilteredAndPagedProductsAsync(criteria);
+
+            var totalCount = _context.Products.Count();
+
+
+            var minPrice = await _context.Products.MinAsync(p => p.Price);
+            var maxPrice = await _context.Products.MaxAsync(p => p.Price);
+
+            ViewBag.MinPrice = minPrice;
+            ViewBag.MaxPrice = maxPrice;
+            ViewBag.TotalCount = totalCount;
+            ViewBag.CurrentPage = criteria.Page;
+            ViewBag.PageSize = criteria.Size;
+
+            return View(productsViewModels);
+
+
+
+        }
+
+        public async Task<List<ProductViewModel>> GetFilteredAndPagedProductsAsync(ProductSearchCriteria criteria)
+        {
+
+
+            var filteredQuery = _context.Products
+                                        .Include(p => p.Category)
+                                        .Include(p => p.OrderItems)
+                                        .AsQueryable();
+
+            if (!string.IsNullOrEmpty(criteria.SearchTerm))
+            {
+                string term = criteria.SearchTerm.ToLower();
+                filteredQuery = filteredQuery
+                                        .Where(p =>
+                                                p.Name.ToLower().Contains(term) ||
+                                                (p.Description ?? "").ToLower().Contains(term));
+            }
+
+
+            if (criteria.MinPrice.HasValue)
+                filteredQuery = filteredQuery.Where(p => p.Price >= criteria.MinPrice);
+
+            if (criteria.MaxPrice.HasValue)
+                filteredQuery = filteredQuery.Where(p => p.Price <= criteria.MaxPrice);
+
+            if (criteria.CategoryId.HasValue)
+                filteredQuery = filteredQuery.Where(p => p.CategoryId == criteria.CategoryId);
+
+            var totalCount = await filteredQuery.CountAsync();
+
+            if (!string.IsNullOrEmpty(criteria.SortBy))
+            {
+                switch (criteria.SortBy?.ToLowerInvariant())
+                {
+                    case "priceasc":
+                        filteredQuery = filteredQuery.OrderBy(p => p.Price);
+                        break;
+                    case "pricedesc":
+                        filteredQuery = filteredQuery.OrderByDescending(p => p.Price);
+                        break;
+                    case "totalsoldasc":
+                        filteredQuery = filteredQuery.OrderBy(p => p.OrderItems.Sum(oi => oi.Quantity));
+                        break;
+                    case "totalsolddesc":
+                        filteredQuery = filteredQuery.OrderByDescending(p => p.OrderItems.Sum(oi => oi.Quantity));
+                        break;
+                    default:
+                        filteredQuery = filteredQuery.OrderBy(p => p.Id);
+                        break;
+                }
+            }
+
+            else
+            {
+                filteredQuery = filteredQuery.OrderBy(p => p.Id);
+            }
+
+
+
+            // İlişkili verileri sorguya dahil et (Tek sorgu için)
+            filteredQuery = filteredQuery.Include(p => p.Category)
+                         .Include(p => p.OrderItems);
+
+            // Sayfalama işlemleri
+            var pagedQuery = filteredQuery.Skip((criteria.Page - 1) * criteria.Size).Take(criteria.Size);
+
+            // Sonucu ViewModel listesine dönüştür
+            var productsViewModels = await pagedQuery.Select(p => new ProductViewModel
+            {
+                Id = p.Id,
+                ProductName = p.Name,
+                CategoryName = p.Category.Name,
+                Price = p.Price,
+                TotalSoldQuantity = p.OrderItems.Sum(oi => oi.Quantity),
+                TotalRevenue = p.OrderItems.Sum(oi => oi.Quantity * oi.UnitPrice)
+            }).ToListAsync();
+
+            return productsViewModels;
+        }
+
+        public async Task<IActionResult> GetProductsJSON(ProductSearchCriteria criteria)
+        {
+            criteria ??= new ProductSearchCriteria();
+
+            var productsViewModels = await GetFilteredAndPagedProductsAsync(criteria);
+
+            var totalCount =  productsViewModels.Count();
+
+            return Json(new
+            {
+                data = productsViewModels,
+                totalCount = totalCount,
+                currentPage = criteria.Page,
+                pageSize = criteria.Size
+            });
         }
 
 
-        public IActionResult Details()
+        public async Task<IActionResult> Details(int id)
         {
-            return View();
+
+            if (id <= 0)
+            {
+                return NotFound();
+            }
+
+            var product = await _context.Products.FirstOrDefaultAsync(p => p.Id == id);
+            if (product is null)
+            {
+                return NotFound();
+            }
+
+            var relatedProducts = await _context.Products
+                                        .Where(p =>  p.CategoryId == product.CategoryId)
+                                        .OrderByDescending(p => p.OrderItems.Sum(oi => (int?)oi.Quantity) ?? 0)
+                                        .Take(4)
+                                        .ToListAsync();
+
+            ProductDetailsViewModel viewModel = new ProductDetailsViewModel
+            {
+                Product = product,
+                RelatedProducts = relatedProducts
+            };
+
+            var viewedProductIds = new List<string>();
+            var cookies = Request.Cookies["recentlyViewed"];
+            if (cookies != null)
+            {
+                viewedProductIds = cookies.Split(',').ToList();
+                var lastViewedProductsNumber = viewedProductIds.Count();
+                if (lastViewedProductsNumber > 6) { viewedProductIds = viewedProductIds.Skip(lastViewedProductsNumber - 6).Take(6).ToList(); }
+
+            }
+            viewedProductIds.Insert(0, id.ToString());
+            var updatedCookieValue = string.Join(",", viewedProductIds);
+
+            var cookieOptions = new CookieOptions
+            {
+                Expires = DateTime.UtcNow.AddDays(30),
+                HttpOnly = true,
+                Path = "/"
+            };
+
+            Response.Cookies.Append("recentlyViewed", updatedCookieValue, cookieOptions);
+
+
+            return View(viewModel);
         }
 
 

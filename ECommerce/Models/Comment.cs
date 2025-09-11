@@ -6,6 +6,10 @@ namespace ECommerce.Models
     {
    
         public int Id { get; set; }
+
+        [Required]
+        [Range(1, 5)]
+        public int Rating { get; set; }
         public string UserId { get; set; }
         public ApplicationUser? User { get; set; }
 

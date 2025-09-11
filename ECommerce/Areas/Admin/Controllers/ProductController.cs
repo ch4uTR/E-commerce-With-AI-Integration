@@ -1,8 +1,6 @@
-﻿using ECommerce.Areas.Admin.Models;
-using ECommerce.Data;
-using ECommerce.Models;
+﻿using ECommerce.Data;
 using ECommerce.Models.DTOs;
-using ECommerce.Services;
+using ECommerce.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -38,7 +36,7 @@ namespace ECommerce.Areas.Admin.Controllers
             var productsViewModels = await GetFilteredAndPagedProductsAsync(criteria);
 
           
-            var totalCount = await _context.Products.CountAsync();
+            var totalCount = _context.Products.Count();
 
 
             var minPrice = await _context.Products.MinAsync(p => p.Price);
@@ -55,6 +53,12 @@ namespace ECommerce.Areas.Admin.Controllers
 
 
 
+        [HttpGet]
+        public  IActionResult CreatePArtial()
+        {
+            return PartialView("_CreatePartial");
+        }
+
         /*     -----------------------------------------------------------------------------------------------------------------------------------*/
         /*     -----------------------------------------------------------------------------------------------------------------------------------*/
 
@@ -64,8 +68,8 @@ namespace ECommerce.Areas.Admin.Controllers
             // Yine aynı metodu çağır
             var productsViewModels = await GetFilteredAndPagedProductsAsync(criteria);
 
-            // Toplam ürün sayısını hesapla
-            var totalCount = await _context.Products.CountAsync();
+
+            var totalCount = productsViewModels.Count();
 
             
 
@@ -228,7 +232,19 @@ namespace ECommerce.Areas.Admin.Controllers
         {
 
 
-            var filteredQuery = _context.Products.AsQueryable();
+            var filteredQuery =  _context.Products
+                                        .Include(p => p.Category)
+                                        .Include(p => p.OrderItems)
+                                        .AsQueryable();
+
+            if (!string.IsNullOrEmpty(criteria.SearchTerm))
+            {
+                string term = criteria.SearchTerm.ToLower();
+                filteredQuery = filteredQuery
+                                        .Where(p => 
+                                                p.Name.ToLower().Contains(term) ||
+                                                (p.Description ?? "" ).ToLower().Contains(term));
+            }
 
             if (criteria.MinPrice.HasValue)
                 filteredQuery = filteredQuery.Where(p => p.Price >= criteria.MinPrice);

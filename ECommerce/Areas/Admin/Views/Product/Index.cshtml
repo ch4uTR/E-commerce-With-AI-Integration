@@ -24,13 +24,20 @@
                 </select>
             </div>
             <div class="filter__found">
-                <h6><span id="product-count"></span> @totalCount Products listed</h6>
+                <h6><span id="product-count"></span> @Model.Count() /@totalCount Products listed</h6>
             </div>
-            <a asp-action="Create" class="btn btn-success rounded-pill" style="background-color: #7fad39; border-color: #7fad39;">
+            <a href="/Admin/Product/Create"
+               class="btn btn-success rounded-pill"
+               id="create-product-btn"
+               style="background-color: #7fad39; border-color: #7fad39;">
                 <i class="fa fa-plus"></i> Create New Product
-            </a>
+            </a>           
         </div>
     </div>
+
+
+    <div id="dynamic-content"></div>
+
 
     <div class="modern-table-container">
         <table class="table table-hover">
@@ -173,11 +180,12 @@
             const baseUrl = '/Admin/Product/GetProductDetailsJSON';
             const url = `${baseUrl}?${params.toString()}`;
             console.log(url);
-
+            
+            
             fetch(url)
                 .then(response => {
                     if (!response.ok) throw new Error('Network response was not ok');
-                    return response.json();
+                    return response.json(); 
                 })
                 .then(data => {
                     const tableBody = document.getElementById('product-table-body');
@@ -286,5 +294,18 @@
                 fetchProducts(1, selectedSortBy);
             });
         });
+
+        //         document.getElementById('create-product-btn').addEventListener('click', function (e) {
+        //     e.preventDefault(); // Sayfanın yenilenmesini engelle
+
+        //     fetch('/Admin/Product/CreatePartial')
+        //         .then(response => response.text())
+        //         .then(html => {
+        //             document.getElementById('dynamic-content').innerHTML = html;
+        //         })
+        //         .catch(error => console.error('Error loading create form:', error));
+        // });
+
+
     </script>
 }

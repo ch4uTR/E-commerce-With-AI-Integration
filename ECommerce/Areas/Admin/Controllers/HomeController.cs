@@ -1,11 +1,12 @@
 ﻿using ECommerce.Areas.Admin.Models;
 using ECommerce.Data;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-
 namespace ECommerce.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [Authorize(Roles = "Admin")]
     
     public class HomeController : Controller
     {   

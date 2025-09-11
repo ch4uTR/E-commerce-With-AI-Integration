@@ -11,6 +11,8 @@ namespace ECommerce.Models
         [StringLength(100)]
         public string Name { get; set; }
 
+        public string Slug { get; set; }
+
         public string? ImagePath { get; set; }
 
         public int? ParentCategoryId { get; set; }
@@ -18,5 +20,13 @@ namespace ECommerce.Models
         public ICollection<Category> SubCategories { get; set; } = new List<Category>();
 
         public ICollection<Product> Products { get; set; } = new List<Product>();
+
+
+        public void GenerateSlug()
+        {
+            if (!string.IsNullOrEmpty(Name))
+                Slug = Name.ToLower().Replace(" ", "-");
+        }
+
     }
 }

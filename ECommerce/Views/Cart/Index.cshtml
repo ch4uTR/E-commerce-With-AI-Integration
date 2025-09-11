@@ -1,5 +1,68 @@
-﻿<section class="shoping-cart spad">
+﻿@model List<CartItem>
+
+@{
+    var itemCount = Model.Any() ? Model.Count() : 0;
+}
+
+
+<section class="shoping-cart spad">
     <div class="container">
+        
+        @if(itemCount == 0)
+        {
+
+
+
+            <div class="d-flex justify-content-center align-items-center">
+                <div class="col-md-6 p-4 text-center">
+                    <section>
+                        <div class="mb-4">
+                            <h2 style="color: #7fad39;"><i class="fa fa-shopping-cart"></i> @ViewData["Title"]</h2>
+                        </div>
+                        <div>
+                            <p class="lead">Your cart is empty.</p>
+                        </div>
+                        <div class="mt-4">
+                            <a asp-area="" asp-controller="Home" asp-action="Index" class="site-btn">
+                                <i class="fa fa-home"></i> Go to Home Page
+                            </a>
+                        </div>
+                    </section>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="section-title related__product__title">
+                        <h2>Related Product</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                @* @foreach (var rp in relatedProducts)
+                    {
+                        <div class="col-lg-3 col-md-4 col-sm-6">
+                            <div class="product__item">
+                                <div class="product__item__pic set-bg" data-setbg="@rp.ImageUrl">
+                                    <ul class="product__item__pic__hover">
+                                        <li><a href="#"><i class="fa fa-heart"></i></a></li>
+                                        <li><a href="#"><i class="fa fa-retweet"></i></a></li>
+                                        <li><a href="#"><i class="fa fa-shopping-cart"></i></a></li>
+                                    </ul>
+                                </div>
+                                <div class="product__item__text">
+                                    <h6><a href="#">@rp.Name</a></h6>
+                                    <h5>$@rp.Price</h5>
+                                </div>
+                            </div>
+                        </div>
+                    } *@
+
+            </div>
+
+        }
+
+        else{
+
         <div class="row">
             <div class="col-lg-12">
                 <div class="shoping__cart__table">
@@ -14,72 +77,32 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td class="shoping__cart__item">
-                                    <img src="img/cart/cart-1.jpg" alt="">
-                                    <h5>Vegetable’s Package</h5>
-                                </td>
-                                <td class="shoping__cart__price">
-                                    $55.00
-                                </td>
-                                <td class="shoping__cart__quantity">
-                                    <div class="quantity">
-                                        <div class="pro-qty">
-                                            <input type="text" value="1">
+
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td class="shoping__cart__item">
+                                        <img class="product-img" src="@item.Product.ImageUrl" alt="">
+                                        <h5>@item.Product.Name</h5>
+                                    </td>
+                                    <td class="shoping__cart__price">
+                                        $@item.UnitPrice
+                                    </td>
+                                    <td class="shoping__cart__quantity">
+                                        <div class="quantity">
+                                            <div class="pro-qty">
+                                                <input class="item-count" type="text" value="@item.Quantity">
+                                            </div>
                                         </div>
-                                    </div>
-                                </td>
-                                <td class="shoping__cart__total">
-                                    $110.00
-                                </td>
-                                <td class="shoping__cart__item__close">
-                                    <span class="icon_close"></span>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="shoping__cart__item">
-                                    <img src="img/cart/cart-2.jpg" alt="">
-                                    <h5>Fresh Garden Vegetable</h5>
-                                </td>
-                                <td class="shoping__cart__price">
-                                    $39.00
-                                </td>
-                                <td class="shoping__cart__quantity">
-                                    <div class="quantity">
-                                        <div class="pro-qty">
-                                            <input type="text" value="1">
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="shoping__cart__total">
-                                    $39.99
-                                </td>
-                                <td class="shoping__cart__item__close">
-                                    <span class="icon_close"></span>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="shoping__cart__item">
-                                    <img src="img/cart/cart-3.jpg" alt="">
-                                    <h5>Organic Bananas</h5>
-                                </td>
-                                <td class="shoping__cart__price">
-                                    $69.00
-                                </td>
-                                <td class="shoping__cart__quantity">
-                                    <div class="quantity">
-                                        <div class="pro-qty">
-                                            <input type="text" value="1">
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="shoping__cart__total">
-                                    $69.99
-                                </td>
-                                <td class="shoping__cart__item__close">
-                                    <span class="icon_close"></span>
-                                </td>
-                            </tr>
+                                    </td>
+                                    <td class="shoping__cart__total">
+                                        $@(item.UnitPrice * item.Quantity)
+                                    </td>
+                                    <td class="shoping__cart__item__close">
+                                        <span class="icon_close"></span>
+                                    </td>
+                                </tr>
+                            }                       
                         </tbody>
                     </table>
                 </div>
@@ -89,7 +112,7 @@
             <div class="col-lg-12">
                 <div class="shoping__cart__btns">
                     <a href="#" class="primary-btn cart-btn">CONTINUE SHOPPING</a>
-                    <a href="#" class="primary-btn cart-btn cart-btn-right">
+                    <a href="#" id="update-btn" class="primary-btn cart-btn cart-btn-right">
                         <span class="icon_loading"></span>
                         Upadate Cart
                     </a>
@@ -110,13 +133,77 @@
                 <div class="shoping__checkout">
                     <h5>Cart Total</h5>
                     <ul>
-                        <li>Subtotal <span>$454.98</span></li>
-                        <li>Total <span>$454.98</span></li>
+                        <li>Subtotal <span class="cart-total"></span></li>
+                        <li>Total <span class="cart-total"></span></li>
                     </ul>
                     <a href="#" class="primary-btn">PROCEED TO CHECKOUT</a>
                 </div>
             </div>
         </div>
+        
+        }
+    
     </div>
 </section>
 <!-- Shoping Cart Section End -->
+
+
+
+<style>
+
+    .product-img {
+        width: 100px;
+        height: 100px; 
+        object-fit: contain;
+        border-radius: 8px;
+    }
+</style>
+
+@section Scripts{
+
+
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function(){
+
+            const totalSpans = document.querySelectorAll(".cart-total");
+
+            fetch("/Cart/GetCartDetailsJSON")
+                .then(response => response.json())
+                .then(data => {
+                    totalSpans.forEach(span => {
+                        span.textContent = `$${data.totalCost}`;
+                    });
+                })
+                .catch(err => console.error(err));
+
+
+
+           //  const quantityInputs = document.querySelectorAll(".item-count");
+           // quantityInputs.forEach(qInput => qInput.addEventListener("change", async() => {
+            
+           //     const quantity = qInput.textContent;
+
+           //     fetch("/Cart/Update")
+           
+           
+           // })
+
+
+        });
+
+
+
+       
+
+
+        
+
+
+
+
+
+    </script>
+
+
+}

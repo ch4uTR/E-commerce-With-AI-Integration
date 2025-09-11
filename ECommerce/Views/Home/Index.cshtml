@@ -2,13 +2,21 @@
     
     ViewData["Title"] = "Home Page";
 }
-@model List<Category>
+@model HomePageViewModel
+
+@{
+    var categories = Model.Categories;
+    var featuringCategories = Model.FeaturingProducts
+                                    .Select(p => p.Category)
+                                    .Distinct()
+                                    .ToList();
+}
 
 
 <section class="categories">
     <div class="container">
         <div class="categories__slider owl-carousel">
-            @foreach (var category in Model)
+            @foreach (var category in categories)
             {
                 string imagePath = string.IsNullOrEmpty(category.ImagePath)
                 ? "~/Images/Category/NoPhotoImage.png"
@@ -16,7 +24,7 @@
 
                 <div class="categories__item set-bg" data-setbg="@Url.Content(imagePath)">
                     <h5>
-                        <a asp-controller="" asp-action="">
+                        <a asp-area="" asp-controller="Product" asp-action="Index" asp-route-CategoryId="@category.Id">
                             @category.Name
                         </a>
                     </h5>
@@ -33,141 +41,231 @@
         <div class="row">
             <div class="col-lg-12">
                 <div class="section-title">
-                    <h2>Featured Product</h2>
+                    <h2>Öne Çıkanlar</h2>
                 </div>
                 <div class="featured__controls">
                     <ul>
                         <li class="active" data-filter="*">All</li>
-                        <li data-filter=".oranges">Oranges</li>
-                        <li data-filter=".fresh-meat">Fresh Meat</li>
-                        <li data-filter=".vegetables">Vegetables</li>
-                        <li data-filter=".fastfood">Fastfood</li>
+                        @foreach (var category in featuringCategories)
+                        {
+                            <li data-filter=".@category.Slug">@category.Name</li>
+                        }                       
                     </ul>
                 </div>
             </div>
         </div>
         <div class="row featured__filter">
-            <div class="col-lg-3 col-md-4 col-sm-6 mix oranges fresh-meat">
-                <div class="featured__item">
-                    <div class="featured__item__pic set-bg" data-setbg="img/featured/feature-1.jpg">
-                        <ul class="featured__item__pic__hover">
-                            <li><a href="#"><i class="fa fa-heart"></i></a></li>
-                            <li><a href="#"><i class="fa fa-retweet"></i></a></li>
-                            <li><a href="#"><i class="fa fa-shopping-cart"></i></a></li>
-                        </ul>
+
+            @foreach (var product in Model.FeaturingProducts)
+            {
+                <div class="col-lg-3 col-md-4 col-sm-6 mix @product.Category.Slug">
+                    <div class="featured__item">
+                        <input type="hidden" class="product-id" value="@product.Id"/>
+                        <div class="featured__item__pic set-bg" data-setbg="@product.ImageUrl">
+                            <ul class="featured__item__pic__hover">
+                                <li><a href="#"><i class="fa fa-heart"></i></a></li>
+                                <li><a href="#"><i class="fa fa-retweet"></i></a></li>
+                                <li><a href="#" class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i></a></li>
+                            </ul>
+                        </div>
+                        <div class="featured__item__text">
+                            <h6><a asp-area="" asp-controller="Product" asp-action="Details" asp-route-id="@product.Id">@product.Name</a></h6>
+                            <h5>$@product.Price</h5>
+                        </div>
                     </div>
-                    <div class="featured__item__text">
-                        <h6><a href="#">Crab Pool Security</a></h6>
-                        <h5>$30.00</h5>
+                </div>
+            }    
+        </div>
+    </div>
+</section>
+<!-- Featured Section End -->
+<!-- Latest Product Section Begin -->
+<section class="latest-product spad">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-4 col-md-6">
+                <div class="latest-product__text">
+                    <h4>Latest Products</h4>
+                    <div class="latest-product__slider owl-carousel">
+                        <div class="latest-prdouct__slider__item">
+                            
+                            @foreach (var product in Model.LatestProducts.Take(3))
+                            {
+                                <a asp-area="" asp-controller="Product" asp-action="Details" asp-route-id="@product.Id" class="latest-product__item">
+                                    <div class="latest-product__item__pic">
+                                        <img src="@product.ImageUrl" alt="@product.Name">
+                                    </div>
+                                    <div class="latest-product__item__text">
+                                        <h6>@product.Name</h6>
+                                        <span>$@product.Price</span>
+                                    </div>
+                                </a>
+                            }
+                        </div>
+                        <div class="latest-prdouct__slider__item">
+                            
+                            @foreach (var product in Model.LatestProducts.Skip(3))
+                            {
+                                <a asp-area="" asp-controller="Product" asp-action="Details" asp-route-id="@product.Id" class="latest-product__item">
+                                    <div class="latest-product__item__pic">
+                                        <img src="@product.ImageUrl" alt="@product.Name">
+                                    </div>
+                                    <div class="latest-product__item__text">
+                                        <h6>@product.Name</h6>
+                                        <span>$@product.Price</span>
+                                    </div>
+                                </a>
+                            }                          
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="col-lg-3 col-md-4 col-sm-6 mix vegetables fastfood">
-                <div class="featured__item">
-                    <div class="featured__item__pic set-bg" data-setbg="img/featured/feature-2.jpg">
-                        <ul class="featured__item__pic__hover">
-                            <li><a href="#"><i class="fa fa-heart"></i></a></li>
-                            <li><a href="#"><i class="fa fa-retweet"></i></a></li>
-                            <li><a href="#"><i class="fa fa-shopping-cart"></i></a></li>
-                        </ul>
-                    </div>
-                    <div class="featured__item__text">
-                        <h6><a href="#">Crab Pool Security</a></h6>
-                        <h5>$30.00</h5>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-3 col-md-4 col-sm-6 mix vegetables fresh-meat">
-                <div class="featured__item">
-                    <div class="featured__item__pic set-bg" data-setbg="img/featured/feature-3.jpg">
-                        <ul class="featured__item__pic__hover">
-                            <li><a href="#"><i class="fa fa-heart"></i></a></li>
-                            <li><a href="#"><i class="fa fa-retweet"></i></a></li>
-                            <li><a href="#"><i class="fa fa-shopping-cart"></i></a></li>
-                        </ul>
-                    </div>
-                    <div class="featured__item__text">
-                        <h6><a href="#">Crab Pool Security</a></h6>
-                        <h5>$30.00</h5>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-3 col-md-4 col-sm-6 mix fastfood oranges">
-                <div class="featured__item">
-                    <div class="featured__item__pic set-bg" data-setbg="img/featured/feature-4.jpg">
-                        <ul class="featured__item__pic__hover">
-                            <li><a href="#"><i class="fa fa-heart"></i></a></li>
-                            <li><a href="#"><i class="fa fa-retweet"></i></a></li>
-                            <li><a href="#"><i class="fa fa-shopping-cart"></i></a></li>
-                        </ul>
-                    </div>
-                    <div class="featured__item__text">
-                        <h6><a href="#">Crab Pool Security</a></h6>
-                        <h5>$30.00</h5>
+            <div class="col-lg-4 col-md-6">
+                <div class="latest-product__text">
+                    <h4>Most Reviewed Products</h4>
+                    <div class="latest-product__slider owl-carousel">
+                        <div class="latest-prdouct__slider__item">
+                            
+                            @foreach(var product in Model.ReviewedProducts.Take(3))
+                            {
+                                <a asp-area="" asp-controller="Product" asp-action="Details" asp-route-id="@product.Id" class="latest-product__item">
+                                    <div class="latest-product__item__pic">
+                                        <img src="@product.ImageUrl" alt="@product.Name">
+                                    </div>
+                                    <div class="latest-product__item__text">
+                                        <h6>@product.Name</h6>
+                                        <span>$@product.Price</span>
+                                    </div>
+                                </a>
+                            }
+                          
+                        </div>
+                        <div class="latest-prdouct__slider__item">
+
+
+                            @foreach (var product in Model.ReviewedProducts.Skip(3))
+                            {
+                                <a asp-area="" asp-controller="Product" asp-action="Details" asp-route-id="@product.Id" class="latest-product__item">
+                                    <div class="latest-product__item__pic">
+                                        <img src="@product.ImageUrl" alt="@product.Name">
+                                    </div>
+                                    <div class="latest-product__item__text">
+                                        <h6>@product.Name</h6>
+                                        <span>$@product.Price</span>
+                                    </div>
+                                </a>
+                            }
+
+                          
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="col-lg-3 col-md-4 col-sm-6 mix fresh-meat vegetables">
-                <div class="featured__item">
-                    <div class="featured__item__pic set-bg" data-setbg="img/featured/feature-5.jpg">
-                        <ul class="featured__item__pic__hover">
-                            <li><a href="#"><i class="fa fa-heart"></i></a></li>
-                            <li><a href="#"><i class="fa fa-retweet"></i></a></li>
-                            <li><a href="#"><i class="fa fa-shopping-cart"></i></a></li>
-                        </ul>
-                    </div>
-                    <div class="featured__item__text">
-                        <h6><a href="#">Crab Pool Security</a></h6>
-                        <h5>$30.00</h5>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-3 col-md-4 col-sm-6 mix oranges fastfood">
-                <div class="featured__item">
-                    <div class="featured__item__pic set-bg" data-setbg="img/featured/feature-6.jpg">
-                        <ul class="featured__item__pic__hover">
-                            <li><a href="#"><i class="fa fa-heart"></i></a></li>
-                            <li><a href="#"><i class="fa fa-retweet"></i></a></li>
-                            <li><a href="#"><i class="fa fa-shopping-cart"></i></a></li>
-                        </ul>
-                    </div>
-                    <div class="featured__item__text">
-                        <h6><a href="#">Crab Pool Security</a></h6>
-                        <h5>$30.00</h5>
-                    </div>
-                </div>  
-            </div>
-            <div class="col-lg-3 col-md-4 col-sm-6 mix fresh-meat vegetables">
-                <div class="featured__item">
-                    <div class="featured__item__pic set-bg" data-setbg="img/featured/feature-7.jpg">
-                        <ul class="featured__item__pic__hover">
-                            <li><a href="#"><i class="fa fa-heart"></i></a></li>
-                            <li><a href="#"><i class="fa fa-retweet"></i></a></li>
-                            <li><a href="#"><i class="fa fa-shopping-cart"></i></a></li>
-                        </ul>
-                    </div>
-                    <div class="featured__item__text">
-                        <h6><a href="#">Crab Pool Security</a></h6>
-                        <h5>$30.00</h5>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-3 col-md-4 col-sm-6 mix fastfood vegetables">
-                <div class="featured__item">
-                    <div class="featured__item__pic set-bg" data-setbg="img/featured/feature-8.jpg">
-                        <ul class="featured__item__pic__hover">
-                            <li><a href="#"><i class="fa fa-heart"></i></a></li>
-                            <li><a href="#"><i class="fa fa-retweet"></i></a></li>
-                            <li><a href="#"><i class="fa fa-shopping-cart"></i></a></li>
-                        </ul>
-                    </div>
-                    <div class="featured__item__text">
-                        <h6><a href="#">Crab Pool Security</a></h6>
-                        <h5>$30.00</h5>
+            <div class="col-lg-4 col-md-6">
+                <div class="latest-product__text">
+                    <h4>Recently Viewed Products</h4>
+                    <div class="latest-product__slider owl-carousel">
+                        <div class="latest-prdouct__slider__item">
+                            
+                            @foreach(var product in Model.RecentlyViewedProducts.Take(3))
+                            {
+                                <a asp-area="" asp-controller="Product" asp-action="Details" asp-route-id="@product.Id" class="latest-product__item">
+                                    <div class="latest-product__item__pic">
+                                        <img src="@product.ImageUrl" alt="@product.Name">
+                                    </div>
+                                    <div class="latest-product__item__text">
+                                        <h6>@product.Name</h6>
+                                        <span>$ @product.Price</span>
+                                    </div>
+                                </a>
+                            }
+
+                        </div>
+                        <div class="latest-prdouct__slider__item">
+                            
+                            @foreach (var product in Model.RecentlyViewedProducts.Skip(3))
+                            {
+                                <a asp-area="" asp-controller="Product" asp-action="Details" asp-route-id="@product.Id" class="latest-product__item">
+                                    <div class="latest-product__item__pic">
+                                        <img src="@product.ImageUrl" alt="@product.Name">
+                                    </div>
+                                    <div class="latest-product__item__text">
+                                        <h6>@product.Name</h6>
+                                        <span>$ @product.Price</span>
+                                    </div>
+                                </a>
+                            }
+
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </section>
-<!-- Featured Section End -->
+<!-- Latest Product Section End -->
+
+
+
+
+@section Scripts{
+
+    <script>
+
+
+
+         /////////////////////////////------------SAYFA YÜKLENDİĞİNDE YAPILACAK İŞLEMLER-------////////////////////////////
+        document.addEventListener("DOMContentLoaded", function(){
+
+
+            //////////////       SEPETE ÜRÜN EKLEME /////////////////
+            const cartButtons = document.querySelectorAll(".add-to-cart-btn");
+            console.log(cartButtons.length);
+
+            cartButtons.forEach(button => {
+                button.addEventListener("click", (event) => {
+                    event.preventDefault();
+
+                    const productItem = event.currentTarget.closest(".featured__item");
+                    const productId = productItem.querySelector(".product-id").value;
+
+                    console.log("Sepete eklendi ", productId);
+
+                    fetch("/Cart/AddItemToCart", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ ProductId: productId })
+                        })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log("Sepet güncellendi", data);
+                        if(data.message){
+                            Swal.fire({
+                                title: "Başarılı!",
+                                text: data.message,
+                                icon: "success",
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+                        }
+                    })
+                    .catch(error => {
+                           console.error(error);
+                           Swal.fire({
+                               title: "Hata!",
+                               text: "Ürün eklenemedi",
+                               icon: "error"
+                           })
+                    });
+
+                });
+            });
+
+            /////////////////////////////////////////////////////////////////////////
+        });
+
+    </script>
+
+
+
+}

@@ -1,7 +1,6 @@
 using Ecommerce.Models;
 using ECommerce.Data;
 using ECommerce.Models;
-using ECommerce.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
@@ -23,6 +22,7 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
 builder.Services.AddSingleton<IEmailSender, DummyEmailSender>();
 builder.Services.ConfigureApplicationCookie(options =>
 {
+    options.LoginPath = "/Identity/Account/Login";
     options.AccessDeniedPath = "/Home/AccessDenied"; 
 });
 
@@ -32,10 +32,6 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 builder.Services.AddControllersWithViews();
 
-builder.Services.AddScoped<CartService>();
-builder.Services.AddScoped<CommentService>();
-builder.Services.AddScoped<OrderService>();
-builder.Services.AddScoped<CategoryService>();
 
 builder.Services.AddRazorPages();
 

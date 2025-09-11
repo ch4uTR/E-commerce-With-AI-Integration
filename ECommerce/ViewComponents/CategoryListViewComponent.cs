@@ -1,23 +1,24 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using ECommerce.Services;
+﻿using ECommerce.Data;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 
 namespace ECommerce.ViewComponents
 {
     public class CategoryListViewComponent : ViewComponent
     {   
-        private readonly CategoryService _categoryService;
+        private readonly ApplicationDbContext _context;
 
-        public CategoryListViewComponent(CategoryService categoryService)
+        public CategoryListViewComponent(ApplicationDbContext context)
         {
-            _categoryService = categoryService;
+            _context = context;
         }
 
 
 
         public async Task<IViewComponentResult> InvokeAsync()
         {
-            var categories = await _categoryService.GetAllMainCategoriesAsync();
+            var categories = await _context.Categories.Where(c => c.ParentCategoryId == null).ToListAsync();
             return View(categories);
         }
     }

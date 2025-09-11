@@ -1,7 +1,6 @@
-﻿using ECommerce.Models.DTOs;
-using ECommerce.Models;
+﻿using ECommerce.Models;
 
-namespace ECommerce.Areas.Admin.Models
+namespace ECommerce.Models.DTOs
 {
     public class ProductViewModel
     {
@@ -14,7 +13,7 @@ namespace ECommerce.Areas.Admin.Models
 
         public decimal Price { get; set; }
 
-        public string? ImageUrl { get; set; }
+        public string? ImageUrl { get; set; } = "/Images/Product/NoPhotoImage.jpg";
 
         public int TotalSoldQuantity { get; set; }
 
