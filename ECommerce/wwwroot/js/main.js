@@ -223,6 +223,3 @@
 
 })(jQuery);
 
-
-// sayfa yüklenince çaðýr
-document.addEventListener('DOMContentLoaded', loadBestSellingProducts);

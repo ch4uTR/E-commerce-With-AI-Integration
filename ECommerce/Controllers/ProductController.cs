@@ -29,12 +29,15 @@ namespace ECommerce.Controllers
 
             var productsViewModels = await GetFilteredAndPagedProductsAsync(criteria);
 
-            var totalCount = _context.Products.Count();
+            var totalCount = await _context.Products.CountAsync();
 
 
             var minPrice = await _context.Products.MinAsync(p => p.Price);
             var maxPrice = await _context.Products.MaxAsync(p => p.Price);
 
+            int? selectedCategoryId = criteria.CategoryId;
+
+            ViewBag.SelectedCategoryId = selectedCategoryId;
             ViewBag.MinPrice = minPrice;
             ViewBag.MaxPrice = maxPrice;
             ViewBag.TotalCount = totalCount;
@@ -104,12 +107,7 @@ namespace ECommerce.Controllers
                 filteredQuery = filteredQuery.OrderBy(p => p.Id);
             }
 
-
-
-            // İlişkili verileri sorguya dahil et (Tek sorgu için)
-            filteredQuery = filteredQuery.Include(p => p.Category)
-                         .Include(p => p.OrderItems);
-
+    
             // Sayfalama işlemleri
             var pagedQuery = filteredQuery.Skip((criteria.Page - 1) * criteria.Size).Take(criteria.Size);
 
@@ -118,6 +116,7 @@ namespace ECommerce.Controllers
             {
                 Id = p.Id,
                 ProductName = p.Name,
+                CategoryId = p.CategoryId,
                 CategoryName = p.Category.Name,
                 ImageUrl = p.ImageUrl,
                 Price = p.Price,

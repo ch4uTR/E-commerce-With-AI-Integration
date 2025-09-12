@@ -123,9 +123,9 @@
                 <div class="shoping__continue">
                     <div class="shoping__discount">
                         <h5>Discount Codes</h5>
-                        <form action="#">
-                            <input type="text" placeholder="Enter your coupon code">
-                            <button type="submit" class="site-btn">APPLY COUPON</button>
+                        <form  id="coupon-form" action="#">
+                            <input id="coupon-text" type="text" placeholder="Enter your coupon code">
+                            <button id="coupon-button" type="submit" class="site-btn">APPLY COUPON</button>
                         </form>
                     </div>
                 </div>
@@ -201,13 +201,16 @@
         //// Butona Basılınca///////////
 
         document.addEventListener("click", function(event){
+            console.log("Çalıştı");
 
             if (event.target.classList.contains("inc") || event.target.classList.contains("dec")){
-
+                console.log("İf içerisindeyi<")
                 //miktarı değiştir
                 const row = event.target.closest("tr");
                 const productId = row.querySelector(".product-id").value;
                 const quantity = row.querySelector(".item-count").value;
+
+
 
                 fetch("/Cart/UpdateCartItem", {
                     method: "POST",
@@ -215,37 +218,34 @@
                     body: JSON.stringify({ProductId: productId, Quantity: quantity})
                 })
                 .then(response => response.json())
-                .then(data => {
-                    if (data.message){
+                .then(response => {
+                    if (response.message){
                         Swal.fire({
                             title: "Başarılı!",
-                            text: data.message,
+                            text: response.message,
                             icon: "success",
-                            timer: 500,
+                            timer: 1000,
                             showConfirmButton: false
-                        })
+                        });
                     }
-                    window.updateCartDiv();
-                })
-                
 
+                    
+                    if (response.data) {
+                        refreshCartTable(response.data);
+                        window.updateCartDiv();
+                    }
+                })
                 .catch(error => {
                     console.error(error);
                     Swal.fire({
                         title: "Hata!",
                         text: "Miktar değişikliği gerçekleştirilemedi",
                         icon: "error"
-                    })
+                    });
                 });
 
-                //görünümü değiştir
 
-                // row.innerHTML = ``;
-                // fetch("/Cart/")
-
-
-
-            }
+            } 
 
         });
 
@@ -256,109 +256,133 @@
             if (event.target.classList.contains("item-count")){
 
 
-                const row = event.target.closest("tr");
-                const productId = row.querySelector(".product-id").value;
-                const quantity = row.querySelector(".item-count").value;
+                    const row = event.target.closest("tr");
+                    const productId = row.querySelector(".product-id").value;
+                    const quantity = row.querySelector(".item-count").value;
 
-                fetch("/Cart/UpdateCartItem", {
-                    method: "POST",
-                    headers: {"Content-Type": "application/json"},
-                    body: JSON.stringify({ProductId: productId, Quantity: quantity})
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.message){
-                        Swal.fire({
-                            title: "Başarılı!",
-                            text: data.message,
-                            icon: "success",
-                            timer: 500,
-                            showConfirmButton: false
-                        })
-                    }
-                    window.updateCartDiv();
-                })
-                .catch(error => {
-                    console.error(error);
-                    Swal.fire({
-                        title: "Hata!",
-                        text: "Miktar değişikliği gerçekleştirilemedi",
-                        icon: "error"
+
+
+                    fetch("/Cart/UpdateCartItem", {
+                        method: "POST",
+                        headers: {"Content-Type": "application/json"},
+                        body: JSON.stringify({ProductId: productId, Quantity: quantity})
                     })
-                });
+                    .then(response => response.json())
+                    .then(response => {
+                        if (response.message){
+                            Swal.fire({
+                                title: "Başarılı!",
+                                text: response.message,
+                                icon: "success",
+                                timer: 1000,
+                                showConfirmButton: false
+                            });
+                        }
 
-            }
+
+                        if (response.data) {
+                            refreshCartTable(response.data);
+                            window.updateCartDiv();
+                        }
+                    })
+                    .catch(error => {
+                        console.error(error);
+                        Swal.fire({
+                            title: "Hata!",
+                            text: "Miktar değişikliği gerçekleştirilemedi",
+                            icon: "error"
+                        });
+                    });
 
 
-        });
+                }
+
+            });
 
         ///////////////////////////////////////////////////////////////////////////////////////////
        
  
-        ///Tabloyu yenileme Fonksiyonu /////
+        ////Tabloyu yenileme Fonksiyonu /////
+            function refreshCartTable(cartItems){
+                const emptyDiv = document.querySelector("#empty-cart-div");
+                const tableDiv = document.querySelector("#cart-table-div");
+                const tbody = document.querySelector("#cart-table-body");
 
-        // function refreshCartTable(){
-        //     fetch("/Cart/GetAllCartItemsJSON")
-        //         .then(res => res.json())
-        //         .then(data => {
+                if (!cartItems || cartItems.length === 0){
+                    emptyDiv.style.display = "block";
+                    tableDiv.style.display = "none";
+                    return;
+                }
 
-        //             const emptyDiv = document.querySelector("#empty-cart-div");
-        //             const tableDiv = document.querySelector("#cart-table-div");
+                emptyDiv.style.display = "none";
+                tableDiv.style.display = "block";
 
+                tbody.innerHTML = ``;
 
-        //             if (data.isEmpty){
-        //                 emptyDiv.style.display = "block";
-        //                 tableDiv.style.display = "none";
-        //             }
+                cartItems.forEach(item => {
+                    const row = `
+                        <tr>
+                            <input type="hidden" class="product-id" value="${item.productId}">
+                            <td class="shoping__cart__item">
+                                <img class="product-img" src="${item.imageUrl}" alt="">
+                                <h5>${item.productName}</h5>
+                            </td>
+                            <td class="shoping__cart__price">
+                                $${item.unitPrice}
+                            </td>
+                            <td class="shoping__cart__quantity">
+                                <div class="quantity">
+                                    <div class="pro-qty"><span class="dec qtybtn">-</span>
+                                        <input class="item-count" type="text" value="${item.quantity}">
+                                    <span class="inc qtybtn">+</span></div>
+                                </div>
+                            </td>
+                            <td class="shoping__cart__total">
+                                $${item.unitPrice * item.quantity}
+                            </td>
+                            <td class="shoping__cart__item__close">
+                                <span class="icon_close"></span>
+                            </td>
+                        </tr>`;
+                    tbody.innerHTML += row;
+                });
+            }
 
-        //             else{
-
-        //                 emptyDiv.style.display = "none";
-        //                 tableDiv.style.display = "block";
-
-        //                 const tbody = document.querySelector("#cart-table-body");
-        //                 tbody.innerHTML = ``;
-
-        //                 data.data.forEach(item => {
-
-        //                     const row = `
-        //                     <tr>
-        //                             <input type="hidden" class="product-id" value="${item.ProductId}">
-        //                             <td class="shoping__cart__item">
-        //                                 <img class="product-img" src="${item.Product.ImageUrl}" alt="">
-        //                                 <h5>${item.Product.Name}</h5>
-        //                             </td>
-        //                             <td class="shoping__cart__price">
-        //                                 $${item.UnitPrice}
-        //                             </td>
-        //                             <td class="shoping__cart__quantity">
-        //                                 <div class="quantity">
-        //                                     <div class="pro-qty">
-        //                                         <input class="item-count" type="text" value="${item.Quantity}">
-        //                                     </div>
-        //                                 </div>
-        //                             </td>
-        //                             <td class="shoping__cart__total">
-        //                                 $${item.UnitPrice* item.Quantity}
-        //                             </td>
-        //                             <td class="shoping__cart__item__close">
-        //                                 <span class="icon_close"></span>
-        //                             </td>
-        //                         </tr>`;
-
-        //                         tbody.innerHTML += row;
-
-        //                 });
-
-        //             }
+       
 
 
+    //////////////////////////////// KUPON UYGULAMA ////////////////////////////7
 
-        //         });
-        // }
+    const couponForm = document.getElementById("coupon-form");
+    couponForm.addEventListener("submit", function(event){
+
+        event.preventDefault();
+
+        const couponCode = document.getElementById("coupon-text").value;
+
+           fetch(`/Cart/VerifyCoupon?couponName=${encodeURIComponent(couponCode)}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.isValid){
+                    Swal.fire({
+                        title: "Başarılı!",
+                        text: data.message,
+                        icon: "success",
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                }
+            })
+
+        const couponButton = document.getElementById("coupon-button");
+        couponButton.disabled = true;
+
+        couponButton.style.opacity = "0.6";
+        couponButton.style.cursor = "not-allowed";
 
 
 
+    })
 
 
     </script>

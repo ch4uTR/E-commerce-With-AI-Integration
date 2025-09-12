@@ -1,4 +1,5 @@
-﻿using ECommerce.Data;
+﻿using ECommerce.Areas.Admin.Models;
+using ECommerce.Data;
 using ECommerce.Models;
 using ECommerce.Models.DTOs;
 using Microsoft.AspNetCore.Mvc;
@@ -7,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 namespace ECommerce.Controllers
 {
     public class CommentController : Controller
-    {   
+    {
         private readonly ApplicationDbContext _context;
 
         public CommentController(ApplicationDbContext context)
@@ -24,11 +25,11 @@ namespace ECommerce.Controllers
 
 
 
-        public async Task<IActionResult> GetCommentsJSON([FromQuery] CommentFilterModel filter, int page = 1, int size = 20)
+        public async Task<IActionResult> GetCommentsJSON([FromQuery] CommentSearchCriteria filter)
         {
             var query = _context.Comments.AsQueryable();
             List<Comment> comments = new List<Comment>();
-            filter ??= new CommentFilterModel();
+            filter ??= new CommentSearchCriteria();
 
             if (filter.UserId != null)
             {
@@ -40,19 +41,24 @@ namespace ECommerce.Controllers
                 query = query.Where(c => c.ProductId == filter.ProductId);
             }
 
-            if (filter.HideUnapprovedComments)
+            if (filter.IsDeleted.HasValue)
             {
-                query = query.Where(c => c.IsApproved == false);
+                query = query.Where(c => c.IsDeleted == filter.IsDeleted);
             }
 
-            if (filter.HideDeletedComments)
+            if (filter.IsApproved.HasValue)
             {
-                query = query.Where(c => c.IsDeleted == false);
+                query = query.Where(c => c.IsApproved == filter.IsApproved);
             }
 
-            if (filter.CreatedAt.HasValue)
+            if (filter.MinDate.HasValue)
             {
-                query = query.Where(c => c.CreatedAt.Date == filter.CreatedAt.Value.Date);
+                query = query.Where(c => c.CreatedAt.Date >= filter.MinDate.Value.Date);
+            }
+
+            if (filter.MaxDate.HasValue)
+            {
+                query = query.Where(c => c.CreatedAt.Date <= filter.MaxDate.Value.Date);
             }
 
             if (filter.SortBy != null)
@@ -78,23 +84,14 @@ namespace ECommerce.Controllers
                 query = query.OrderBy(c => c.CreatedAt);
             }
 
-            int skipCount = (page - 1) * size;
+            int skipCount = (filter.Page - 1) * filter.Size;
             query = query.Skip(skipCount);
-            query = query.Take(page);
+            query = query.Take(filter.Size);
 
             comments = await query.ToListAsync();
-            var totalCount = comments.Count();
+            return Json(new { data = comments });
 
-            return Ok(new
-            {
-                data = comments,
-                totalCount = totalCount,
-                currentPage = page,
-                pageSize = size
-            });
+
         }
-
-
-
     }
 }

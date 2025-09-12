@@ -1,7 +1,7 @@
 ﻿@page
 @model RegisterModel
 @{
-    ViewData["Title"] = "Register";
+    ViewData["Title"] = "Kayıt Ol";
 }
 
 
@@ -11,9 +11,9 @@
         <div class="col-md-6 d-none d-md-block p-0">
             <div class="hero__item set-bg" style="background-image: url('~/img/hero/banner.jpg');">
                 <div class="hero__text">
-                    <span>BUDGET-FRIENDLY</span>
-                    <h2>Affordable <br /> 24/7</h2>
-                    <p>Join now</p>
+                    <span>BÜTÇE DOSTU</span>
+                    <h2>ERİŞİLEBİLİR <br /> 7/24</h2>
+                    <p>Tasarrufa katıl</p>
                 </div>
             </div>
         </div>
@@ -21,43 +21,43 @@
             <section>
             <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post">
                 <h2>@ViewData["Title"]</h2>
-                <h3>Create a new account.</h3>
+                <h3>Yeni bir hesap oluşturun</h3>
                 <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
                 <div class="form-floating mb-3">
-                    <input asp-for="Input.FirstName" class="form-control" placeholder="First Name" />
-                    <label asp-for="Input.FirstName">First Name</label>
+                    <input asp-for="Input.FirstName" class="form-control" placeholder="Adınız" />
+                    <label asp-for="Input.FirstName">Ad</label>
                     <span asp-validation-for="Input.FirstName" class="text-danger"></span>
                 </div>
 
                 <div class="form-floating mb-3">
-                    <input asp-for="Input.LastName" class="form-control" placeholder="Last Name" />
-                    <label asp-for="Input.LastName">Last Name</label>
+                    <input asp-for="Input.LastName" class="form-control" placeholder="Soyadınız" />
+                    <label asp-for="Input.LastName">Soyad</label>
                     <span asp-validation-for="Input.LastName" class="text-danger"></span>
                 </div>
 
                 <div class="form-floating mb-3">
-                    <textarea asp-for="Input.Address" class="form-control" placeholder="Address" ></textarea>
-                        <label asp-for="Input.Address">Address</label>
+                    <textarea asp-for="Input.Address" class="form-control" placeholder="Adresiniz" ></textarea>
+                        <label asp-for="Input.Address">Adres</label>
                         <span asp-validation-for="Input.Address" class="text-danger"></span>
                 </div>
 
                 <div class="form-floating mb-3">
-                    <input asp-for="Input.Email" class="form-control" autocomplete="username" placeholder="name@example.com" />
-                    <label asp-for="Input.Email">Email</label>
+                    <input asp-for="Input.Email" class="form-control" autocomplete="username" placeholder="name@ornek.com" />
+                    <label asp-for="Input.Email">E-posta</label>
                     <span asp-validation-for="Input.Email" class="text-danger"></span>
                 </div>
 
                 <div class="form-floating mb-3">
-                    <input asp-for="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
-                    <label asp-for="Input.Password">Password</label>
+                    <input asp-for="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="şifreniz" />
+                    <label asp-for="Input.Password">Şifre</label>
                     <span asp-validation-for="Input.Password" class="text-danger"></span>
                 </div>
                 <div class="form-floating mb-3">
-                    <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
-                    <label asp-for="Input.ConfirmPassword">Confirm Password</label>
+                    <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="şifreniz" />
+                    <label asp-for="Input.ConfirmPassword">Şifreyi Onayla</label>
                     <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
                 </div>
-                <button id="registerSubmit" type="submit" class="site-btn">Register</button>
+                <button id="registerSubmit" type="submit" class="site-btn">Kayıt ol</button>
             </form>
         </section>
     </div>

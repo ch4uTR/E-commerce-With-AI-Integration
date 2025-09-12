@@ -16,9 +16,10 @@ namespace ECommerce.ViewComponents
 
 
 
-        public async Task<IViewComponentResult> InvokeAsync()
+        public async Task<IViewComponentResult> InvokeAsync(int? selectedCategoryId)
         {
             var categories = await _context.Categories.Where(c => c.ParentCategoryId == null).ToListAsync();
+            ViewBag.SelectedCategoryId = selectedCategoryId;
             return View(categories);
         }
     }

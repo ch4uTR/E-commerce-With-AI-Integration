@@ -15,10 +15,10 @@
         <table class="table table-hover">
             <thead>
                 <tr>
-                    <th>Name</th>
-                    <th>Total Product<i class="fa fa-dollar mb-2"></i></th>
-                    <th>Total Revenue</th>
-                    <th>Actions</th>
+                    <th>Kategori İsmi</th>
+                    <th>Toplam Ürün Sayısı<i class="fa fa-dollar mb-2"></i></th>
+                    <th>Toplam Hasılat</th>
+                    <th>Aksiyonlar</th>
                 </tr>
             </thead>
             <tbody>
@@ -27,7 +27,7 @@
                     <tr>
                         <td>@category.Name</td>
                         <td>@category.TotalProductCount</td>
-                        <td>@category.TotalRevenue.ToString("N") </td>
+                        <td>@category.TotalRevenue.ToString("N") TL </td>
                         <td>
                             <a asp-action="Edit" asp-route-id="@category.Id" class="btn-xs site-btn">  <i class="fa fa-pencil-square-o"></i> Edit  </a>
                             <form asp-action="Delete" asp-route-id="@category.Id" method="post" style="display:inline">
@@ -82,3 +82,33 @@
 
 </style>
     
+
+
+@section Scripts {
+    <script>
+        const deleteButtons = document.querySelectorAll("form button[type='submit']");
+
+        deleteButtons.forEach(button => {
+            button.addEventListener("click", function(event){
+                event.preventDefault();
+
+                Swal.fire({
+                    title: "Emin misiniz?",
+                    text: "Bu kategoriyi ve ona bağlı ürünleri silmek istediğinize emin misiniz?",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonText: "Evet, sil!",
+                    cancelButtonText: "Hayır, vazgeç"
+                }).then((result) => {
+                    if (result.isConfirmed){
+                        button.closest("form").submit();
+                    }
+                });
+            });
+        });
+    </script>
+}
+
+
+
+

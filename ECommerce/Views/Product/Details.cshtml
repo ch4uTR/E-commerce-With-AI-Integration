@@ -13,7 +13,6 @@
 @{/* Neden bunu ekledim, zaafiyet yaratır mı bilmiyorum sorucam! */}
 <input type="hidden" id="productId" value="@product.Id" />
 
-COOKŞİLERİ EKLE
 
 <section class="product-details spad">
     <div class="container">
@@ -23,17 +22,7 @@ COOKŞİLERİ EKLE
                     <div class="product__details__pic__item">
                         <img class="product__details__pic__item--large"
                              src="@product.ImageUrl" alt="@product.Name">
-                    </div>
-                    <div class="product__details__pic__slider owl-carousel">
-                        <img data-imgbigurl="~/img/product/details/product-details-2.jpg"
-                             src="~/img/product/details/thumb-1.jpg" alt="">
-                        <img data-imgbigurl="~/img/product/details/product-details-3.jpg"
-                             src="~/img/product/details/thumb-2.jpg" alt="">
-                        <img data-imgbigurl="~/img/product/details/product-details-5.jpg"
-                             src="~/img/product/details/thumb-3.jpg" alt="">
-                        <img data-imgbigurl="~/img/product/details/product-details-4.jpg"
-                             src="~/img/product/details/thumb-4.jpg" alt="">
-                    </div>
+                    </div>                    
                 </div>
             </div>
             <div class="col-lg-6 col-md-6">
@@ -56,32 +45,24 @@ COOKŞİLERİ EKLE
                         }
 
 
-                        <span>(@(comments.Any() ? comments.Count() : 0) reviews)</span>
+                        <span>(@(comments.Any() ? comments.Count() : 0) değerlendirme)</span>
                     </div>
-                    <div class="product__details__price">$@product.Price</div>
+                    <div class="product__details__price">@product.Price TL</div>
                     <p>
                         @product.Description
                     </p>
                     <div class="product__details__quantity">
                         <div class="quantity">
                             <div class="pro-qty">
-                                <input type="text" value="1">
+                                <input id="item-quantity-input" type="text" value="1">
                             </div>
                         </div>
                     </div>
-                    <a href="#" class="primary-btn">ADD TO CARD</a>
+                    <a href="#" class="primary-btn add-to-cart-btn">SEPETE EKLE</a>
                     <a href="#" class="heart-icon"><span class="icon_heart_alt"></span></a>
                     <ul>
-                        <li><b>Availability</b> <span>In Stock</span></li>
-                        <li><b>Shipping</b> <span>01 day shipping. <samp>Free pickup today</samp></span></li>
+                        <li><b>Availability</b> <span>Stokta</span></li>
                         <li>
-                            <b>Share on</b>
-                            <div class="share">
-                                <a href="#"><i class="fa fa-facebook"></i></a>
-                                <a href="#"><i class="fa fa-twitter"></i></a>
-                                <a href="#"><i class="fa fa-instagram"></i></a>
-                                <a href="#"><i class="fa fa-pinterest"></i></a>
-                            </div>
                         </li>
                     </ul>
                 </div>
@@ -101,7 +82,7 @@ COOKŞİLERİ EKLE
                     <div class="tab-content">
                         <div class="tab-pane active" id="tabs-1" role="tabpanel">
                             <div class="product__details__tab__desc">
-                                <h6>Products Description</h6>
+                                <h6>Ürün Açıklaması</h6>
                                 <p>
                                     @product.Description
                                 </p>
@@ -110,7 +91,7 @@ COOKŞİLERİ EKLE
                         <div class="tab-pane" id="tabs-2" role="tabpanel">
                             <div class="product__details__tab__desc">
                                 <div class="product__details__tab__desc" id="commentsContainer">
-                                    Click on tab to load reviews...
+                                    Yorumları yüklemek için tıklayın...
                                 </div>
                             </div>
                         </div>
@@ -127,7 +108,7 @@ COOKŞİLERİ EKLE
         <div class="row">
             <div class="col-lg-12">
                 <div class="section-title related__product__title">
-                    <h2>Related Product</h2>
+                    <h2>Benzer Ürünler</h2>
                 </div>
             </div>
         </div>
@@ -139,15 +120,16 @@ COOKŞİLERİ EKLE
                 <div class="col-lg-3 col-md-4 col-sm-6">
                     <div class="product__item">
                         <div class="product__item__pic set-bg" data-setbg="@rp.ImageUrl">
+                            <input class="product-id" type="hidden" value="@rp.Id" />
                             <ul class="product__item__pic__hover">
                                 <li><a href="#"><i class="fa fa-heart"></i></a></li>
                                 <li><a href="#"><i class="fa fa-retweet"></i></a></li>
-                                <li><a href="#"><i class="fa fa-shopping-cart"></i></a></li>
+                                <li><a class="add-to-cart-btn" href="#"><i class="fa fa-shopping-cart"></i></a></li>
                             </ul>
                         </div>
                         <div class="product__item__text">
                             <h6><a href="#">@rp.Name</a></h6>
-                            <h5>$@rp.Price</h5>
+                            <h5>@rp.Price TL</h5>
                         </div>
                     </div>
                 </div>
@@ -203,6 +185,83 @@ COOKŞİLERİ EKLE
 
         });
 
+
+        /////////// SEPETE ÜRÜN EKLEME ////////////////////////////
+
+        document.addEventListener("click", function(event){
+
+                const button = event.target.closest(".add-to-cart-btn");
+                if (!button) return;
+
+                event.preventDefault();
+
+                let productId;
+                let quantity = 1;
+
+                const productItem = button.closest(".product__item");
+                if (productItem){
+                    productId = productItem.querySelector(".product-id").value;
+                }
+                else{
+                    productId = document.getElementById("productId").value;
+                    quantity = document.getElementById("item-quantity-input").value;
+
+                }
+
+
+
+                console.log("Sepete eklendi ", productId);
+
+
+
+                fetch("/Cart/AddItemToCart", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ ProductId: productId , Quantity: quantity})
+                    })
+                .then(res => res.json())
+                .then(data => {
+                    if(data.message){
+                        Swal.fire({
+                            title: "Başarılı!",
+                            text: data.message,
+                            icon: "success",
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
+                    }
+                    window.updateCartDiv();
+
+                })
+                .catch(err => {
+                    console.error(err);
+                    Swal.fire({
+                        title: "Hata!",
+                        text: "Ürün eklenemedi",
+                        icon: "error"
+                    });
+                });
+
+
+
+
+
+            });
+
+
+        const productDivs = document.querySelectorAll(".product__item__pic");
+            productDivs.forEach(pic =>{
+
+                    pic.addEventListener("click",function(event){
+
+                        const featuredItem = event.target.closest(".product__item");
+                        const productId = featuredItem.querySelector(".product-id").value;
+
+                        window.location.href = `/Product/Details/${productId}`
+
+                    });
+
+            });
 
 
 

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 
 namespace ECommerce.Areas.Admin.Controllers
@@ -18,11 +19,13 @@ namespace ECommerce.Areas.Admin.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly ILogger<CategoryController> _logger;
 
-        public CategoryController(ApplicationDbContext context, IWebHostEnvironment webHostEnvironment)
+        public CategoryController(ApplicationDbContext context, IWebHostEnvironment webHostEnvironment, ILogger<CategoryController> logger)
         {
             _context = context;
             _webHostEnvironment = webHostEnvironment;
+            _logger = logger;
         }
 
         [HttpGet]
@@ -46,7 +49,7 @@ namespace ECommerce.Areas.Admin.Controllers
             return View(categoriesViewModel);
         }
 
-
+        
         [HttpGet]
         public async Task<IActionResult> Create()
         {
@@ -86,7 +89,7 @@ namespace ECommerce.Areas.Admin.Controllers
             if (id <= 0) { return RedirectToAction("Index"); }
 
             var category = await GetCategoryByIdAsync(id);
-            if (category == null) { RedirectToAction("Index"); }
+            if (category == null) { return RedirectToAction("Index"); }
 
             CategoryRequest requestModel = new CategoryRequest
             {
@@ -113,10 +116,18 @@ namespace ECommerce.Areas.Admin.Controllers
         [HttpPost]
         public async Task<IActionResult> Edit(CategoryEditModel editModel)
         {
+            var category = await _context.Categories.FirstOrDefaultAsync(c => c.Id == editModel.Request.Id);
+
             if (!ModelState.IsValid) {
 
+
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+                foreach (var err in errors)
+                    Console.WriteLine(err);
+
                 editModel.MainCategories = await GetAllMainCategoriesAsync();
-                editModel.DefaultImagePath = GetDefaultImagePath();
+                
+                editModel.DefaultImagePath = (string.IsNullOrEmpty(category.ImagePath)) ? GetDefaultImagePath() : category.ImagePath;
 
                 return View(editModel); 
             }
@@ -129,8 +140,13 @@ namespace ECommerce.Areas.Admin.Controllers
                 return RedirectToAction("Details", new {id = editModel.Request.Id });
             }
 
+
             ModelState.AddModelError("", "An Error Occured");
-            return RedirectToAction("Details", new { id = editModel.Request.Id });
+
+            editModel.MainCategories = await GetAllMainCategoriesAsync();
+            editModel.DefaultImagePath = (string.IsNullOrEmpty(category.ImagePath)) ? GetDefaultImagePath() : category.ImagePath;
+
+            return View(editModel);
         }
 
 
@@ -151,6 +167,20 @@ namespace ECommerce.Areas.Admin.Controllers
 
             return View(model);
         }
+
+
+        [HttpPost]
+        public async Task<IActionResult> Delete(int id)
+        {
+            bool isDeleted = await DeleteCategoryAsync(id);
+
+            if (isDeleted)
+                return RedirectToAction("Index");
+
+            ModelState.AddModelError("", "An error occurred while deleting.");
+            return RedirectToAction("Details", new { id });
+        }
+
 
 
         public async Task<CategoryViewModel> GetCategoryDetailsAsync(int id)
@@ -235,19 +265,23 @@ namespace ECommerce.Areas.Admin.Controllers
         {
             try
             {
-                var category = await _context.Categories.FirstOrDefaultAsync(c => c.Id == id);
+                var category = await _context.Categories.
+                                        Include(c => c.SubCategories)
+                                        .FirstOrDefaultAsync(c => c.Id == id);
 
-                if (category != null)
-                {
-                    _context.Categories.Remove(category);
-                    await _context.SaveChangesAsync();
-                    return true;
-                }
-                else
+                if (category == null)
                 {
                     return false;
                 }
 
+                if (category.SubCategories != null && category.SubCategories.Any())
+                {
+                    _context.Categories.RemoveRange(category.SubCategories);
+                }
+
+                _context.Categories.Remove(category);
+                await _context.SaveChangesAsync();
+                return true;
             }
 
             catch (Exception ex)
@@ -318,6 +352,7 @@ namespace ECommerce.Areas.Admin.Controllers
 
             catch (Exception ex)
             {
+                Console.WriteLine(ex.Message);
                 return false;
             }
         }

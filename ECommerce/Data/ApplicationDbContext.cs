@@ -1,6 +1,7 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using ECommerce.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using ECommerce.Models;
+using System.Reflection.Emit;
 
 namespace ECommerce.Data
 {
@@ -29,6 +30,15 @@ namespace ECommerce.Data
         public DbSet<DiscountCoupon> Coupons { get; set; }
 
 
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            base.OnModelCreating(builder);
+
+            builder.Entity<DiscountCoupon>()
+                .HasIndex(c => c.Name)
+                .IsUnique();
+
+        }
 
 
 

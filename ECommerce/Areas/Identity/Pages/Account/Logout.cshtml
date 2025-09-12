@@ -2,7 +2,7 @@
 @model LogoutModel
 
 @{
-    ViewData["Title"] = "You have been logged out";
+    ViewData["Title"] = "Başarıyla Çıkış Yaptınız!";
 }
 
 <div class="d-flex justify-content-center align-items-center">
@@ -12,11 +12,11 @@
                     <h2 style="color: #7fad39;"><i class="fa fa-check-circle"></i> @ViewData["Title"]</h2>
                 </div>
                 <div>
-                    <p class="lead">You have successfully logged out of the application.</p>
+                    <p class="lead">Tekrar görüşmek üzere</p>
                 </div>
                 <div class="mt-4">
                     <a asp-area="" asp-controller="Home" asp-action="Index" class="site-btn">
-                        <i class="fa fa-home"></i> Go to Home Page
+                        <i class="fa fa-home"></i> Ana sayfaya dön
                     </a>
                 </div>
             </section>

@@ -26,6 +26,7 @@ namespace ECommerce.Models
         {
             if (!string.IsNullOrEmpty(Name))
                 Slug = Name.ToLower().Replace(" ", "-");
+                Slug = Slug.Replace("&", "-");
         }
 
     }

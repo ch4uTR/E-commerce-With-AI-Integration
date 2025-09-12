@@ -65,13 +65,13 @@
                 <li>
                     <a href="#">Pages</a>
                     <ul class="header__menu__dropdown">
-                        <li><a asp-controller="Product" asp-action="Index" >Shop Details</a></li>
-                        <li><a href="./shoping-cart.html">Sepet</a></li>
-                        <li><a href="./checkout.html">Check Out</a></li>
+                        <li><a asp-controller="Product" asp-action="Index" >Alışveriş Detay</a></li>
+                        <li><a asp-area="" asp-controller="Cart" asp-action="Index">Sepet</a></li>
+                        <li><a a asp-area="" asp-controller="Cart" asp-action="Index">Ödemeye geç</a></li>
                     </ul>
                 </li>
                 <li><a href="./blog.html">Blog</a></li>
-                <li><a href="./contact.html">Contact</a></li>
+                <li><a href="./contact.html">İletişim</a></li>
             </ul>
         </nav>
         <div id="mobile-menu-wrap"></div>
@@ -86,13 +86,13 @@
                         <div class="header__top__left">
                             <ul>
                                 <li><i class="fa fa-envelope"></i> enes.yildirim@std.yeditepe.edu.tr</li>
-                                <li>250 TL ve üstü ücretsiz kargo!</li>
+                                <li>350 TL ve üstü ücretsiz kargo!</li>
                             </ul>
                         </div>
                     </div>
                     <div class="col-lg-6 col-md-6">
                         <div class="header__top__right">
-                            <div class="header__top__right__auth">
+                            <div class="header__top__right__auth">                                
                                 @if (User.Identity.IsAuthenticated)
                                 {
                                     <form id="logoutForm" asp-area="Identity" asp-page="/Account/Logout" method="post" class="d-inline">

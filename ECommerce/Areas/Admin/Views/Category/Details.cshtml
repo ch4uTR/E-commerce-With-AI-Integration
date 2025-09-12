@@ -68,6 +68,43 @@
     </div>
 </div>
 
+<style>
+    .btn-xs {
+        padding: .25rem .5rem;
+        font-size: .75rem;
+        line-height: 1.5;
+        border-radius: .2rem;
+    }
+</style>
+
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+
+
+
+    <script>
+        const deleteButtons = document.querySelectorAll("form button[type='submit']");
+
+        deleteButtons.forEach(button => {
+            button.addEventListener("click", function(event){
+                event.preventDefault();
+
+                Swal.fire({
+                    title: "Emin misiniz?",
+                    text: "Bu kategoriyi ve ona bağlı ürünleri silmek istediğinize emin misiniz?",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonText: "Evet, sil!",
+                    cancelButtonText: "Hayır, vazgeç"
+                }).then((result) => {
+                    if (result.isConfirmed){
+                        button.closest("form").submit();
+                    }
+                });
+            });
+        });
+    </script>
+}
+
+
 }

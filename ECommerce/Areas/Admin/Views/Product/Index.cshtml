@@ -307,5 +307,36 @@
         // });
 
 
+
+
+
+
+        ///// delete için onay al
+
+
+        const deleteButtons = document.querySelectorAll("form button[type='submit']");
+
+        deleteButtons.forEach(button => {
+            button.addEventListener("click", function(event){
+                event.preventDefault();
+
+                Swal.fire({
+                    title: "Emin misiniz?",
+                    text: "Bu ürünü silmek istediğinize emin misiniz?",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonText: "Evet, sil!",
+                    cancelButtonText: "Hayır, vazgeç"
+                }).then((result) => {
+                    if (result.isConfirmed){
+                        button.closest("form").submit();
+                    }
+                });
+            });
+        });
+
+
+
+
     </script>
 }

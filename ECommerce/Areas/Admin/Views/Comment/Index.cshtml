@@ -1,17 +1,18 @@
-﻿@model List<Comment>
-
-@{
-    int currentPage = ViewBag.PageNumber;
-    int pageSize = ViewBag.PageSize;
-    int totalCount = ViewBag.TotalCount;
-    int totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
-}
-
-<div class="container mt-4">
+﻿<div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 style="color: #7fad39; margin-bottom: 0;">
             <i class="fa fa-comments"></i> Comment List
         </h2>
+        <div class="filter__sort">
+            <span>Sort By</span>
+            <select id="sort-select" style="display: block;" class="form-select form-select-sm">
+                <option value="default">Default</option>
+                <option value="priceasc">Price: Low to High</option>
+                <option value="pricedesc">Price: High to Low</option>
+                <option value="totalsolddesc">Total Sold: High to Low</option>
+                <option value="totalsoldasc">Total Sold: Low to High</option>
+            </select>
+        </div>
     </div>
 
     <div class="modern-table-container">
@@ -32,7 +33,7 @@
                     <tr>
                         <td>@comment.Text</td>
                         <td>@comment.User?.UserName</td>
-                        <td> @comment.Product.Name</td>
+                        <td>@comment.Product.Name</td>
                         <td>@comment.CreatedAt.ToShortDateString()</td>
                         <td>
                             @if (comment.IsApproved)
@@ -49,11 +50,11 @@
                             }
                         </td>
                         <td>
-                            <form asp-area="Admin" asp-controller="Comment" asp-action="Approve" asp-route-id="@comment.Id" method="post" style="display:inline;">
-                                <button type="submit" class="btn-xs site-btn"> <i class="fa fa-check"></i> Approve </button>
+                            <form  method="post" style="display:inline;">
+                                <button type="submit" class="btn btn-sm site-btn"> <i class="fa fa-check"></i> Approve </button>
                             </form>
                             <form asp-area="Admin" asp-controller="Comment" asp-action="Delete" asp-route-id="@comment.Id" method="post" style="display:inline;">
-                                <button type="submit" class="btn-xs site-btn"> <i class="fa fa-trash-o"></i> Delete </button>
+                                <button type="submit" class="btn btn-sm site-btn"> <i class="fa fa-trash-o"></i> Delete </button>
                             </form>
                         </td>
                     </tr>
@@ -62,7 +63,7 @@
         </table>
     </div>
 
-    <div class="d-flex justify-content-center mt-4">
+    @* <div class="d-flex justify-content-center mt-4">
         <nav aria-label="Page navigation">
             <ul class="pagination">
                 <li class="page-item @(currentPage == 1 ? "disabled" : "")">
@@ -85,112 +86,184 @@
                 </li>
             </ul>
         </nav>
-    </div>
+    </div> *@
 </div>
 
+
 <style>
-    /* Stil tanımlamalarınız buraya */
-    .modern-table-container {
-        background-color: #ffffff;
-        border-radius: 1rem;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        overflow: hidden;
-    }
+.modern-table-container {
+    background-color: #ffffff;
+    border-radius: 1rem; /* 16px */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden; /* İçerik taşmasını engeller ve köşelerin yuvarlatılmasına yardımcı olur */
+}
 
-        .modern-table-container .table thead th {
-            background-color: #7fad39;
-            color: #ffffff;
-            font-weight: 600;
-        }
+/* Tablo başlık stili */
+.modern-table-container .table thead th {
+    background-color: #7fad39;
+    color: #ffffff;
+    font-weight: 600;
+}
 
-        .modern-table-container .table tbody tr:hover {
-            background-color: #f5f5f5;
-        }
+/* Tablo satırlarına geçiş efekti */
+.modern-table-container .table tbody tr:hover {
+    background-color: #f5f5f5; /* Hafif gri */
+}
 
-        .modern-table-container .table {
-            margin-bottom: 0;
-        }
+/* Buton gruplarını düzenleme */
+.modern-table-container .btn-group {
+    border-radius: 0.5rem; /* 8px */
+}
 
-    .btn-xs {
-        padding: .25rem .5rem;
-        font-size: .75rem;
-        line-height: 1.5;
-        border-radius: .2rem;
-    }
+/* Tabloyu daha düzenli göstermek için */
+.modern-table-container .table {
+    margin-bottom: 0;
+}
 
-    .site-btn {
-        display: inline-block;
-        font-size: 14px;
-        color: #ffffff;
-        padding: 10px 20px;
-        background: #7fad39;
-        border: none;
-        border-radius: 50px;
-        text-transform: uppercase;
-        font-weight: 700;
-        text-align: center;
-        transition: all 0.3s ease;
-    }
+.btn-xs {
+    padding: .25rem .5rem;
+    font-size: .75rem;
+    line-height: 1.5;
+    border-radius: .2rem;
+}
 
-        .site-btn:hover {
-            background: #6a962e;
-            color: #ffffff;
-            text-decoration: none;
-        }
 </style>
 
+@section Scripts{
 
 
 <script>
-    <script>
-    function fetchComments(pageNumber) {
-        const url = '@Url.Action("GetCommentsJSON", "Comment", new { area = "Admin", page = "__PAGE__" })'
-            .replace("__PAGE__", pageNumber);
 
-        fetch(url)
-            .then(response => response.json())
-            .then(result => {
-                const tableBody = document.getElementById('comment-table-body');
-                tableBody.innerHTML = '';
 
-                result.data.forEach(comment => {
-                    const row = `
-                        <tr>
-                            <td>${comment.text}</td>
-                            <td>${comment.user ? comment.user.userName : ''}</td>
-                            <td>${comment.product ? comment.product.name : ''}</td>
-                            <td>${new Date(comment.createdAt).toLocaleDateString()}</td>
-                            <td>
-                                ${comment.isApproved ? '<span class="badge bg-success">Approved</span>' : '<span class="badge bg-warning text-dark">Pending</span>'}
-                                ${comment.isDeleted ? '<span class="badge bg-danger">Deleted</span>' : ''}
-                            </td>
-                            <td>
-                                <button onclick="approveComment(${comment.id})" class="btn-xs site-btn">
-                                    <i class="fa fa-check"></i> Approve
-                                </button>
-                                <button onclick="deleteComment(${comment.id})" class="btn-xs site-btn">
-                                    <i class="fa fa-trash-o"></i> Delete
-                                </button>
-                            </td>
-                        </tr>`;
-                    tableBody.innerHTML += row;
+
+    //////////////// Silme işlemi için onay popup'ını göster
+
+        const deleteButtons = document.querySelectorAll("form button[type='submit']");
+
+        deleteButtons.forEach(button => {
+            button.addEventListener("click", function(event){
+                event.preventDefault();
+
+                Swal.fire({
+                    title: "Emin misiniz?",
+                    text: "Bu Yorumu silmek istediğinize emin misiniz?",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonText: "Evet, sil!",
+                    cancelButtonText: "Hayır, vazgeç"
+                }).then((result) => {
+                    if (result.isConfirmed){
+                        button.closest("form").submit();
+                    }
+                });
+            });
+        });
+
+
+
+        ///////////// Filtrele ve sırala ////////////////////
+
+        //sayfa yüklendiğinde sıralama barı, seacrh barı ve filtreler hep olacak, o sebeple başlangıçta bu eventlistenerları onlara atayabilirim
+        document.addEventListener("DOMContentLoaded", function(){
+
+            const filter = {
+                        SearchTerm : null,
+                        MinDate : null,
+                        MaxDate : null,
+                        CategoryId : null,
+                        ProductId: null,
+                        IsApproved : null,
+                        IsDeleted : null,
+                        Page : null,
+                        Size : null,
+                        SortBy : null
+            };
+            
+            const sortMenu = document.getElementById("sort-select");
+            sortMenu.addEventListener("change", function(event){
+
+                const urlParams = new URLSearchParams(window.location.search);
+
+                urlParams.forEach((value, key) => {
+                    if (filter.hasOwnProperty(key)){
+                        filter[key] = value;
+                    }
                 });
 
-                // Burada pagination UI'ını da güncelleyebilirsin
+                filter["SortBy"] = event.target.value;
+
+                const cleanFilter = {};
+                    for (const key in filter) {
+                        if (filter[key] !== null && filter[key] !== undefined && filter[key] !== "") {
+                            cleanFilter[key] = filter[key];
+                        }
+                    }
+
+                const baseUrl = "/Comment/GetCommentsJSON" ;
+                const queryParams = new URLSearchParams(cleanFilter).toString();
+                const tableBody = document.getElementById("comment-table-body");
+
+                fetch(`${baseUrl}?${queryParams}`)
+                .then(res => res.json())
+                .then(res =>  {
+
+                    tableBody.innerHTML = '';
+
+                    res.data.forEach(comment => {
+                        const row = `
+                            <tr>
+                                <td>${comment.text}</td>
+                                <td>${comment.user ? comment.user.userName : ''}</td>
+                                <td>${comment.product ? comment.product.name : ''}</td>
+                                <td>${new Date(comment.createdAt).toLocaleDateString()}</td>
+                                <td>
+                                    ${comment.isApproved ? '<span class="badge bg-success">Approved</span>' : '<span class="badge bg-warning text-dark">Pending</span>'}
+                                    ${comment.isDeleted ? '<span class="badge bg-danger">Deleted</span>' : ''}
+                                </td>
+                                <td>
+                                    <button onclick="approveComment(${comment.id})" class="btn-xs site-btn">
+                                        <i class="fa fa-check"></i> Approve
+                                    </button>
+                                    <button onclick="deleteComment(${comment.id})" class="btn-xs site-btn">
+                                        <i class="fa fa-trash-o"></i> Delete
+                                    </button>
+                                </td>
+                            </tr>`;
+                        tableBody.innerHTML += row;
+                    });
+
+
             });
-    }
 
-    function approveComment(id) {
-        fetch(`/Admin/Comment/Approve/${id}`, { method: 'POST' })
-            .then(res => res.json())
-            .then(() => fetchComments(1));
-    }
 
-    function deleteComment(id) {
-        fetch(`/Admin/Comment/Delete/${id}`, { method: 'POST' })
-            .then(res => res.json())
-            .then(() => fetchComments(1));
-    }
-</script>
 
-</script>
+
+        });
+
+
+           
+
+
+            
+
+                    // Burada pagination UI'ını da güncelleyebilirsin
+                });
+        }
+
+        function approveComment(id) {
+            fetch(`/Admin/Comment/Approve/${id}`, { method: 'POST' })
+                .then(res => res.json())
+                .then(() => fetchComments(1));
+        }
+
+        function deleteComment(id) {
+            fetch(`/Admin/Comment/Delete/${id}`, { method: 'POST' })
+                .then(res => res.json())
+                .then(() => fetchComments(1));
+        }
+    </script>
+
+
+
+}
+

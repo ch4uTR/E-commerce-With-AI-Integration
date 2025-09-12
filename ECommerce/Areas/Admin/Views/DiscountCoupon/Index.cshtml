@@ -1,0 +1,90 @@
+﻿@model List<DiscountCoupon>
+
+@{
+    var couponCount = Model.Count();
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 style="color: #7fad39; margin-bottom: 0;">
+            <i class="fa fa-gift"></i> Discount Coupons
+        </h2>
+        <a asp-action="Create" class="btn btn-success rounded-pill" style="background-color: #7fad39; border-color: #7fad39;">
+            <i class="fa fa-plus"></i> Create New Coupon
+        </a>
+    </div>
+
+    <div class="modern-table-container">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Discount Amount</th>
+                    <th>Discount %</th>
+                    <th>Expires At</th>
+                    <th>Usage</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var coupon in Model)
+                {
+                    <tr>
+                        <td>@coupon.Name</td>
+                        <td>@(coupon.DiscountAmount?.ToString("C") ?? "-")</td>
+                        <td>@(coupon.DiscountPercentage?.ToString("N0") ?? "-") %</td>
+                        <td>@coupon.ExpiresAt.ToString("dd/MM/yyyy")</td>
+                        <td>@coupon.UsedCount / @coupon.UsageLimit</td>
+                        <td>
+                            <a asp-action="Edit" asp-route-id="@coupon.Id" class="btn-xs site-btn">
+                                <i class="fa fa-pencil-square-o"></i> Edit
+                            </a>
+                            <form asp-action="Delete" asp-route-id="@coupon.Id" method="post" style="display:inline">
+                                <button type="submit" class="btn-xs site-btn">
+                                    <i class="fa fa-trash-o"></i> Delete
+                                </button>
+                            </form>
+                            <a asp-action="Details" asp-route-id="@coupon.Id" class="btn-xs site-btn">
+                                <i class="fa fa-info-circle"></i> Details
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<style>
+    .modern-table-container {
+        background-color: #ffffff;
+        border-radius: 1rem;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+
+        .modern-table-container .table thead th {
+            background-color: #7fad39;
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .modern-table-container .table tbody tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        .modern-table-container .btn-group {
+            border-radius: 0.5rem;
+        }
+
+        .modern-table-container .table {
+            margin-bottom: 0;
+        }
+
+    .btn-xs {
+        padding: .25rem .5rem;
+        font-size: .75rem;
+        line-height: 1.5;
+        border-radius: .2rem;
+    }
+</style>

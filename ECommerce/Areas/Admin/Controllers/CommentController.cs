@@ -1,4 +1,5 @@
-﻿using ECommerce.Data;
+﻿using ECommerce.Areas.Admin.Models;
+using ECommerce.Data;
 using ECommerce.Models;
 using ECommerce.Models.DTOs;
 using Microsoft.AspNetCore.Authorization;
@@ -20,14 +21,14 @@ namespace ECommerce.Areas.Admin.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Index(int page = 1, int size = 20)
-        {   
-            var commentFilterModel = new CommentFilterModel();
-            var comments = await GetCommentsAsync(commentFilterModel, page, size);
+        public async Task<IActionResult> Index(CommentSearchCriteria filter)
+        {
+
+            var comments = await GetCommentsAsync(filter);
             var totalCount = comments.Count(); ;
 
-            ViewBag.PageNumber = page;
-            ViewBag.PageSize = size;
+            ViewBag.PageNumber = filter.Page;
+            ViewBag.PageSize = filter.Size;
             ViewBag.TotalCount = totalCount;
             return View(comments);
         }
@@ -52,7 +53,7 @@ namespace ECommerce.Areas.Admin.Controllers
 
         [HttpPost]
         public async Task<bool> Delete(int id)
-        {   
+        {
             var comment = await _context.Comments.FirstOrDefaultAsync(c => c.Id == id);
             if (comment == null)
             {
@@ -66,13 +67,13 @@ namespace ECommerce.Areas.Admin.Controllers
 
 
 
-        
 
-        public async Task<List<Comment>> GetCommentsAsync(CommentFilterModel filter, int page = 1, int size = 20)
+
+        public async Task<List<Comment>> GetCommentsAsync(CommentSearchCriteria filter)
         {
             var query = _context.Comments.AsQueryable();
             List<Comment> comments = new List<Comment>();
-            filter ??= new CommentFilterModel();
+            filter ??= new CommentSearchCriteria();
 
             if (filter.UserId != null)
             {
@@ -84,19 +85,24 @@ namespace ECommerce.Areas.Admin.Controllers
                 query = query.Where(c => c.ProductId == filter.ProductId);
             }
 
-            if (filter.HideUnapprovedComments)
+            if (filter.IsDeleted.HasValue)
             {
-                query = query.Where(c => c.IsApproved == false);
+                query = query.Where(c => c.IsDeleted == filter.IsDeleted);
             }
 
-            if (filter.HideDeletedComments)
+            if (filter.IsApproved.HasValue)
             {
-                query = query.Where(c => c.IsDeleted == false);
+                query = query.Where(c => c.IsApproved == filter.IsApproved);
             }
 
-            if (filter.CreatedAt.HasValue)
+            if (filter.MinDate.HasValue)
             {
-                query = query.Where(c => c.CreatedAt.Date == filter.CreatedAt.Value.Date);
+                query = query.Where(c => c.CreatedAt.Date >= filter.MinDate.Value.Date);
+            }
+
+            if (filter.MaxDate.HasValue)
+            {
+                query = query.Where(c => c.CreatedAt.Date <= filter.MaxDate.Value.Date);
             }
 
             if (filter.SortBy != null)
@@ -104,7 +110,7 @@ namespace ECommerce.Areas.Admin.Controllers
                 switch (filter.SortBy)
                 {
                     case "dateAsc":
-                        query = query.OrderBy(c => c.CreatedAt); 
+                        query = query.OrderBy(c => c.CreatedAt);
                         break;
 
                     case "dateDesc":
@@ -122,22 +128,22 @@ namespace ECommerce.Areas.Admin.Controllers
                 query = query.OrderBy(c => c.CreatedAt);
             }
 
-            int skipCount = (page - 1) * size;
+            int skipCount = (filter.Page - 1) * filter.Size;
             query = query.Skip(skipCount);
-            query = query.Take(page);
+            query = query.Take(filter.Size);
 
             comments = await query.ToListAsync();
             return comments;
-            
+
 
         }
-              
-        
-        public async Task<IActionResult> GetCommentsJSON(CommentFilterModel filter, int page = 1, int size = 20)
+
+
+        public async Task<IActionResult> GetCommentsJSON(CommentSearchCriteria filter)
         {
             var query = _context.Comments.AsQueryable();
             List<Comment> comments = new List<Comment>();
-            filter ??= new CommentFilterModel();
+            filter ??= new CommentSearchCriteria();
 
             if (filter.UserId != null)
             {
@@ -149,19 +155,24 @@ namespace ECommerce.Areas.Admin.Controllers
                 query = query.Where(c => c.ProductId == filter.ProductId);
             }
 
-            if (filter.HideUnapprovedComments)
+            if (filter.IsDeleted.HasValue)
             {
-                query = query.Where(c => c.IsApproved == false);
+                query = query.Where(c => c.IsDeleted == filter.IsDeleted);
             }
 
-            if (filter.HideDeletedComments)
+            if (filter.IsApproved.HasValue)
             {
-                query = query.Where(c => c.IsDeleted == false);
+                query = query.Where(c => c.IsApproved == filter.IsApproved);
             }
 
-            if (filter.CreatedAt.HasValue)
+            if (filter.MinDate.HasValue)
             {
-                query = query.Where(c => c.CreatedAt.Date == filter.CreatedAt.Value.Date);
+                query = query.Where(c => c.CreatedAt.Date >= filter.MinDate.Value.Date);
+            }
+
+            if (filter.MaxDate.HasValue)
+            {
+                query = query.Where(c => c.CreatedAt.Date <= filter.MaxDate.Value.Date);
             }
 
             if (filter.SortBy != null)
@@ -187,25 +198,20 @@ namespace ECommerce.Areas.Admin.Controllers
                 query = query.OrderBy(c => c.CreatedAt);
             }
 
-            int skipCount = (page - 1) * size;
+            int skipCount = (filter.Page - 1) * filter.Size;
             query = query.Skip(skipCount);
-            query = query.Take(page);
+            query = query.Take(filter.Size);
 
             comments = await query.ToListAsync();
-            var totalCount = comments.Count();
+            return Json(new { data = comments });
 
-            return Ok(new
-            {
-                data = comments,
-                totalCount = totalCount,
-                currentPage = page,
-                pageSize = size
-            });
+
+
         }
+
 
     }
 
-        
 
 
 
@@ -216,6 +222,4 @@ namespace ECommerce.Areas.Admin.Controllers
 
 
 
-
-    
-}
+    }

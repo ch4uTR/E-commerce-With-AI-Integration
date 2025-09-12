@@ -6,9 +6,9 @@ namespace ECommerce.Areas.Admin.Models
     public class CategoryEditModel
     {
         public CategoryRequest Request { get; set; }
-        public string DefaultImagePath { get; set; }
+        public string? DefaultImagePath { get; set; }
 
-        public List<Category> MainCategories { get; set; }
+        public List<Category> MainCategories { get; set; } = new List<Category>();
 
     }
 }

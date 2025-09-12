@@ -39,11 +39,11 @@ namespace ECommerce.Areas.Admin.Controllers
             var totalCount = _context.Products.Count();
 
 
-            var minPrice = await _context.Products.MinAsync(p => p.Price);
-            var maxPrice = await _context.Products.MaxAsync(p => p.Price);
+            //var minPrice = await _context.Products.MinAsync(p => p.Price);
+            //var maxPrice = await _context.Products.MaxAsync(p => p.Price);
 
-            ViewBag.MinPrice = minPrice;
-            ViewBag.MaxPrice = maxPrice;
+            //ViewBag.MinPrice = minPrice;
+            //ViewBag.MaxPrice = maxPrice;
             ViewBag.TotalCount = totalCount;
             ViewBag.CurrentPage = criteria.Page;
             ViewBag.PageSize = criteria.Size;

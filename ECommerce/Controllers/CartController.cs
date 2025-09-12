@@ -5,6 +5,8 @@ using ECommerce.Models.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Security.Claims;
 
 namespace ECommerce.Controllers
@@ -118,15 +120,36 @@ namespace ECommerce.Controllers
             {
                 _context.CartItems.Remove(cartItem);
                 await _context.SaveChangesAsync();
-                return Ok(new { message = "Ürün başarıyla sepetinizden çıkarıldı!" });
+
+                
             }
+            else
+            {
+                cartItem.Quantity = request.Quantity;
+                _context.Update(cartItem);
+                await _context.SaveChangesAsync();
+            }
+                
 
-            cartItem.Quantity = request.Quantity;
-            _context.Update(cartItem);
-            await _context.SaveChangesAsync();
-
-
-            return Ok(new { message = "Ürün miktarı başarıyla değiştirildi!" });
+            var data = await _context.CartItems
+                                    .Where(ci => ci.CartId == cart.Id)
+                                    .Select(ci => new {
+                                        productId = ci.ProductId,
+                                        quantity = ci.Quantity,
+                                        unitPrice = ci.UnitPrice,
+                                        productName = ci.Product.Name,
+                                        imageUrl = ci.Product.ImageUrl
+                                    })
+                                    .ToListAsync();
+            if (request.Quantity == 0)
+            {
+                return Ok(new { message = "Ürün başarıyla sepetinizden çıkarıldı!", data });
+            }
+            else
+            {
+                return Ok(new { message = "Ürün miktarı başarıyla değiştirildi!", data });
+            }
+               
         }
 
 
@@ -175,28 +198,95 @@ namespace ECommerce.Controllers
 
 
         [HttpGet]
-        public async Task<IActionResult> GEtAllCartItemsJSON()
+        public async Task<IActionResult> GetAllCartItemsJSON()
         {
 
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             var cart = await _context.Carts.FirstOrDefaultAsync(c => c.UserId == userId);
 
+            if(cart == null)
+            {
+                return Json(new { isEmpty = true });
+            }
+
             var cartItems = await _context.CartItems
-                                    .Where(ci => ci.Cart.UserId == userId)
+                                    .Where(ci => ci.CartId == cart.Id)
                                     .Include(ci => ci.Product)
                                     .ToListAsync();
 
-            if (cartItems.Count() == 0)
+            if (!cartItems.Any())
             {
                 return Json(new { isEmpty = true });
 
             }
             else
             {
-                return Json(new { isEmpty = false, data = cartItems });
+
+                var cartItemDTOs = cartItems.Select(ci => new
+                {
+                    productId = ci.ProductId,
+                    productName = ci.Product.Name,
+                    imageUrl = ci.Product.ImageUrl,
+                    quantity = ci.Quantity,
+                    unitPrice = ci.UnitPrice
+                }).ToList();
+
+ 
+                return Json( new {isEmpty = false, data = cartItemDTOs});
+
+
             }
 
+
+        }
+
+
+
+        [HttpGet]
+        public async Task<IActionResult> VerifyCoupon(string couponName)
+        {
+            var coupon = await _context.Coupons.FirstOrDefaultAsync(cou => cou.Name.ToLower() == couponName.ToLower());
+            string action;
+            decimal value;
+
+
+            if (coupon == null)
+            {
+                return Json(new { isValid = false , message = "Kupon buulunamadı."});
+            }
+
+            if (!coupon.IsActive)
+            {
+                return Json(new { isValid = false , message = "Kuponun süresi doldu."});
+            }
+
+            if (coupon.UsedCount >= coupon.UsageLimit)
+            {
+                return Json(new { isValid = false , message = "Kupon kullanım limitine ulaşmıştır."});
+            }
+
+            
+
+            if (coupon.DiscountAmount.HasValue)
+            {
+                action = "amount";
+                value = coupon.DiscountAmount.Value;
+            }
+
+            else if (coupon.DiscountPercentage.HasValue)
+            {
+                action = "percentage";
+                value = coupon.DiscountPercentage.Value;
+            }
+
+            else
+            {
+                action = "none";
+                value = 0;
+            }
+
+            return Json(new { isValid = true, message = "Kupon başarıyla uygulandı", action = action, value = value});
 
         }
 

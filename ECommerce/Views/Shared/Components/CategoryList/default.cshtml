@@ -1,9 +1,11 @@
 ﻿@model List<Category>
 
 
-<ul>
     @foreach (var category in Model)
     {
-            <li><a asp-area="" asp-controller="Product" asp-action="Index" asp-route-CategoryId="@category.Id">@category.Name</a></li>
+        <li class="@(category.Id == ViewBag.SelectedCategoryId ? "active" : "")">
+            <a asp-area="" asp-controller="Product" asp-action="Index" asp-route-CategoryId="@category.Id">
+                @category.Name
+            </a>
+        </li>
     }
-</ul>

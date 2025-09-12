@@ -238,10 +238,10 @@ namespace ECommerce.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<decimal>("DiscountAmount")
+                    b.Property<decimal?>("DiscountAmount")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<decimal>("DiscountPercentage")
+                    b.Property<decimal?>("DiscountPercentage")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime>("ExpiresAt")
@@ -249,15 +249,19 @@ namespace ECommerce.Data.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
-                    b.Property<int>("Usagelimit")
+                    b.Property<int>("UsageLimit")
                         .HasColumnType("int");
 
                     b.Property<int>("UsedCount")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
 
                     b.ToTable("Coupons");
                 });

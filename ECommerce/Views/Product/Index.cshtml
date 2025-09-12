@@ -6,6 +6,7 @@
     int currentPage = ViewBag.CurrentPage;
     int pageSize = ViewBag.PageSize;
     int totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+    int? selectedCategoryId = ViewBag.SelectedCategoryId;
 }
 
 
@@ -19,7 +20,7 @@
 
 
                         <ul id="sidebar-category-ul">
-                            @await Component.InvokeAsync("CategoryList")
+                            @await Component.InvokeAsync("CategoryList", selectedCategoryId)
                         </ul>
 
                     </div>
@@ -151,8 +152,8 @@
                                     </ul>
                                 </div>
                                 <div class="product__item__text">
-                                    <h6><a href="#">@product.ProductName</a></h6>
-                                    <h5>$@product.Price</h5>
+                                    <h6><a asp-area="" asp-controller="Product" asp-action="Details" asp-route-id="@product.Id">@product.ProductName</a></h6>
+                                    <h5>@product.Price TL</h5>
                                 </div>
                             </div>
                         </div>
@@ -171,6 +172,14 @@
 <!-- Product Section End -->
 
 
+<style>
+
+    ul li.active > a {
+        color: #7fad39;
+        font-weight: bold;
+    }
+
+</style>
 
 
 
@@ -181,7 +190,113 @@
         
 
         /////////////////////////////------------SAYFA YÜKLENDİĞİNDE YAPILACAK İŞLEMLER-------////////////////////////////
-        document.addEventListener("DOMContentLoaded", function(){});
+        document.addEventListener("DOMContentLoaded", function(){
+
+
+            ///// SIRALAMA İŞLEMİ //////////////////////////////////
+
+                const filter = {
+                        SearchTerm : null,
+                        MinPrice : null,
+                        MaxPrice : null,
+                        CategoryId : null,
+                        Page : null,
+                        Size : null,
+                        SortBy : null
+                    };
+
+                //parametreleri aldım
+                const sortMenu = document.getElementById("sort-select");
+                sortMenu.style.display = "";
+
+                sortMenu.addEventListener("change", function(event){
+
+                const urlParams = new URLSearchParams(window.location.search);
+                
+
+                    urlParams.forEach((value,key) =>{
+                        if (filter.hasOwnProperty(key)){
+                            filter[key] = value;
+                        }
+                    });
+                    //sortby ı değiştireyim//
+                    filter["SortBy"] = event.target.value;
+
+                    //filterdaki nulların olmadığı ImageBitmapRenderingContext dict oluşturmalı
+
+                    const cleanFilter = {};
+                    for (const key in filter) {
+                        if (filter[key] !== null && filter[key] !== undefined && filter[key] !== "") {
+                            cleanFilter[key] = filter[key];
+                        }
+                    }
+
+                    console.log(cleanFilter);
+  
+
+                    //fetch File verileri alıcam
+
+                    const baseUrl = "/Product/GetProductsJSON";
+                    const queryParams = new URLSearchParams(cleanFilter).toString();
+                    const productRow = document.getElementById("product-row");
+
+                    console.log(queryParams);
+
+                    fetch(`${baseUrl}?${queryParams}`)
+                        .then(res => res.json())
+                        .then(data => {
+
+                            productRow.innerHTML = ``;
+                            console.log(data);
+                            data.data.forEach(item => {
+                                const newRow = `
+                                <div class="col-lg-4 col-md-6 col-sm-6">
+                                    <div class="product__item">
+                                        <div class="product__item__pic set-bg" data-setbg="${item.ImageUrl}">
+                                            <ul class="product__item__pic__hover">
+                                                <input type="hidden" class="product-id" value="${item.Id}"/>
+                                                <li><a ><i class="fa fa-heart"></i></a></li>
+                                                <li><a href="#"><i class="fa fa-retweet"></i></a></li>
+                                                <li><a href="#" class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i></a></li>
+                                            </ul>
+                                        </div>
+                                        <div class="product__item__text">
+                                            <h6><a asp-area="" asp-controller="Product" asp-action="Details" asp-route-id="${item.Id}">${item.ProductName}</a></h6>
+                                            <h5>${item.Price} TL</h5>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                `;
+
+                                 productRow.innerHTML += newRow;
+                            });
+
+                    });
+
+
+            });
+
+            
+
+
+
+        });
+            ////////////////////////////// Resme tıklanınca ürüün detay sayfasına gitme //////////////////
+
+            const productDivs = document.querySelectorAll(".product__item__pic");
+            productDivs.forEach(pic =>{
+
+                    pic.addEventListener("click",function(event){
+
+                        const featuredItem = event.target.closest(".product__item");
+                        const productId = featuredItem.querySelector(".product-id").value;
+
+                        window.location.href = `/Product/Details/${productId}`
+
+                    });
+
+            });
 
 
             //////////////       SEPETE ÜRÜN EKLEME /////////////////
@@ -213,7 +328,7 @@
                             title: "Başarılı!",
                             text: data.message,
                             icon: "success",
-                            timer: 500,
+                            timer: 1500,
                             showConfirmButton: false
                         });
                     }
@@ -242,8 +357,10 @@
 
 
 
+   
 
-           ///// SEPET KISMINI GÜNCELLE ////
+            
+           
            
 
 

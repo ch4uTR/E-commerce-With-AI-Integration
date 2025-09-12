@@ -65,7 +65,7 @@
                             <ul class="featured__item__pic__hover">
                                 <li><a href="#"><i class="fa fa-heart"></i></a></li>
                                 <li><a href="#"><i class="fa fa-retweet"></i></a></li>
-                                <li><a href="#" class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i></a></li>
+                                <li><a  class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i></a></li>
                             </ul>
                         </div>
                         <div class="featured__item__text">
@@ -225,6 +225,7 @@
             cartButtons.forEach(button => {
                 button.addEventListener("click", (event) => {
                     event.preventDefault();
+                    event.stopPropagation();
 
                     const productItem = event.currentTarget.closest(".featured__item");
                     const productId = productItem.querySelector(".product-id").value;
@@ -244,7 +245,7 @@
                                 title: "Başarılı!",
                                 text: data.message,
                                 icon: "success",
-                                timer: 500,
+                                timer: 1500,
                                 showConfirmButton: false
                             });
                         }
@@ -263,6 +264,39 @@
             });
 
             /////////////////////////////////////////////////////////////////////////
+
+
+            ///// resimlere tıklanınca detaya yönlendirme ///////////////////////
+
+            const productDivs = document.querySelectorAll(".featured__item__pic");
+            productDivs.forEach(pic =>{
+
+                    pic.addEventListener("click",function(event){
+
+                        const featuredItem = event.target.closest(".featured__item");
+                        const productId = featuredItem.querySelector(".product-id").value;
+
+                        window.location.href = `/Product/Details/${productId}`
+
+                    });
+
+            });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         });
 
     </script>
