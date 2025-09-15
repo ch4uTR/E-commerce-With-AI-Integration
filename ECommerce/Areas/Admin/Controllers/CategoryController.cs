@@ -117,8 +117,13 @@ namespace ECommerce.Areas.Admin.Controllers
         public async Task<IActionResult> Edit(CategoryEditModel editModel)
         {
             var category = await _context.Categories.FirstOrDefaultAsync(c => c.Id == editModel.Request.Id);
+            _logger.LogWarning("ModelState : {IsValid}", ModelState.IsValid);
+
+
 
             if (!ModelState.IsValid) {
+
+                _logger.LogWarning("ModelState : {IsValid}", ModelState.IsValid);
 
 
                 var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);

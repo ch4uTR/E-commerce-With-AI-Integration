@@ -1,0 +1,318 @@
+﻿@model CheckoutViewModel
+
+
+
+@{
+    var cartItems = Model.Cart.CartItems ?? new List<CartItem>();
+    var subTotal = cartItems.Sum(c => c.Quantity * c.UnitPrice);
+
+    DiscountCoupon? coupon = Model.Cart.AppliedCoupon;
+    var discountAmount = coupon?.DiscountAmount;
+    var price = discountAmount.HasValue? (subTotal - discountAmount) : subTotal;
+
+    var firstAddress = Model.Addresses.FirstOrDefault();
+    var selectedCountryId = firstAddress?.City?.CountryId ?? 0;
+    var selectedCityId = firstAddress?.CityId ?? 0;
+    var street = firstAddress?.Street ?? "";
+
+}
+
+
+
+<!-- Checkout Section Begin -->
+<section class="checkout spad">
+    <div class="container">
+        <div class="checkout__form">
+            <h4>Fatura Detayları</h4>
+            <form id="checkout-form" asp-action="Checkout" method="post">
+                <div class="row">
+                    <div class="col-lg-8 col-md-6">
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <div class="checkout__input">
+                                    <p>Ad<span>*</span></p>
+                                    <input asp-for="FirstName" type="text" value="@Model.FirstName"> 
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="checkout__input">
+                                    <p>Soyad<span>*</span></p>
+                                    <input asp-for="LastName" type="text" value="@Model.LastName">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="checkout__input">
+                            <p>Ülke<span>*</span></p>
+                            <select id="country-select" class="checkout-select"></select>
+                        </div>
+                        <div class="checkout__input">
+                            <p>Şehir<span>*</span></p>
+                            <select asp-for="CityId" id="city-select" class="checkout-select"></select>
+                        </div>
+                        <div class="checkout__input">
+                            <p>Adres<span>*</span></p>
+                            <input  asp-for="Street" type="text" id="street" placeholder="Açık Adres" class="checkout__input__add">
+                        </div>
+@*                         <div class="checkout__input">
+                            <p>Country/State<span>*</span></p>
+                            <input type="text">
+                        </div> *@
+                        <div class="checkout__input">
+                            <p>Posta kodu<span>*</span></p>
+                            <input type="text" asp-for="PostalCode">
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <div class="checkout__input">
+                                    <p>Telefon<span>*</span></p>
+                                    <input asp-for="PhoneNumber" type="text" value="@Model.PhoneNumber">
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="checkout__input">
+                                    <p>E-posta<span>*</span></p>
+                                    <input asp-for="Email" type="text" value="@Model.Email">
+                                </div>
+                            </div>
+                        </div>
+                        @* <div class="checkout__input__checkbox">
+                            <label for="acc">
+                                Create an account?
+                                <input type="checkbox" id="acc">
+                                <span class="checkmark"></span>
+                            </label>
+                        </div>
+                        <p>
+                            Create an account by entering the information below. If you are a returning customer
+                            please login at the top of the page
+                        </p>
+                        <div class="checkout__input">
+                            <p>Account Password<span>*</span></p>
+                            <input type="text">
+                        </div> *@
+                        @* <div class="checkout__input__checkbox">
+                            <label for="diff-acc">
+                                Ship to a different address?
+                                <input type="checkbox" id="diff-acc">
+                                <span class="checkmark"></span>
+                            </label>
+                        </div> *@
+                        @* <div class="checkout__input">
+                            <p>Sipariş Notu<span>*</span></p>
+                            <input type="text"
+                                   placeholder="Notes about your order, e.g. special notes for delivery.">
+                        </div> *@
+                    </div>
+                    <div class="col-lg-4 col-md-6">
+                        <div class="checkout__order">
+                            <h4>Siparişiniz</h4>
+                            <div class="checkout__order__products">Ürünler <span>Toplam</span></div>
+                            <ul>
+                                @foreach (var item in cartItems)
+                                {
+                                    <li> @item.Product.Name (@item.Quantity x @item.UnitPrice)  <span> @(item.Quantity * item.UnitPrice)</span></li>
+                                }
+                                
+                            </ul>
+                            <div class="checkout__order__subtotal">Ara Toplam <span>@subTotal TL</span></div>
+
+                            @if (discountAmount.HasValue)
+                            {
+                                <div class="checkout__order__discount">İndirim/Kupon <span> @discountAmount TL</span></div>                                
+                            }
+                            <div class="checkout__order__total">Toplam <span> @price TL</span></div>
+                            
+                            <p>
+                                Lorem ipsum dolor sit amet, consectetur adip elit, sed do eiusmod tempor incididunt
+                                ut labore et dolore magna aliqua.
+                            </p>
+                            <div class="checkout__input__checkbox">
+                                <label for="payment">
+                                    Ön bilgilendirme formu'nu ve Mesafeli satış sözleşmesi 'ni onaylıyorum.
+                                    <input type="checkbox" id="payment">
+                                    <span class="checkmark"></span>
+                                </label>
+                            </div>
+                            @* <div class="checkout__input__checkbox">
+                                <label for="paypal">
+                                    Paypal
+                                    <input type="checkbox" id="paypal">
+                                    <span class="checkmark"></span>
+                                </label>
+                            </div> *@
+                            <button  id="confirm-cart" type="submit" class="site-btn">Siparişi Onayla</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+<!-- Checkout Section End -->
+
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+
+            const countrySelect = document.getElementById("country-select");
+            const citySelect = document.getElementById("city-select");
+
+            // Razor'dan gelen değerleri JSON olarak güvenli şekilde alıyoruz
+            const selectedCountryId = @Html.Raw(Json.Serialize(selectedCountryId));
+            let selectedCityId = @Html.Raw(Json.Serialize(selectedCityId));
+
+            // -------------------- Fonksiyonlar --------------------
+            function loadCities(countryId) {
+                fetch(`/Common/GetAllCitiesByCountryId?countryId=${countryId}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        citySelect.innerHTML = '';
+                        data.data.forEach(city => {
+                            const option = document.createElement('option');
+                            option.value = city.id;
+                            option.textContent = city.name;
+                            if(city.id == selectedCityId) option.selected = true;
+                            citySelect.appendChild(option);
+                        });
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        Swal.fire({
+                            title: "Hata!",
+                            text: "Şehirler yüklenirken bir hata ile karşılaşıldı",
+                            icon: "error"
+                        });
+                    });
+            }
+
+            function loadCountries() {
+                fetch(`/Common/GetAllCountries`)
+                    .then(res => res.json())
+                    .then(data => {
+                        countrySelect.innerHTML = `<option value="">Ülke seçin</option>`;
+                        data.data.forEach(country => {
+                            const option = document.createElement("option");
+                            option.value = country.id;
+                            option.textContent = country.name;
+                            if (country.id == selectedCountryId) option.selected = true;
+                            countrySelect.appendChild(option);
+                        });
+
+                        if (selectedCountryId && selectedCountryId != 0) {
+                            loadCities(selectedCountryId);
+                        }
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        Swal.fire({
+                            title: "Hata!",
+                            text: "Ülkeler yüklenirken bir hata ile karşılaşıldı",
+                            icon: "error"
+                        });
+                    });
+            }
+
+            // -------------------- Event Listener --------------------
+            countrySelect.addEventListener("change", function() {
+                const selectedCountry = countrySelect.value;
+                citySelect.innerHTML = '<option value="">Şehir seçin</option>';
+                if (selectedCountry) loadCities(selectedCountry);
+            });
+
+            // City focus
+            let isWarningShown = false;
+            citySelect.addEventListener("focus", function() {
+                const selectedCountry = countrySelect.value;
+                if (!selectedCountry && !isWarningShown) {
+                    Swal.fire({
+                        title: "Uyarı!",
+                        text: "Öncelikle ülke seçmelisiniz!",
+                        icon: "warning"
+                    });
+                    isWarningShown = true;
+                }
+            });
+
+            // -------------------- Buton tıklama işlemi --------------------
+            const form = document.getElementById("checkout-form");
+            const confirmButton = document.getElementById("confirm-cart");
+
+                   confirmButton.addEventListener("click", async function(e) {
+            e.preventDefault();
+
+            // Loading aç
+            Swal.fire({
+                title: "İşleminiz gerçekleşiyor...",
+                html: "Lütfen bekleyin",
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
+
+            try {
+                const formData = new FormData(form);
+
+                // 3 saniye simülasyon beklemesi
+                await new Promise(resolve => setTimeout(resolve, 3000));
+
+                // Fetch isteği
+                const res = await fetch(`/Cart/Checkout`, {
+                    method: "POST",
+                    body: formData
+                });
+                const data = await res.json();
+
+                Swal.close(); // Loading kapat
+
+                if (data.success) {
+                    Swal.fire({
+                        title: "Başarılı!",
+                        text: data.message || "Siparişiniz oluşturuldu",
+                        icon: "success"
+                    });
+                } else {
+                    Swal.fire({
+                        title: "Hata!",
+                        text: data.message || "Sipariş oluşturulamadı",
+                        icon: "error"
+                    });
+                }
+
+            } catch (err) {
+                console.error(err);
+                Swal.close();
+                Swal.fire({
+                    title: "Hata!",
+                    text: "Sunucu ile bağlantı kurulamadı",
+                    icon: "error"
+                });
+            }
+        });
+
+
+            // -------------------- Sayfa yüklendiğinde --------------------
+            loadCountries();
+
+        });
+    </script>
+}
+
+
+
+
+<style>
+    
+    .checkout-select {
+        width: 100%;
+        padding: 10px 12px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        font-size: 16px;
+        font-weight: 600;
+        background-color: #fff;
+        color: #7fad39;
+        cursor: pointer;
+    }
+
+
+</style>

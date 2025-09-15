@@ -111,6 +111,14 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
+
+//using (var scope = app.Services.CreateScope())
+//{
+//    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+//    DataSeeder.SeedCountriesAndCities(context);
+//}
+
+
 app.MapRazorPages();
 
 app.Run();

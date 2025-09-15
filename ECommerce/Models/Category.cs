@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.RegularExpressions;
 
 namespace ECommerce.Models
 {
@@ -25,8 +26,15 @@ namespace ECommerce.Models
         public void GenerateSlug()
         {
             if (!string.IsNullOrEmpty(Name))
-                Slug = Name.ToLower().Replace(" ", "-");
-                Slug = Slug.Replace("&", "-");
+            {
+                Slug = Name.ToLowerInvariant();
+                Slug = Regex.Replace(Slug, @"\s*&\s*|\s*\+\s*|/", "-");
+                Slug = Regex.Replace(Slug, @"\s+", "-");
+                Slug = Regex.Replace(Slug, @"[^a-z0-9\-]", "");
+                Slug = Regex.Replace(Slug, @"-+", "-");
+                Slug = Slug.Trim('-');
+            }
+                
         }
 
     }

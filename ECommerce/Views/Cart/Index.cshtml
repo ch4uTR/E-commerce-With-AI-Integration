@@ -87,17 +87,19 @@
                                         <h5>@item.Product.Name</h5>
                                     </td>
                                     <td class="shoping__cart__price">
-                                        $@item.UnitPrice
+                                        @item.UnitPrice TL
                                     </td>
                                     <td class="shoping__cart__quantity">
                                         <div class="quantity">
                                             <div class="pro-qty">
+                                                <span class="dec qtybtn">-</span>
                                                 <input class="item-count" type="text" value="@item.Quantity">
+                                                <span class="inc qtybtn">+</span>
                                             </div>
                                         </div>
                                     </td>
                                     <td class="shoping__cart__total">
-                                        $@(item.UnitPrice * item.Quantity)
+                                        @(item.UnitPrice * item.Quantity) TL
                                     </td>
                                     <td class="shoping__cart__item__close">
                                         <span class="icon_close"></span>
@@ -112,11 +114,7 @@
             <div class="row">
             <div class="col-lg-12">
                 <div class="shoping__cart__btns">
-                    <a href="#" class="primary-btn cart-btn">CONTINUE SHOPPING</a>
-                    <a href="#" id="update-btn" class="primary-btn cart-btn cart-btn-right">
-                        <span class="icon_loading"></span>
-                        Upadate Cart
-                    </a>
+                    <a asp-area="" asp-controller="Product" asp-action="Index" class="primary-btn cart-btn">CONTINUE SHOPPING</a>
                 </div>
             </div>
             <div class="col-lg-6">
@@ -133,11 +131,11 @@
             <div class="col-lg-6">
                 <div class="shoping__checkout">
                     <h5>Cart Total</h5>
-                    <ul>
-                        <li>Subtotal <span class="cart-total"></span></li>
-                        <li>Total <span class="cart-total"></span></li>
+                        <ul id="cart-total-list">
+                        <li>Subtotal <span  id= "subtotal-span" class="cart-total"></span></li>
+                        <li>Total <span id="total-span" class="cart-total"></span></li>
                     </ul>
-                    <a href="#" class="primary-btn">PROCEED TO CHECKOUT</a>
+                    <a asp-area="" asp-controller="Cart" asp-action="Checkout" class="primary-btn">PROCEED TO CHECKOUT</a>
                 </div>
             </div>
         </div>
@@ -187,7 +185,7 @@
                 .then(response => response.json())
                 .then(data => {
                     totalSpans.forEach(span => {
-                        span.textContent = `$${data.totalCost}`;
+                        span.textContent = `${data.totalCost} TL`;
                     });
                 })
                 .catch(err => console.error(err));
@@ -209,13 +207,22 @@
                 const row = event.target.closest("tr");
                 const productId = row.querySelector(".product-id").value;
                 const quantity = row.querySelector(".item-count").value;
+                let neweQuantity =  parseInt(quantity, 10);
+                    if (event.target.classList.contains("inc")){
+                        console.log("Miktar arttı");
+                        neweQuantity += 1;
+                    }
+                    else{
+                        neweQuantity -= 1;
+                    }
+                
 
 
 
                 fetch("/Cart/UpdateCartItem", {
                     method: "POST",
                     headers: {"Content-Type": "application/json"},
-                    body: JSON.stringify({ProductId: productId, Quantity: quantity})
+                    body: JSON.stringify({ProductId: productId, Quantity: neweQuantity})
                 })
                 .then(response => response.json())
                 .then(response => {
@@ -328,17 +335,18 @@
                                 <h5>${item.productName}</h5>
                             </td>
                             <td class="shoping__cart__price">
-                                $${item.unitPrice}
+                                ${item.unitPrice} TL
                             </td>
                             <td class="shoping__cart__quantity">
                                 <div class="quantity">
-                                    <div class="pro-qty"><span class="dec qtybtn">-</span>
+                                    <div class="pro-qty">
+                                    <span class="dec qtybtn">-</span>
                                         <input class="item-count" type="text" value="${item.quantity}">
-                                    <span class="inc qtybtn">+</span></div>
+                                    <span class="inc qtybtn">+</span>    
                                 </div>
                             </td>
                             <td class="shoping__cart__total">
-                                $${item.unitPrice * item.quantity}
+                                ${item.unitPrice * item.quantity} TL
                             </td>
                             <td class="shoping__cart__item__close">
                                 <span class="icon_close"></span>
@@ -346,19 +354,33 @@
                         </tr>`;
                     tbody.innerHTML += row;
                 });
+
+                const totalSpans = document.querySelectorAll(".cart-total");
+
+                fetch("/Cart/GetCartDetailsJSON")
+                    .then(response => response.json())
+                    .then(data => {
+                        totalSpans.forEach(span => {
+                            span.textContent = `${data.totalCost} TL`;
+                        });
+                    })
+                    .catch(err => console.error(err));
+                
+
             }
 
        
 
 
     //////////////////////////////// KUPON UYGULAMA ////////////////////////////7
-
+    const couponButton = document.getElementById("coupon-button");
     const couponForm = document.getElementById("coupon-form");
     couponForm.addEventListener("submit", function(event){
 
         event.preventDefault();
 
         const couponCode = document.getElementById("coupon-text").value;
+        const cartTotalList = document.getElementById("cart-total-list");
 
            fetch(`/Cart/VerifyCoupon?couponName=${encodeURIComponent(couponCode)}`)
             .then(res => res.json())
@@ -371,14 +393,37 @@
                         timer: 1500,
                         showConfirmButton: false
                     });
+
+                    couponButton.disabled = true;
+                    couponButton.style.opacity = "0.6";
+                    couponButton.style.cursor = "not-allowed";
+                    
+                    const subTotalSpan = document.getElementById("subtotal-span");
+                    const totalSpan = document.getElementById("total-span");
+
+                    const discountLi = document.createElement("li");
+                    discountLi.innerHTML = `İndirim <span>${data.value.toFixed(2)} TL</span>`;
+                    totalSpan.textContent = `${data.newTotal.toFixed(2)} TL`;
+                    cartTotalList.insertBefore(discountLi, totalSpan.parentElement);
+
+
+                }
+
+                else{
+                    Swal.fire({
+                        title: "Hata!",
+                        text: data.message,
+                        icon: "error",
+                        timer: 1500,
+                        showConfirmButton: false
+
+                    });
                 }
             })
 
-        const couponButton = document.getElementById("coupon-button");
-        couponButton.disabled = true;
 
-        couponButton.style.opacity = "0.6";
-        couponButton.style.cursor = "not-allowed";
+
+
 
 
 

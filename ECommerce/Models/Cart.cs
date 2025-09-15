@@ -7,6 +7,8 @@
         public string UserId { get; set; }
         public ApplicationUser? User { get; set; }
 
+        public int? AppliedCouponId { get; set; }
+        public DiscountCoupon? AppliedCoupon { get; set; }
         public ICollection<CartItem> CartItems { get; set; } = new List<CartItem>();
 
 

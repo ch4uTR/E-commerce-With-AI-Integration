@@ -32,8 +32,8 @@ namespace ECommerce.Controllers
             var totalCount = await _context.Products.CountAsync();
 
 
-            var minPrice = await _context.Products.MinAsync(p => p.Price);
-            var maxPrice = await _context.Products.MaxAsync(p => p.Price);
+            decimal? minPrice =  productsViewModels.Any()? productsViewModels.Min(vm => vm.Price) : null;                           
+            decimal? maxPrice = productsViewModels.Any() ? productsViewModels.Max(vm => vm.Price) : null;
 
             int? selectedCategoryId = criteria.CategoryId;
 
@@ -118,6 +118,7 @@ namespace ECommerce.Controllers
                 ProductName = p.Name,
                 CategoryId = p.CategoryId,
                 CategoryName = p.Category.Name,
+                CreatedAt = p.CreatedAt,
                 ImageUrl = p.ImageUrl,
                 Price = p.Price,
                 TotalSoldQuantity = p.OrderItems.Sum(oi => oi.Quantity),
@@ -133,12 +134,18 @@ namespace ECommerce.Controllers
 
             var productsViewModels = await GetFilteredAndPagedProductsAsync(criteria);
 
+            decimal? minPrice = productsViewModels.Any() ? productsViewModels.Min(vm => vm.Price) : null;
+            decimal? maxPrice = productsViewModels.Any() ? productsViewModels.Max(vm => vm.Price) : null;
             var totalCount =  productsViewModels.Count();
 
+            int? categoryId = criteria.CategoryId;
+
             return Json(new
-            {
+            {   categoryId,
+                minPrice,
+                maxPrice,
+                totalCount,
                 data = productsViewModels,
-                totalCount = totalCount,
                 currentPage = criteria.Page,
                 pageSize = criteria.Size
             });

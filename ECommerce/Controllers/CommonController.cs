@@ -21,6 +21,30 @@ namespace ECommerce.Controllers
             var mainCategories = await _context.Categories.Where(c => c.ParentCategoryId == null).ToListAsync();
             return Json(mainCategories);
         }
-        
+
+
+        [HttpGet]
+        public async Task<IActionResult> GetAllCountries()
+        {
+
+            var countries = await _context.Countries
+                                    .Select(c => new {c.Id, c.Name})
+                                    .ToListAsync();
+
+            return Json( new { data = countries });
+        }
+
+
+        [HttpGet]
+        public async Task<IActionResult> GetAllCitiesByCountryId(int countryId)
+        {
+            var cities = new List<City>();
+            cities = await _context.Cities
+                                    .Where(c => c.CountryId == countryId)
+                                    .ToListAsync();
+
+            return Json(new { data = cities });
+        }
+
     }
 }

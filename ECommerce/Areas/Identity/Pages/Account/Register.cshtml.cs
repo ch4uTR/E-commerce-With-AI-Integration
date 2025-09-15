@@ -84,9 +84,6 @@ namespace ECommerce.Areas.Identity.Pages.Account
             [Display(Name = "Last Name")]
             public string LastName { get; set; }
 
-            [Required]
-            [Display(Name = "Address")]
-            public string Address { get; set; }
 
 
             [Required]
@@ -131,7 +128,6 @@ namespace ECommerce.Areas.Identity.Pages.Account
                 {
                     FirstName = Input.FirstName,
                     LastName = Input.LastName,
-                    Address = Input.Address,
                     UserName = Input.Email,
 
                 };

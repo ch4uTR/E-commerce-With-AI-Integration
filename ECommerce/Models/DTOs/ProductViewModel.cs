@@ -18,6 +18,8 @@ namespace ECommerce.Models.DTOs
 
         public int TotalSoldQuantity { get; set; }
 
+        public DateTime CreatedAt { get; set; }
+
         public decimal TotalRevenue { get; set; }
         public List<Comment>? Comments { get; set; }
 

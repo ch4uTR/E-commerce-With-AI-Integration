@@ -28,7 +28,7 @@
                         <h4>Fiyat</h4>
                         <div class="price-range-wrap">
                             <div class="price-range ui-slider ui-corner-all ui-slider-horizontal ui-widget ui-widget-content"
-                                 data-min="10" data-max="540">
+                                 data-min="@ViewBag.MinPrice" data-max="@ViewBag.MaxPrice">
                                 <div class="ui-slider-range ui-corner-all ui-widget-header"></div>
                                 <span tabindex="0" class="ui-slider-handle ui-corner-all ui-state-default"></span>
                                 <span tabindex="0" class="ui-slider-handle ui-corner-all ui-state-default"></span>
@@ -46,6 +46,8 @@
                             <h4>Latest Products</h4>
                             <div class="latest-product__slider owl-carousel">
                                 <div class="latest-prdouct__slider__item">
+
+
                                     <a href="#" class="latest-product__item">
                                         <div class="latest-product__item__pic">
                                             <img src="img/latest-product/lp-1.jpg" alt="">
@@ -55,6 +57,7 @@
                                             <span>$30.00</span>
                                         </div>
                                     </a>
+
                                     <a href="#" class="latest-product__item">
                                         <div class="latest-product__item__pic">
                                             <img src="img/latest-product/lp-2.jpg" alt="">
@@ -64,6 +67,7 @@
                                             <span>$30.00</span>
                                         </div>
                                     </a>
+
                                     <a href="#" class="latest-product__item">
                                         <div class="latest-product__item__pic">
                                             <img src="img/latest-product/lp-3.jpg" alt="">
@@ -211,7 +215,7 @@
 
                 sortMenu.addEventListener("change", function(event){
 
-                const urlParams = new URLSearchParams(window.location.search);
+                    const urlParams = new URLSearchParams(window.location.search);
                 
 
                     urlParams.forEach((value,key) =>{
@@ -222,7 +226,6 @@
                     //sortby ı değiştireyim//
                     filter["SortBy"] = event.target.value;
 
-                    //filterdaki nulların olmadığı ImageBitmapRenderingContext dict oluşturmalı
 
                     const cleanFilter = {};
                     for (const key in filter) {
@@ -252,51 +255,69 @@
                                 const newRow = `
                                 <div class="col-lg-4 col-md-6 col-sm-6">
                                     <div class="product__item">
-                                        <div class="product__item__pic set-bg" data-setbg="${item.ImageUrl}">
+                                        <div class="product__item__pic set-bg" data-setbg="${item.imageUrl}">
                                             <ul class="product__item__pic__hover">
-                                                <input type="hidden" class="product-id" value="${item.Id}"/>
+                                                <input type="hidden" class="product-id" value="${item.id}"/>
                                                 <li><a ><i class="fa fa-heart"></i></a></li>
                                                 <li><a href="#"><i class="fa fa-retweet"></i></a></li>
                                                 <li><a href="#" class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i></a></li>
                                             </ul>
                                         </div>
                                         <div class="product__item__text">
-                                            <h6><a asp-area="" asp-controller="Product" asp-action="Details" asp-route-id="${item.Id}">${item.ProductName}</a></h6>
-                                            <h5>${item.Price} TL</h5>
+                                            <h6><a asp-area="" asp-controller="Product" asp-action="Details" asp-route-id="${item.id}">${item.productName}</a></h6>
+                                            <h5>${item.price} TL</h5>
                                         </div>
                                     </div>
                                 </div>
 
                                 `;
 
-                                 productRow.innerHTML += newRow;
-                            });
+                                productRow.innerHTML += newRow;
+                                const addedDiv = productRow.lastElementChild.querySelector('.set-bg');
+                                addedDiv.style.backgroundImage = `url('${item.imageUrl}')`; 
+                                });
 
-                    });
+                        });
 
 
+                });
+
+                 
+                const minAmount = document.getElementById("minamount").value;
+                const maxAmount = document.getElementById("maxamount").value;
+
+                console.log(minAmount)
+
+                const urlParams = new URLSearchParams(window.location.search);
+
+
+                urlParams.forEach((value,key) =>{
+                    if (filter.hasOwnProperty(key)){
+                        filter[key] = value;
+                    }
+                });
+
+                filter["MinPrice"] = parseFloat(minAmount);
+                filter["MaxPrice"] = parseFloat(MaxAmount);
+                filter["Page"] = 1;
+
+
+
+
+         });
+            ////////////////////////////// Resme tıklanınca ürün detay sayfasına gitme //////////////////
+
+            document.getElementById("product-row").addEventListener("click", function(e) {
+                const pic = e.target.closest(".product__item__pic");
+                if (!pic) return;
+                if (e.target.closest("a")) return;
+
+                const featuredItem = pic.closest(".product__item");
+                const productId = featuredItem.querySelector(".product-id").value;
+
+                window.location.href = `/Product/Details/${productId}`;
             });
 
-            
-
-
-
-        });
-            ////////////////////////////// Resme tıklanınca ürüün detay sayfasına gitme //////////////////
-
-            const productDivs = document.querySelectorAll(".product__item__pic");
-            productDivs.forEach(pic =>{
-
-                    pic.addEventListener("click",function(event){
-
-                        const featuredItem = event.target.closest(".product__item");
-                        const productId = featuredItem.querySelector(".product-id").value;
-
-                        window.location.href = `/Product/Details/${productId}`
-
-                    });
-
-            });
 
 
             //////////////       SEPETE ÜRÜN EKLEME /////////////////
@@ -305,8 +326,9 @@
 
                 const button = event.target.closest(".add-to-cart-btn");
                 if (!button) return;
-
                 event.preventDefault();
+                event.stopPropagation();
+                
 
                 const productItem = button.closest(".product__item");
                 const productId = productItem.querySelector(".product-id").value;

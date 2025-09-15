@@ -5,26 +5,288 @@
     ViewData["ActivePage"] = ManageNavPages.Index;
 }
 
-<h3>@ViewData["Title"]</h3>
+<h3 class="checkout__form__h3">@ViewData["Title"]</h3>
 <partial name="_StatusMessage" for="StatusMessage" />
-<div class="row">
-    <div class="col-md-6">
+<div class="container">
+
+    <div class="checkout__form">
         <form id="profile-form" method="post">
             <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
-            <div class="form-floating mb-3">
-                <input asp-for="Username" class="form-control" placeholder="Please choose your username." disabled />
-                <label asp-for="Username" class="form-label"></label>
+            <div class="row">
+
+                <div class="col-lg-4 col-md-6 card-body shadow">
+                    <h4>Kullanıcı Bilgilerim</h4>
+                    <div class="profile-avatar">
+                        <img src="~/Images/User/no-photo-user-removebg.png" alt="Profil Fotoğrafı" class="profile-avatar-img">
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <input asp-for="Username" class="form-control" placeholder="Please choose your username." disabled />
+                        <label asp-for="Username" class="form-label"></label>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <input asp-for="Input.FirstName" class="form-control" placeholder="Adınız..."  />
+                        <label asp-for="Input.FirstName" class="form-label"></label>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <input asp-for="Input.LastName" class="form-control" placeholder="Soyadınız..."  />
+                        <label asp-for="Input.LastName" class="form-label"></label>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <input asp-for="Input.PhoneNumber" class="form-control" placeholder="Please enter your phone number." />
+                        <label asp-for="Input.PhoneNumber" class="form-label"></label>
+                        <span asp-validation-for="Input.PhoneNumber" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="col-lg-8 col-md-6 card-body shadow">
+                    <h4>Adres Bilgilerim</h4>
+                    <div class="checkout__input">
+                        <label>Ülke</label>
+                        <select asp-for="Input.CountryId" id="country-select" class="checkout-select"></select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Şehir</label>
+                        <select asp-for="Input.CityId" id="city-select" class="checkout-select"></select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Sokak / Cadde</label>
+                        <input asp-for="Input.Street" class="form-control" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Posta Kodu</label>
+                        <input asp-for="Input.PostalCode" class="form-control" />
+                    </div>
+                </div>
+                <button id="update-profile-button" type="submit" class="btn btn-lg site-btn">Kaydet</button>
             </div>
-            <div class="form-floating mb-3">
-                <input asp-for="Input.PhoneNumber" class="form-control" placeholder="Please enter your phone number."/>
-                <label asp-for="Input.PhoneNumber" class="form-label"></label>
-                <span asp-validation-for="Input.PhoneNumber" class="text-danger"></span>
-            </div>
-            <button id="update-profile-button" type="submit" class="w-100 btn btn-lg btn-primary">Save</button>
         </form>
     </div>
 </div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+
+
+    <script>
+
+
+        //submit edince swal ile onay göstericem
+
+        const updateButton = document.getElementById("update-profile-button");
+
+
+
+
+
+
+
+
+
+
+
+
+
+    @{
+            var selectedCountryIdValue = ViewData["SelectedCountryId"] ?? 0;
+            var selectedCityIdValue = ViewData["SelectedCityId"] ?? 0;
+        }
+
+
+    const countrySelect = document.getElementById("country-select");
+    const selectedCountryId = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(selectedCountryIdValue));
+    const selectedCityId = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(selectedCityIdValue));
+
+
+    function loadCities(countryId) {
+            fetch(`/Common/GetAllCitiesByCountryId?countryId=${countryId}`)
+                .then(res => res.json())
+                .then(data => {
+                    citySelect.innerHTML = '';
+                    data.data.forEach(city => {
+                        const option = document.createElement('option');
+                        option.value = city.id;
+                        option.textContent = city.name;
+                        if(city.id == selectedCityId) option.selected = true;
+                        citySelect.appendChild(option);
+                    });
+                })
+                .catch(err => {
+                    console.error(err);
+                    Swal.fire({
+                        title: "Hata!",
+                        text: "Şehirler yüklenirken bir hata ile karşılaşıldı",
+                        icon: "error"
+                    });
+                });
+        }
+                
+        
+        countrySelect.addEventListener("change", function() {
+            const selectedCountry = countrySelect.value;
+
+            citySelect.innerHTML = '<option value="">Şehir seçin</option>';
+
+            if (selectedCountry) {
+
+                loadCities(selectedCountry);
+            }
+        });
+
+
+
+
+
+
+
+//// Checkout sayfası yüklenince yapılacaklar //////
+    document.addEventListener("DOMContentLoaded", function(event) {
+
+        fetch(`/Common/GetAllCountries`)
+            .then(res => res.json())
+            .then(data => {
+                    countrySelect.innerHTML = `<option value="">Ülke seçin</option>`;
+                data.data.forEach(country => {
+
+                    console.log("data.data.foreach'teyiz");
+
+                    const option = document.createElement("option");
+                    option.value = country.id;
+                    option.textContent = country.name;
+                    if (country.id.toString() === selectedCountryId.toString()) {
+                        option.selected = true;
+                    }
+                    countrySelect.appendChild(option);
+                });
+
+                if (selectedCountryId && selectedCountryId != "0") {
+                loadCities(selectedCountryId);
+
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                Swal.fire({
+                    title: "Hata!",
+                    text: "Ülkeler yüklenirken bir hata ile karşılaşıldı",
+                    icon: "error"
+                });
+            });
+
+    });
+
+
+
+    //// City kısmında focus olunca ülke seçilmiş mi bakıcak seçilmemişse bir popup seçilmişse city'ler gelicell
+
+    const citySelect = document.getElementById("city-select");
+    let isWarningShown = false;
+    citySelect.addEventListener("focus", function(){
+
+        //ülke seçildi mi?
+        const selectedCountryIndex = countrySelect.selectedIndex;
+        let selectedCountryId = null;
+
+
+        if(selectedCountryIndex >= 0 ){
+            selectedCountryId = countrySelect.options[selectedCountryIndex].value;
+        }
+
+        if (selectedCountryId){
+
+            const baseUrl = "/Common/GetAllCitiesByCountryId";
+            const url = `${baseUrl}?countryId=${selectedCountryId}`;
+
+            fetch(url)
+                .then(res => res.json())
+                .then(data => {
+
+                    //önceki şehirleri temizle
+                    citySelect.innerHTML = ``;
+
+
+                    data.data.forEach(city =>{
+
+                        const option = document.createElement("option");
+                        option.value = city.id;
+                        option.textContent = city.name;
+                        if (city.id == selectedCityId){
+                            option.selected = true;
+                        }
+                        citySelect.appendChild(option);
+
+                    });
+                })
+                .catch(err =>{
+                    console.error(err);
+                    Swal.fire({
+                        title: "Hata!",
+                        text: "Şehirler yüklenirken bir hata ile karşılaşıldı",
+                        icon: "error"
+                    });
+                });
+        }
+        else{
+            if (!isWarningShown){
+                    Swal.fire({
+                        title: "Uyarı!",
+                        text: "Öncelikle ülke seçmelisiniz!",
+                        icon: "warning"
+                    });
+                    isWarningShown = true;
+            }
+        }
+
+
+        
+
+
+
+
+
+
+
+
+
+
+
+
+    });
+
+    </script>
+
+
+
+
+
+
+
+
+
+    <style>
+
+        .checkout-select {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+            font-weight: 600;
+            background-color: #fff;
+            color: #7fad39;
+            cursor: pointer;
+        }
+
+    </style>
+
+
+
+
+
 }

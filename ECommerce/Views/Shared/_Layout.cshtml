@@ -1,4 +1,12 @@
-﻿<!DOCTYPE html>
+﻿@{
+    var controller = ViewContext.RouteData.Values["controller"]?.ToString();
+    var action = ViewContext.RouteData.Values["action"]?.ToString();
+}
+
+
+
+
+<!DOCTYPE html>
 <html lang="zxx">
 
 <head>
@@ -92,14 +100,18 @@
                     </div>
                     <div class="col-lg-6 col-md-6">
                         <div class="header__top__right">
-                            <div class="header__top__right__auth">                                
+                            <div class="header__top__right__auth">
                                 @if (User.Identity.IsAuthenticated)
                                 {
+                                    <a asp-area="Identity" asp-page="/Account/Manage/Index" class="me-2">
+                                        <i class="fa fa-user"></i> Profilim
+                                    </a>
                                     <form id="logoutForm" asp-area="Identity" asp-page="/Account/Logout" method="post" class="d-inline">
                                         <a href="javascript:document.getElementById('logoutForm').submit()">
                                             <i class="fa fa-sign-out"></i> Logout
                                         </a>
                                     </form>
+                                    
                                 }
                                 else
                                 {
@@ -173,7 +185,7 @@
                 <div class="col-lg-9">
                     <div class="hero__search">
                         <div class="hero__search__form">
-                            <form method="get" action="/Product/Index">
+                            <form method="get" action="/Product/">
                                 <div class="hero__search__categories">
                                     Kategoriler
                                     <span class="arrow_carrot-down"></span>
@@ -188,7 +200,34 @@
         </div>
     </section>
     <!-- Hero Section End -->
+
+
     
+
+    @if(controller != "Home")
+        {
+        <!-- Breadcrumb Section Begin -->
+        <section class="breadcrumb-section set-bg" data-setbg="@Url.Content("~/img/breadcrumb2.png")">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-12 text-center">
+                        <div class="breadcrumb__text">
+                            <h2>Organi Shop</h2>
+                            <div class="breadcrumb__option">
+                                <a asp-area="" asp-controller="Home" asp-action="Index">Ana Sayfa</a>
+                                <span>Mağaza</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- Breadcrumb Section End -->
+        } 
+    
+
+    
+
 
     <main class="container my-5">
         @RenderBody()

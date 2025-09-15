@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json.Linq;
+using NuGet.Protocol;
 using System;
 using System.Security.Claims;
 
@@ -34,8 +35,8 @@ namespace ECommerce.Controllers
                 cart = new Cart { UserId = userId };
                 await _context.Carts.AddAsync(cart);
                 await _context.SaveChangesAsync();
-            }
-            ;
+            };
+            
 
 
             var cartItems = await _context.CartItems
@@ -47,6 +48,132 @@ namespace ECommerce.Controllers
 
 
         }
+
+
+        [HttpGet]
+        public async Task<IActionResult> Checkout()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var cart = await _context.Carts
+                                        .Include(c => c.CartItems)
+                                        .ThenInclude( ci => ci.Product)
+                                        .Include(c => c.AppliedCoupon)
+                                        .FirstOrDefaultAsync(c => c.UserId == userId);
+
+            if (cart == null)
+            {
+                cart = new Cart { UserId = userId };
+                await _context.Carts.AddAsync(cart);
+                await _context.SaveChangesAsync();
+            };
+            
+
+
+            var user = await _context.Users
+                                .Include(u => u.Addresses)
+                                    .ThenInclude(a => a.City)
+                                .ThenInclude(c => c.Country)
+                                .FirstOrDefaultAsync(u => u.Id == userId);
+
+
+            var model = new CheckoutViewModel
+            {
+
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Email = user.Email,
+                PhoneNumber = user.PhoneNumber,
+                Addresses = user.Addresses.ToList(),
+                Cart = cart
+            };
+
+            return View(model);
+        }
+
+
+        [HttpPost]
+        public async Task<IActionResult> Checkout(CheckoutViewModel model)
+        {
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var cart = await _context.Carts
+                                    .Include(c => c.CartItems)
+                                    .ThenInclude(ci => ci.Product)
+                                    .Include(c => c.AppliedCoupon)
+                                    .FirstOrDefaultAsync(c => c.UserId == userId);
+
+            if (cart == null || cart.CartItems.Count == 0)
+            {
+                return Json(new { success = false, message = "Sepet boş veya bulunamadı." });
+            }
+
+            var totalAmount = cart.CartItems.Sum(ci => ci.UnitPrice * ci.Quantity);
+            var order = new Order
+            {
+                TotalAmount = totalAmount,
+                DiscountAmount = cart.AppliedCoupon?.DiscountAmount ?? 0,
+                Street = model.Street,
+                PostalCode = model.PostalCode,
+                CityId = model.CityId,
+                UserId = userId
+            };
+
+            var coupon = await _context.Coupons.FirstOrDefaultAsync(c => c.Id == cart.AppliedCouponId);
+            if (coupon != null)
+            {
+                coupon.UsedCount += 1;
+                _context.Coupons.Update(coupon);
+                await _context.SaveChangesAsync();
+            } 
+            
+
+           
+            // With this:
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                _context.Orders.Add(order);
+                await _context.SaveChangesAsync();
+
+                foreach (var cartItem in cart.CartItems)
+                {
+                    var orderItem = new OrderItem
+                    {
+                        Quantity = cartItem.Quantity,
+                        UnitPrice = cartItem.UnitPrice,
+                        ProductId = cartItem.ProductId,
+                        OrderId = order.Id
+                    };
+
+                    _context.OrderItems.Add(orderItem);
+                }
+
+                _context.CartItems.RemoveRange(cart.CartItems);
+                await _context.SaveChangesAsync();
+
+
+                await transaction.CommitAsync();
+
+                return Json(new { success = true, message = "Siparişiniz alındı.", orderId = order.Id });
+            }
+
+            catch 
+            {
+                await transaction.RollbackAsync();
+                return Json(new { success = false, message = "Sipariş sırasında bir hata oluştu."});
+            }
+            
+
+            
+            
+
+            
+
+
+        }
+
 
         [HttpPost]
         public async Task<IActionResult> AddItemToCart([FromBody] AddCartDTO request)
@@ -266,17 +393,20 @@ namespace ECommerce.Controllers
                 return Json(new { isValid = false , message = "Kupon kullanım limitine ulaşmıştır."});
             }
 
-            
+            decimal? discountAmount = null;
+            decimal? discountPercentage = null;
 
             if (coupon.DiscountAmount.HasValue)
             {
                 action = "amount";
+                discountAmount = coupon.DiscountAmount;
                 value = coupon.DiscountAmount.Value;
             }
 
             else if (coupon.DiscountPercentage.HasValue)
             {
                 action = "percentage";
+                discountPercentage = coupon.DiscountPercentage.Value;
                 value = coupon.DiscountPercentage.Value;
             }
 
@@ -286,7 +416,27 @@ namespace ECommerce.Controllers
                 value = 0;
             }
 
-            return Json(new { isValid = true, message = "Kupon başarıyla uygulandı", action = action, value = value});
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var cart = await _context.Carts
+                                .Include(c => c.CartItems)
+                                .FirstOrDefaultAsync(c => c.UserId == userId);
+
+            cart.AppliedCouponId = coupon.Id;
+            decimal? subTotal = cart.CartItems.Sum(ci => ci.Quantity * ci.UnitPrice);
+            if (discountAmount.HasValue)
+            {
+                subTotal = subTotal - discountAmount;
+            }
+            else
+            {
+                subTotal *= 1 - (discountPercentage / 100);
+            }
+
+
+                _context.Carts.Update(cart);
+            await _context.SaveChangesAsync();
+
+            return Json(new { isValid = true, message = "Kupon başarıyla uygulandı", action = action, value = value, newTotal = subTotal});
 
         }
 

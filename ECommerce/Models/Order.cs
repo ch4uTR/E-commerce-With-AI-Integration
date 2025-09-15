@@ -12,11 +12,21 @@ namespace ECommerce.Models
         [Required]
         [Range(0.01, double.MaxValue)]
         public decimal TotalAmount { get; set; }
+        public decimal? DiscountAmount { get; set; }
+
+        public decimal FinalAmount => TotalAmount - (DiscountAmount ?? 0);
+
         public DateTime OrderDate { get; set; } = DateTime.UtcNow;
 
 
-        public int OrderStatusId { get; set; } 
+        public int OrderStatusId { get; set; } = 1;
         public OrderStatus? OrderStatus { get; set; }
+
+
+        public string Street { get; set; }
+        public string  PostalCode { get; set; }
+        public int CityId { get; set; }
+
 
 
         public string UserId { get; set; }
