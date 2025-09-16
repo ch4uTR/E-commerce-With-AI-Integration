@@ -18,7 +18,9 @@
 
         public Cart Cart { get; set; }
 
-
+        public decimal ShippingFee { get; set; }
+ 
+        public decimal DiscountAmount { get; set; }
 
 
 

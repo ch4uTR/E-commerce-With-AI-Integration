@@ -282,24 +282,104 @@
 
                 });
 
-                 
-                const minAmount = document.getElementById("minamount").value;
-                const maxAmount = document.getElementById("maxamount").value;
 
-                console.log(minAmount)
+                //// Fiyat değişince tekrar istek atılacak
 
-                const urlParams = new URLSearchParams(window.location.search);
+                const priceInput = document.querySelector(".price-input")
+                priceInput.addEventListener("change", function(){
 
-
-                urlParams.forEach((value,key) =>{
-                    if (filter.hasOwnProperty(key)){
-                        filter[key] = value;
-                    }
+                    filterPriceChange();
                 });
 
-                filter["MinPrice"] = parseFloat(minAmount);
-                filter["MaxPrice"] = parseFloat(MaxAmount);
-                filter["Page"] = 1;
+
+                $(".price-range").on("slidestop", function(event, ui){
+                    filterPriceChange();
+                });
+
+
+
+
+
+                function filterPriceChange(){
+                    const minAmount = document.getElementById("minamount").value;
+                    const maxAmount = document.getElementById("maxamount").value;
+                    console.log(minAmount)
+                    const urlParams = new URLSearchParams(window.location.search);
+
+
+                    urlParams.forEach((value,key) =>{
+                        if (filter.hasOwnProperty(key)){
+                            filter[key] = value;
+                        }
+                    });
+
+                    filter["MinPrice"] = parseFloat(minAmount);
+                    filter["MaxPrice"] = parseFloat(maxAmount);
+                    filter["Page"] = 1;
+
+                    const cleanFilter = {};
+                        for (const key in filter) {
+                            if (filter[key] !== null && filter[key] !== undefined && filter[key] !== "") {
+                                cleanFilter[key] = filter[key];
+                            }
+                        }
+                    console.log(cleanFilter);
+
+                    const baseUrl = "/Product/GetProductsJSON";
+                    const queryParams = new URLSearchParams(cleanFilter).toString();
+                    const productRow = document.getElementById("product-row");
+
+                    console.log(queryParams);
+                    fetch(`${baseUrl}?${queryParams}`)
+                        .then(res => res.json())
+                        .then(data => {
+
+                            productRow.innerHTML = ``;
+                            console.log(data);
+                            data.data.forEach(item => {
+                                const newRow = `
+                                <div class="col-lg-4 col-md-6 col-sm-6">
+                                    <div class="product__item">
+                                        <div class="product__item__pic set-bg" data-setbg="${item.imageUrl}">
+                                            <ul class="product__item__pic__hover">
+                                                <input type="hidden" class="product-id" value="${item.id}"/>
+                                                <li><a ><i class="fa fa-heart"></i></a></li>
+                                                <li><a href="#"><i class="fa fa-retweet"></i></a></li>
+                                                <li><a href="#" class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i></a></li>
+                                            </ul>
+                                        </div>
+                                        <div class="product__item__text">
+                                            <h6><a asp-area="" asp-controller="Product" asp-action="Details" asp-route-id="${item.id}">${item.productName}</a></h6>
+                                            <h5>${item.price} TL</h5>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                `;
+
+                                productRow.innerHTML += newRow;
+                                const addedDiv = productRow.lastElementChild.querySelector('.set-bg');
+                                addedDiv.style.backgroundImage = `url('${item.imageUrl}')`;
+                                });
+
+                        });
+
+
+                }
+                    
+
+
+                    
+
+                    
+
+
+                // });
+                 
+                
+
+
+
 
 
 

@@ -12,9 +12,10 @@ namespace ECommerce.Models
         [Required]
         [Range(0.01, double.MaxValue)]
         public decimal TotalAmount { get; set; }
-        public decimal? DiscountAmount { get; set; }
+        public decimal DiscountAmount { get; set; }
 
-        public decimal FinalAmount => TotalAmount - (DiscountAmount ?? 0);
+        public decimal ShippingFee { get; set; }
+        public decimal FinalAmount => TotalAmount + ShippingFee - DiscountAmount ;
 
         public DateTime OrderDate { get; set; } = DateTime.UtcNow;
 

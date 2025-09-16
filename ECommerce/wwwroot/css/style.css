@@ -2082,7 +2082,13 @@ ol {
 
 .shoping__checkout ul li span {
 	font-size: 18px;
-	color: #dd2222;
+	color: #1c1c1c;
+	float: right;
+}
+
+.shoping__checkout ul li .span-discount {
+	font-size: 18px;
+	color: #7fad39;
 	float: right;
 }
 

@@ -10,6 +10,9 @@
     var discountAmount = coupon?.DiscountAmount;
     var price = discountAmount.HasValue? (subTotal - discountAmount) : subTotal;
 
+    var isThereShippingFee = price < 350;
+    var shippingFee =  isThereShippingFee?  89 : 0;
+
     var firstAddress = Model.Addresses.FirstOrDefault();
     var selectedCountryId = firstAddress?.City?.CountryId ?? 0;
     var selectedCityId = firstAddress?.CityId ?? 0;
@@ -116,20 +119,32 @@
                             </ul>
                             <div class="checkout__order__subtotal">Ara Toplam <span>@subTotal TL</span></div>
 
+                            @if (!isThereShippingFee)
+                            {
+                                <div class="checkout__order__discount">Kargo <span> ÜCRETSİZ</span></div>
+                                <input type="hidden" asp-for="ShippingFee" value=0/>
+                            }
+                            else
+                            {
+                                <div class="checkout__order__subtotal">Kargo <span>@shippingFee TL</span></div>
+                                <input type="hidden" asp-for="ShippingFee" value=@shippingFee />
+                            }
+
                             @if (discountAmount.HasValue)
                             {
-                                <div class="checkout__order__discount">İndirim/Kupon <span> @discountAmount TL</span></div>                                
+                                <div class="checkout__order__discount">İndirim/Kupon <span> @discountAmount TL</span></div>   
+                                <input type="hidden" asp-for="DiscountAmount" value=@discountAmount />
+                            }
+                            else
+                            {
+                                <input type="hidden" asp-for="DiscountAmount" value=0 />
                             }
                             <div class="checkout__order__total">Toplam <span> @price TL</span></div>
                             
-                            <p>
-                                Lorem ipsum dolor sit amet, consectetur adip elit, sed do eiusmod tempor incididunt
-                                ut labore et dolore magna aliqua.
-                            </p>
                             <div class="checkout__input__checkbox">
-                                <label for="payment">
+                                <label for="contract">
                                     Ön bilgilendirme formu'nu ve Mesafeli satış sözleşmesi 'ni onaylıyorum.
-                                    <input type="checkbox" id="payment">
+                                    <input type="checkbox" id="contract">
                                     <span class="checkmark"></span>
                                 </label>
                             </div>
@@ -236,10 +251,21 @@
 
             // -------------------- Buton tıklama işlemi --------------------
             const form = document.getElementById("checkout-form");
+            const contractCheckbox = document.getElementById("contract");
+
             const confirmButton = document.getElementById("confirm-cart");
 
-                   confirmButton.addEventListener("click", async function(e) {
+            confirmButton.addEventListener("click", async function(e) {
             e.preventDefault();
+
+            if (!contractCheckbox.checked){
+                Swal.fire({
+                    title: "Hata",
+                    text: "Ön bilgilendirme formunu işaretlemiz gerekmektedir!",
+                    icon: "warning"
+                });
+                return;
+            }
 
             // Loading aç
             Swal.fire({
@@ -252,7 +278,7 @@
             try {
                 const formData = new FormData(form);
 
-                // 3 saniye simülasyon beklemesi
+                
                 await new Promise(resolve => setTimeout(resolve, 3000));
 
                 // Fetch isteği
@@ -269,7 +295,11 @@
                         title: "Başarılı!",
                         text: data.message || "Siparişiniz oluşturuldu",
                         icon: "success"
+                    }).then(() =>{
+                        window.location.replace(`/Cart/Success?orderId=${data.orderId}`);
                     });
+
+                   
                 } else {
                     Swal.fire({
                         title: "Hata!",

@@ -28,7 +28,9 @@ namespace ECommerce.Controllers
 
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            var cart = await _context.Carts.FirstOrDefaultAsync(c => c.UserId == userId);
+            var cart = await _context.Carts
+                                .Include(c => c.AppliedCoupon)
+                                .FirstOrDefaultAsync(c => c.UserId == userId);
 
             if (cart == null)
             {
@@ -117,7 +119,8 @@ namespace ECommerce.Controllers
                 Street = model.Street,
                 PostalCode = model.PostalCode,
                 CityId = model.CityId,
-                UserId = userId
+                UserId = userId,
+                ShippingFee = model.ShippingFee,
             };
 
             var coupon = await _context.Coupons.FirstOrDefaultAsync(c => c.Id == cart.AppliedCouponId);
@@ -174,6 +177,24 @@ namespace ECommerce.Controllers
 
         }
 
+
+
+        public async Task<IActionResult> Success(int orderId)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var order = await _context.Orders
+                                        .Include(o => o.OrderItems)
+                                        .ThenInclude( oi => oi.Product)
+                                        .FirstOrDefaultAsync(o => o.Id == orderId && o.UserId == userId);
+
+            if (order == null)
+            {
+                return NotFound();
+            }
+
+
+            return View(order);
+        }
 
         [HttpPost]
         public async Task<IActionResult> AddItemToCart([FromBody] AddCartDTO request)
@@ -284,15 +305,18 @@ namespace ECommerce.Controllers
         public async Task<IActionResult> GetCartDetailsJSON()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            decimal totalCost = 0;
+            decimal productCost = 0;
             var totalProducts = 0;
+            decimal discountAmount = 0;
 
             if (string.IsNullOrEmpty(userId))
             {
                 return Json(new { TotalProducts = 0, TotalCost = 0 });
             }
 
-            var cart = await _context.Carts.FirstOrDefaultAsync(c => c.UserId == userId);
+            var cart = await _context.Carts
+                                    .Include(c => c.AppliedCoupon)
+                                    .FirstOrDefaultAsync(c => c.UserId == userId);
 
             if (cart == null)
             {
@@ -309,16 +333,60 @@ namespace ECommerce.Controllers
                                     .ToListAsync();
 
             totalProducts = cartItems.Any() ? cartItems.Count() : 0;
+            decimal? shippingFee = null;
+
             if (totalProducts == 0)
             {
-                totalCost = 0;
+                productCost = 0;
+                return Json(new
+                {
+                    TotalProducts = totalProducts,
+                    ProductCost = 0,
+                    ShippingFee = 0,
+                    DiscountAmount = 0,
+                    TotalCost = 0,
+                    Message =  "Sepetinizde ürün yok"
+                });
             }
             else
             {
-                totalCost = cartItems.Sum(ci => ci.Quantity * ci.UnitPrice);
+                productCost = cartItems.Sum(ci => ci.Quantity * ci.UnitPrice);
             }
 
-            return Json(new { TotalProducts = totalProducts, TotalCost = totalCost });
+            if (cart.AppliedCoupon != null)
+            {
+                discountAmount = (decimal)cart.AppliedCoupon.DiscountAmount;
+            }
+            else
+            {
+                discountAmount = 0;
+            }
+
+            var totalCost = productCost  - discountAmount;
+
+            if (totalCost >= 350)
+            {
+                shippingFee = 0;
+            }
+            else
+            {
+                shippingFee = 89;
+                totalCost += (decimal)shippingFee;
+            }
+
+
+            return Json(new
+            {
+                TotalProducts = totalProducts,
+                ProductCost = productCost,
+                ShippingFee = shippingFee,
+                DiscountAmount = discountAmount,
+                TotalCost = totalCost,
+                IsThereDiscountCoupons = discountAmount > 0,
+                IsThereShippingFee = shippingFee > 0,
+                Message = shippingFee == 0 ? "Kargo ücretsiz!" : ""
+            });
+
 
 
         }

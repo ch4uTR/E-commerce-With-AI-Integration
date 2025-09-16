@@ -130,10 +130,10 @@
             </div>
             <div class="col-lg-6">
                 <div class="shoping__checkout">
-                    <h5>Cart Total</h5>
+                    <h5>Sepet Toplamı</h5>
                         <ul id="cart-total-list">
-                        <li>Subtotal <span  id= "subtotal-span" class="cart-total"></span></li>
-                        <li>Total <span id="total-span" class="cart-total"></span></li>
+                        <li>Ara toplam <span  id="subtotal-span" class="sub-total"></span></li>
+                        <li>Toplam <span id="total-span"></span></li>
                     </ul>
                     <a asp-area="" asp-controller="Cart" asp-action="Checkout" class="primary-btn">PROCEED TO CHECKOUT</a>
                 </div>
@@ -179,16 +179,62 @@
 
 
             ////////////////////// TOPLAM TUTARI GÖSTER /////////////////////
-            const totalSpans = document.querySelectorAll(".cart-total");
+                const subTotalSpan = document.getElementById("subtotal-span");
+                const totalSpan = document.getElementById("total-span");
+                const couponButton = document.getElementById("coupon-button");
+                const couponForm = document.getElementById("coupon-form");
 
-            fetch("/Cart/GetCartDetailsJSON")
-                .then(response => response.json())
-                .then(data => {
-                    totalSpans.forEach(span => {
-                        span.textContent = `${data.totalCost} TL`;
-                    });
-                })
-                .catch(err => console.error(err));
+           
+
+                    fetch("/Cart/GetCartDetailsJSON")
+                        .then(response => response.json())
+                        .then(data => {
+                            
+                            const cartTotalList = document.getElementById("cart-total-list");
+                            cartTotalList.innerHTML = ``;
+
+                            const subTotalLi = document.createElement("li");
+                                subTotalLi.innerHTML = `Ara toplam <span  id="subtotal-span" class="sub-total">${data.productCost.toFixed(2)} TL</span>`;
+
+                            const totalLi = document.createElement("li");
+                                totalLi.innerHTML = `Toplam <span id="total-span">${data.totalCost.toFixed(2)} TL</span>`;
+
+                            const shippingFeeLi = document.createElement("li");
+                            shippingFeeLi.id = "shipping-fee-li";
+
+                            const discountLi = document.createElement("li");
+                            discountLi.id = "discount-li";
+
+
+                            if (data.isThereShippingFee) {
+                                console.log("ship ");
+                                shippingFeeLi.innerHTML = `Kargo Ücreti <span>${data.shippingFee.toFixed(2)} TL</span>`;
+                            }
+                            else {
+                                    shippingFeeLi.innerHTML = `Kargo  <span style="color: #7fad39;"> Ücretsiz</span>`;
+                            }
+
+                            if (data.isThereDiscountCoupons){
+                                    console.log("discount ");
+                                    couponButton.disabled = true;
+                                    couponButton.style.opacity = "0.6";
+                                    couponButton.style.cursor = "not-allowed";
+                                    discountLi.innerHTML = `İndirim <span style="color: #7fad39;">${data.discountAmount.toFixed(2)} TL</span>`;
+                            }
+
+                           
+                            console.log(data);
+
+                            cartTotalList.appendChild(subTotalLi);
+                            cartTotalList.appendChild(shippingFeeLi);
+                            if (data.isThereDiscountCoupons) {
+                                cartTotalList.appendChild(discountLi);
+                            }
+                            cartTotalList.appendChild(totalLi);
+                            
+
+                        })
+                        .catch(err => console.error(err));
 
 
         });
@@ -335,18 +381,19 @@
                                 <h5>${item.productName}</h5>
                             </td>
                             <td class="shoping__cart__price">
-                                ${item.unitPrice} TL
+                                    ${item.unitPrice.toFixed(2)} TL
                             </td>
                             <td class="shoping__cart__quantity">
                                 <div class="quantity">
                                     <div class="pro-qty">
                                     <span class="dec qtybtn">-</span>
                                         <input class="item-count" type="text" value="${item.quantity}">
-                                    <span class="inc qtybtn">+</span>    
+                                    <span class="inc qtybtn">+</span> 
+                                    </div>
                                 </div>
                             </td>
                             <td class="shoping__cart__total">
-                                ${item.unitPrice * item.quantity} TL
+                                ${(item.unitPrice * item.quantity).toFixed(2)} TL
                             </td>
                             <td class="shoping__cart__item__close">
                                 <span class="icon_close"></span>
@@ -355,22 +402,61 @@
                     tbody.innerHTML += row;
                 });
 
-                const totalSpans = document.querySelectorAll(".cart-total");
+                        const subTotalSpan = document.getElementById("subtotal-span");
+                        const totalSpan = document.getElementById("total-span");
+                        const couponButton = document.getElementById("coupon-button");
+                        const couponForm = document.getElementById("coupon-form");
 
-                fetch("/Cart/GetCartDetailsJSON")
-                    .then(response => response.json())
-                    .then(data => {
-                        totalSpans.forEach(span => {
-                            span.textContent = `${data.totalCost} TL`;
-                        });
-                    })
-                    .catch(err => console.error(err));
-                
+                        fetch("/Cart/GetCartDetailsJSON")
+                            .then(response => response.json())
+                            .then(data => {
+
+                                const cartTotalList = document.getElementById("cart-total-list");
+                                cartTotalList.innerHTML = ``;
+
+                                const shippingFeeLi = document.createElement("li");
+                                shippingFeeLi.id = "shipping-fee-li";
+
+                                const discountLi = document.createElement("li");
+                                discountLi.id = "discount-li";
+
+
+                                if (data.isThereShippingFee) {
+                                    shippingFeeLi.innerHTML = `Kargo Ücreti <span>${data.shippingFee.toFixed(2)} TL</span>`;
+                                }
+                                else {
+                                        shippingFeeLi.innerHTML = `Kargo  <span style="color: #7fad39;"> Ücretsiz </span>`;
+                                }
+
+                                if (data.isThereDiscountCoupons){
+                                        couponButton.disabled = true;
+                                        couponButton.style.opacity = "0.6";
+                                        couponButton.style.cursor = "not-allowed";
+                                        discountLi.innerHTML = `İndirim <span style="color: #7fad39;">${data.discountAmount.toFixed(2)} TL</span>`;
+                                }
+
+                                const subTotalLi = document.createElement("li");
+                                subTotalLi.innerHTML = `Ara toplam <span  id="subtotal-span" class="sub-total">${data.productCost.toFixed(2)} TL</span>`;
+
+                                const totalLi = document.createElement("li");
+                                totalLi.innerHTML = `Toplam <span id="total-span">${data.totalCost.toFixed(2)} TL</span>`;
+
+                                cartTotalList.appendChild(subTotalLi);
+                                cartTotalList.appendChild(shippingFeeLi);
+                                if (data.isThereDiscountCoupons) {
+                                    cartTotalList.appendChild(discountLi);
+                                }
+                                cartTotalList.appendChild(totalLi);
+
+
+                            })
+                            .catch(err => console.error(err));
+
 
             }
-
        
 
+        
 
     //////////////////////////////// KUPON UYGULAMA ////////////////////////////7
     const couponButton = document.getElementById("coupon-button");
@@ -397,16 +483,6 @@
                     couponButton.disabled = true;
                     couponButton.style.opacity = "0.6";
                     couponButton.style.cursor = "not-allowed";
-                    
-                    const subTotalSpan = document.getElementById("subtotal-span");
-                    const totalSpan = document.getElementById("total-span");
-
-                    const discountLi = document.createElement("li");
-                    discountLi.innerHTML = `İndirim <span>${data.value.toFixed(2)} TL</span>`;
-                    totalSpan.textContent = `${data.newTotal.toFixed(2)} TL`;
-                    cartTotalList.insertBefore(discountLi, totalSpan.parentElement);
-
-
                 }
 
                 else{
@@ -427,7 +503,7 @@
 
 
 
-    })
+    });
 
 
     </script>
