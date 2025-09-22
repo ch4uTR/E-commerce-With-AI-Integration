@@ -3,7 +3,7 @@
 <div class="container mt-4">
     <div class="card p-4 shadow-sm rounded-4 border-0">
         <h2 class="card-title text-center mb-4" style="color: #7fad39;">
-            <i class="fa fa-edit"></i> Edit The Product
+            <i class="fa fa-edit"></i> Ürünü Düzenle
         </h2>
 
         <form method="post" asp-action="Edit" enctype="multipart/form-data" class="row g-3">
@@ -18,7 +18,7 @@
                     <div class="card-body text-center">
                         <h5 class="card-title fw-bold">@Model.Name</h5>
                         <p class="card-text text-muted">@Model.Price.ToString("C2")</p>
-                        <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-sm btn-outline-secondary">Details</a>
+                        <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-sm btn-outline-secondary">Detay</a>
                     </div>
                 </div>
             </div>
@@ -26,25 +26,25 @@
             <div class="col-md-8">
                 <div class="row g-3">
                     <div class="col-12">
-                        <label asp-for="Name" class="form-label fw-bold">Name</label>
+                        <label asp-for="Name" class="form-label fw-bold">Ürün İsmi</label>
                         <input asp-for="Name" class="form-control rounded-pill">
                         <span asp-validation-for="Name" class="text-danger"></span>
                     </div>
 
                     <div class="col-12">
-                        <label asp-for="Description" class="form-label fw-bold">Description</label>
+                        <label asp-for="Description" class="form-label fw-bold">Açıklama</label>
                         <textarea asp-for="Description" class="form-control rounded-3" rows="4"></textarea>
                         <span asp-validation-for="Description" class="text-danger"></span>
                     </div>
 
                     <div class="col-md-6">
-                        <label asp-for="Price" class="form-label fw-bold">Price</label>
+                        <label asp-for="Price" class="form-label fw-bold">Ücret</label>
                         <input asp-for="Price" class="form-control rounded-pill">
                         <span asp-validation-for="Price" class="text-danger"></span>
                     </div>
 
                     <div class="col-md-6">
-                        <label asp-for="CategoryId" class="form-label fw-bold">Category</label>
+                        <label asp-for="CategoryId" class="form-label fw-bold">Kategori</label>
                         <select asp-for="CategoryId" asp-items="ViewBag.Categories" class="form-control rounded-pill">
                             <option value="">-- Select Category --</option>
                         </select>
@@ -52,17 +52,17 @@
                     </div>
 
                     <div class="col-12">
-                        <label asp-for="ImageFile" class="form-label fw-bold">Upload a photo</label>
+                        <label asp-for="ImageFile" class="form-label fw-bold">Fotoğraf Yükle</label>
                         <input type="file" class="form-control rounded-pill" asp-for="ImageFile">
                         <small class="form-text text-muted">Leave empty to keep current image</small>
                     </div>
 
                     <div class="col-12 mt-4 d-flex justify-content-end">
                         <button type="submit" class="site-btn rounded-pill">
-                            <i class="fa fa-save"></i> Save Changes
+                            <i class="fa fa-save"></i> Kaydet
                         </button>
                         <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-secondary rounded-pill">
-                            <i class="fa fa-times"></i> Cancel
+                            <i class="fa fa-times"></i> İptal
                         </a>
                     </div>
                 </div>

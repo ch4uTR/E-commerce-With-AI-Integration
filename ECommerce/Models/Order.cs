@@ -11,11 +11,14 @@ namespace ECommerce.Models
 
         [Required]
         [Range(0.01, double.MaxValue)]
-        public decimal TotalAmount { get; set; }
+        public decimal TotalTLAmount { get; set; }
+        //public string Currency { get; set; } = "TRY";
         public decimal DiscountAmount { get; set; }
-
+        public string Currency { get; set; } = "TRY";
         public decimal ShippingFee { get; set; }
-        public decimal FinalAmount => TotalAmount + ShippingFee - DiscountAmount ;
+
+        ///DAha sonra düzenlemeliyim, belki bir kur tablosu da olabilir çükü dolardan tl çıkarılacak şuanda
+        public decimal FinalAmount => TotalTLAmount + ShippingFee - DiscountAmount ;
 
         public DateTime OrderDate { get; set; } = DateTime.UtcNow;
 
@@ -29,6 +32,9 @@ namespace ECommerce.Models
         public int CityId { get; set; }
 
 
+
+        public bool IsHidden { get; set; } = false;
+       
 
         public string UserId { get; set; }
 

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json.Linq;
 using NuGet.Protocol;
+using ServiceReference1;
 using System;
 using System.Security.Claims;
 
@@ -114,7 +115,8 @@ namespace ECommerce.Controllers
             var totalAmount = cart.CartItems.Sum(ci => ci.UnitPrice * ci.Quantity);
             var order = new Order
             {
-                TotalAmount = totalAmount,
+                TotalTLAmount = totalAmount,
+                Currency = model.Currency,
                 DiscountAmount = cart.AppliedCoupon?.DiscountAmount ?? 0,
                 Street = model.Street,
                 PostalCode = model.PostalCode,
@@ -156,6 +158,9 @@ namespace ECommerce.Controllers
                 _context.CartItems.RemoveRange(cart.CartItems);
                 await _context.SaveChangesAsync();
 
+                cart.AppliedCouponId = null;
+                _context.Carts.Update(cart);
+                await _context.SaveChangesAsync();
 
                 await transaction.CommitAsync();
 
@@ -178,7 +183,23 @@ namespace ECommerce.Controllers
         }
 
 
+        [HttpGet]
+        public async Task<IActionResult> Orders()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
+            List<Order> orders = new List<Order>();
+            orders = await _context.Orders
+                                    .Include(o => o.OrderStatus)
+                                    .Include(o => o.OrderItems)
+                                        .ThenInclude(oi => oi.Product)
+                                    .Where(o => o.UserId == userId)
+                                    .ToListAsync();
+
+            return View(orders);
+        }
+
+        [HttpGet]
         public async Task<IActionResult> Success(int orderId)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -195,6 +216,26 @@ namespace ECommerce.Controllers
 
             return View(order);
         }
+
+
+        [HttpGet]
+        public async Task<IActionResult> OrderDetails(int orderId)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var order = await _context.Orders
+                                        .Include(o => o.OrderItems)
+                                        .ThenInclude(oi => oi.Product)
+                                        .FirstOrDefaultAsync(o => o.Id == orderId && o.UserId == userId);
+
+            if (order == null)
+            {
+                return NotFound();
+            }
+
+
+            return View(order);
+        }
+
 
         [HttpPost]
         public async Task<IActionResult> AddItemToCart([FromBody] AddCartDTO request)
@@ -302,7 +343,7 @@ namespace ECommerce.Controllers
 
 
         [HttpGet]
-        public async Task<IActionResult> GetCartDetailsJSON()
+        public async Task<IActionResult> GetCartDetailsJSON([FromQuery] string currency = "TRY")
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             decimal productCost = 0;
@@ -362,7 +403,7 @@ namespace ECommerce.Controllers
                 discountAmount = 0;
             }
 
-            var totalCost = productCost  - discountAmount;
+            decimal totalCost = productCost - discountAmount;
 
             if (totalCost >= 350)
             {
@@ -375,6 +416,21 @@ namespace ECommerce.Controllers
             }
 
 
+            double currenyRate = 0;
+            if (currency != "TRY")
+            {
+                var client = new CurrencyServiceClient();
+                var proxyRates = await client.GetCurrencyRatesAsync();
+                var rate = proxyRates.FirstOrDefault(r => r.Name.ToLower() == currency.ToLower());
+                if(rate != null)
+                {
+                    if (rate.Success) { totalCost /= (decimal)rate.Value;  }
+                }
+  
+
+            }
+
+
             return Json(new
             {
                 TotalProducts = totalProducts,
@@ -382,6 +438,7 @@ namespace ECommerce.Controllers
                 ShippingFee = shippingFee,
                 DiscountAmount = discountAmount,
                 TotalCost = totalCost,
+                Currency = currency,
                 IsThereDiscountCoupons = discountAmount > 0,
                 IsThereShippingFee = shippingFee > 0,
                 Message = shippingFee == 0 ? "Kargo ücretsiz!" : ""

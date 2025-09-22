@@ -18,6 +18,8 @@
 
         public Cart Cart { get; set; }
 
+        public string Currency { get; set; } = "TRY"; 
+
         public decimal ShippingFee { get; set; }
  
         public decimal DiscountAmount { get; set; }

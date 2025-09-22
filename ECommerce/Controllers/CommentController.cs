@@ -2,8 +2,10 @@
 using ECommerce.Data;
 using ECommerce.Models;
 using ECommerce.Models.DTOs;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace ECommerce.Controllers
 {
@@ -21,9 +23,47 @@ namespace ECommerce.Controllers
             return View();
         }
 
+        [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> SubmitComment([FromBody] Comment model)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null) { return Json(new  {  success = false}); }
+
+            model.UserId = userId;
+
+            await _context.Comments.AddAsync(model);
+            await _context.SaveChangesAsync();
+
+            return Json(new { success = true });
+
+        }
 
 
+        public async Task<IActionResult> VerifyUserPurchased(int productId)
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
 
+            if (userIdClaim == null || string.IsNullOrEmpty(userIdClaim.Value))
+            {
+                return Json(new { isOk = false, message = "Yorum yapmak için lütfen giriş yapın" });
+            }
+
+            string userId = userIdClaim.Value;
+
+            bool hasPurchased = await _context.OrderItems
+                                              .Include(oi => oi.Order)
+                                              .AnyAsync(oi => oi.ProductId == productId
+                                                              && oi.Order != null
+                                                              && oi.Order.UserId == userId);
+            if (!hasPurchased)
+            {
+                return Json(new { isOk = false, message = "Bu ürünü satın almadığınız için yorum yapamazsınız." });
+            }
+
+            return Json(new { isOk = true, message = "Satın alınmış" });
+
+        }
 
         public async Task<IActionResult> GetCommentsJSON([FromQuery] CommentSearchCriteria filter)
         {
@@ -89,9 +129,35 @@ namespace ECommerce.Controllers
             query = query.Take(filter.Size);
 
             comments = await query.ToListAsync();
-            return Json(new { data = comments });
+            if (!comments.Any())
+            {
+                return Json(new { success = false, message = "Henüz değerlendirme yok!", data = comments });
+            }
+            else
+            {
+                return Json(new { success = true, message = "Yorular başarıyla getirildi!", data = comments });
+            }
+            
 
 
         }
+
+
+        [HttpPost]
+        public async Task<IActionResult> GetCommentsJSONProductdetailsPage([FromQuery] UserCommentViewModel filter)
+        {
+
+            var comments = await _context.Comments
+                .Where(c => c.ProductId == filter.ProductId)
+                .Where(c => c.IsApproved)
+                .Skip((filter.Page - 1) * filter.Size)
+                .Take(filter.Size)
+                .ToListAsync();
+
+            return Json(new { success = true, data = comments });
+
+        }
+    
+    
     }
 }

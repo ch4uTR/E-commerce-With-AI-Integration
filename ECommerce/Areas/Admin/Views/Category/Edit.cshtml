@@ -9,7 +9,7 @@
 <div class="container mt-4">
     <div class="card p-4 shadow-sm rounded-4 border-0">
         <h2 class="card-title text-center mb-4" style="color: #7fad39;">
-            <i class="fa fa-edit"></i> Edit The Category
+            <i class="fa fa-edit"></i> Kategori Düzenle
         </h2>
 
         <form method="post" asp-action="Edit" enctype="multipart/form-data" class="row g-3">
@@ -24,7 +24,7 @@
                     <div class="card-body text-center">
                         <h5 class="card-title fw-bold">@request.Name</h5>
                         <a asp-action="Details" asp-route-id="@request.Id" class="btn btn-outline-secondary rounded-pill">
-                            <i class="fa fa-info-circle"></i> Details
+                            <i class="fa fa-info-circle"></i> Detaylar
                         </a>
                     </div>
                 </div>
@@ -34,13 +34,13 @@
                 <div class="row g-3">
                     <div class="col-12">
                         <input type="hidden" asp-for="Request.Id" />
-                        <label asp-for="Request.Name" class="form-label fw-bold">Name</label>
+                        <label asp-for="Request.Name" class="form-label fw-bold">Kategori İsmi</label>
                         <input asp-for="Request.Name" class="form-control rounded-pill">
                         <span asp-validation-for="Request.Name" class="text-danger"></span>
                     </div>
 
                     <div class="col-12">
-                        <label asp-for="Request.ParentCategoryId" class="form-label fw-bold">Parent Category</label>
+                        <label asp-for="Request.ParentCategoryId" class="form-label fw-bold">Üst Kategori</label>
                         <select asp-for="Request.ParentCategoryId" asp-items="@mainCategories" class="form-control rounded-pill">
                             <option value="">-- Select Category --</option>
                         </select>
@@ -48,17 +48,17 @@
                     </div>
 
                     <div class="col-12">
-                        <label asp-for="Request.ImageFile" class="form-label fw-bold">Upload a photo</label>
+                        <label asp-for="Request.ImageFile" class="form-label fw-bold">Fotoğraf Yükle</label>
                         <input type="file" class="form-control rounded-pill" asp-for="Request.ImageFile">
                         <small class="form-text text-muted">Leave empty to keep current image</small>
                     </div>
 
                     <div class="col-12 mt-4 d-flex justify-content-end gap-2">
                         <button type="submit" class="site-btn rounded-pill" style="background-color: #7fad39; border-color: #7fad39;">
-                            <i class="fa fa-save"></i> Save Changes
+                            <i class="fa fa-save"></i> Değişiklikleri Kaydet
                         </button>
                         <a asp-action="Details" asp-route-id="@request.Id" class="btn btn-outline-secondary rounded-pill">
-                            <i class="fa fa-times"></i> Cancel
+                            <i class="fa fa-times"></i> İptal Et
                         </a>
                     </div>
                 </div>

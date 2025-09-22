@@ -1,19 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk.Web">
-
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>aspnet-ECommerce-58954bec-fb21-4765-931a-fe936272ba3c</UserSecretsId>
+    <Configurations>Debug;Release;All</Configurations>
   </PropertyGroup>
-
   <ItemGroup>
     <Compile Remove="Services\**" />
     <Content Remove="Services\**" />
     <EmbeddedResource Remove="Services\**" />
     <None Remove="Services\**" />
   </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="9.0.8" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.8" />
@@ -23,11 +22,14 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.8" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="9.0.0" />
   </ItemGroup>
-
   <ItemGroup>
     <Folder Include="Areas\Admin\Data\" />
     <Folder Include="wwwroot\Images\User\" />
     <Folder Include="wwwroot\Images\NewFolder\" />
   </ItemGroup>
-
+  <ItemGroup>
+    <PackageReference Include="System.ServiceModel.Http" Version="8.*" />
+    <PackageReference Include="System.ServiceModel.NetTcp" Version="8.*" />
+    <PackageReference Include="System.ServiceModel.Primitives" Version="8.*" />
+  </ItemGroup>
 </Project>

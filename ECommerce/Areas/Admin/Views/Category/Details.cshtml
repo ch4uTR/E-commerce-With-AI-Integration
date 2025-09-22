@@ -4,7 +4,7 @@
 <div class="container mt-4">
     <div class="card p-4 shadow-sm rounded-4 border-0">
         <h3 class="card-title text-center mb-4" style="color: #7fad39;">
-            <i class="fa fa-info-circle"></i> Category Details
+            <i class="fa fa-info-circle"></i> Kategori Detayı
         </h3>
 
         <div class="row g-4">
@@ -26,37 +26,37 @@
                     <table class="table table-hover mb-0">
                         <thead style="background-color: #7fad39; color: white;">
                             <tr>
-                                <th>Property</th>
-                                <th>Value</th>
+                                <th>Özellik</th>
+                                <th>Değer</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td><strong>Name</strong></td>
+                                <td><strong>Kategori İsmi</strong></td>
                                 <td>@Model.Name</td>
                             </tr>
                             <tr>
-                                <td><strong>Total Products</strong></td>
+                                <td><strong>Toplam Ürün</strong></td>
                                 <td>@Model.TotalProductCount</td>
                             </tr>
                             <tr>
-                                <td><strong>Total Revenue</strong></td>
-                                <td style="color: #7fad39; font-weight: bold;">@Model.TotalRevenue.ToString("C2")</td>
+                                <td><strong>Toplam Hasılat</strong></td>
+                                <td style="color: #7fad39; font-weight: bold;">@Model.TotalRevenue.ToString("C2") TL</td>
                             </tr>
                             <tr>
-                                <td><strong>Actions</strong></td>
+                                <td><strong>Aksiyonlar</strong></td>
                                 <td class="d-flex justify-content-start gap-2">
                                     <a class="site-btn btn-xs" asp-action="Edit" asp-route-id="@Model.Id">
-                                        <i class="fa fa-edit"></i> Edit
+                                        <i class="fa fa-edit"></i> Düzenle
                                     </a>
                                     <form asp-action="Delete" asp-route-id="@Model.Id" method="post"
                                           onsubmit="return confirm('Are you sure you want to delete this category?');">
                                         <button type="submit" class="site-btn btn-xs">
-                                            <i class="fa fa-trash-o"></i> Delete
+                                            <i class="fa fa-trash-o"></i> Sil
                                         </button>
                                     </form>
                                     <a class="site-btn btn-xs" asp-action="Index">
-                                        <i class="fa fa-list"></i> Categories
+                                        <i class="fa fa-list"></i> Kategoriler
                                     </a>
                                 </td>
                             </tr>

@@ -28,10 +28,10 @@ namespace ECommerce.Controllers
         {
 
             var countries = await _context.Countries
-                                    .Select(c => new {c.Id, c.Name})
+                                    .Select(c => new { c.Id, c.Name })
                                     .ToListAsync();
 
-            return Json( new { data = countries });
+            return Json(new { data = countries });
         }
 
 
@@ -47,7 +47,6 @@ namespace ECommerce.Controllers
         }
 
     }
-
         
 
 

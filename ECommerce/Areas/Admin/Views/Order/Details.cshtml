@@ -1,0 +1,232 @@
+﻿@using ECommerce.Models
+@model Order
+
+<link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+
+@{
+    ViewData["Title"] = "Sipariş Detay";
+    var items = Model.OrderItems;
+}
+
+<h2 style="color:#7fad39; font-weight:800">Sipariş Bilgileri</h2>
+
+
+
+<section class="shoping-cart spad">
+    <div class="container">
+        <input type="hidden" id="order-id" value="@Model.Id" />
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="shoping__cart__table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th class="shoping__product">Ürünler</th>
+                                <th>Ücret</th>
+                                <th>Miktar</th>
+                                <th>Toplam</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="cart-table-body">
+
+                            @foreach (var item in items)
+                            {
+                                <tr>
+                                    <input type="hidden" class="product-id" value="@item.ProductId">
+                                    <td class="shoping__cart__item">
+                                        <img class="product-img" src="@item.Product.ImageUrl" alt="">
+                                        <h5>@item.Product.Name</h5>
+                                    </td>
+                                    <td class="shoping__cart__price">
+                                        @item.UnitPrice TL
+                                    </td>
+                                    <td class="shoping__cart__quantity">
+                                        <div class="quantity">
+                                            <div class="pro-qty">
+                                                <input class="item-count" type="text" value="@item.Quantity" disabled>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="shoping__cart__total">
+                                        @(item.UnitPrice* item.Quantity) TL
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-12">
+
+                <div class="shopping__checkout">
+
+                    <div class="tracking-wrapper">
+
+                        <div class="tracking">
+                            <div id="progress" class="progress-0">
+                                <div class="empty-bar"></div>
+                                <div class="color-bar"></div>
+                                <ul>
+                                    <li class="bullet-1">
+                                        <div class="el"><i class='bx bx-check'></i></div>
+                                        <div class="txt">İşleme Alındı</div>
+                                    </li>
+                                    <li class="bullet-2">
+                                        <div class="el"><i class='bx bx-check'></i></div>
+                                        <div class="txt">Hazırlanıyor</div>
+                                    </li>
+                                    <li class="bullet-3">
+                                        <div class="el"><i class='bx bx-check'></i></div>
+                                        <div class="txt">Kargoya Verildi</div>
+                                    </li>
+                                    <li class="bullet-4">
+                                        <div class="el"><i class='bx bx-check'></i></div>
+                                        <div class="txt">Teslim Edildi</div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                    </div>
+
+
+                    <div class="controls">
+                        <div>
+                            <button id="prev"><i class='bx bx-chevron-left'></i> Önceki</button>
+                            <button id="next">Sonraki <i class='bx bx-chevron-right'></i></button>
+                        </div>
+                        <div>
+                        </div>
+                    </div>
+                </div>
+                <div class="shoping__checkout">
+                    <h5>Sepet Toplamı</h5>
+                    <ul id="cart-total-list">
+                        <li>Ara toplam <span>@Model.TotalTLAmount TL</span></li>
+                        @if (Model.ShippingFee != 0)
+                        {
+                            <li>Kargo Ücreti<span>@Model.ShippingFee TL</span></li>
+                        }
+                        else
+                        {
+                            <li>Kargo Ücreti<span class="span-discount">ÜCRETSİZ</span></li>
+                        }
+                        @if (Model.DiscountAmount != 0)
+                        {
+                            <li>İndirim <span class="span-discount">@Model.DiscountAmount TL</span></li>
+                        }
+                        <li>Sipariş Tutarı <span>@Model.FinalAmount TL</span></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+</section>
+
+
+
+<style>
+
+    .product-img {
+        width: 100px;
+        height: 100px;
+        object-fit: contain;
+        border-radius: 8px;
+    }
+</style>
+
+@section Scripts{
+
+
+    <script>
+
+        document.addEventListener("DOMContentLoaded", function(){
+
+            var prev = document.getElementById('prev');
+            var next = document.getElementById('next');
+            var trak = document.getElementById('progress');
+            var step = document.getElementById('step');
+
+            var currentStatusId = @Model.OrderStatusId;
+
+            trak.className = 'progress-' + currentStatusId;
+            step.innerHTML = currentStatusId;
+            
+
+            next.addEventListener('click', function(){
+                var cls = parseInt(trak.className.split('-').pop());
+                cls >= 4 ? cls = 4 : cls++;
+                step.innerHTML = cls;
+                trak.className = 'progress-' + cls;
+
+                changeOrderStatus(cls)
+            });
+
+            prev.addEventListener('click', function(){
+                var cls = parseInt(trak.className.split('-').pop());
+                cls <= 1 ? cls = 1 : cls--;
+                step.innerHTML = cls;
+                trak.className = 'progress-' + cls;
+
+                changeOrderStatus(cls)
+            });
+        
+        
+        
+        });
+
+
+        /// Sipariş durum id'sini değiştir
+
+        function changeOrderStatus(statusId){
+
+            const orderId = document.getElementById("order-id").value;
+            const url = "/Admin/Order/ChangeOrderStatus";
+
+            fetch(`${url}?orderId=${orderId}&orderStatusId=${statusId}`)
+            .then(res => res.json())
+            .then(res => {
+            
+                if (res.success){
+                     Swal.fire({
+                        title: 'Başarılı!',
+                        text: res.message,
+                        icon: 'success',
+                    });
+                }
+                else{
+                    Swal.fire({
+                        title: 'Hata!',
+                        text: res.message,
+                        icon: 'error',
+                    });
+                }
+            
+            
+            })
+            .catch(Error => {
+                console.error(error);
+                Swal.fire({
+                    title: 'Hata!',
+                    text: "Değişiklik esnasında bir hata ile karşılaşıldı",
+                    icon: 'error',
+                });
+            });
+
+        }
+        
+
+
+
+
+    </script>
+
+
+}
+

@@ -61,15 +61,32 @@ namespace ECommerce.Areas.Admin.Controllers
             }
 
             comment.IsDeleted = true;
+            comment.IsApproved = false;
             await _context.SaveChangesAsync();
             return true;
         }
 
 
+        [HttpPost]
+        public async Task<IActionResult> RestoreDeletedComment(int commentId)
+        {
+
+            var comment = await _context.Comments.FirstOrDefaultAsync(c => c.Id == commentId);
+            if (comment == null) {
+                return Json(new { success= false, message= "Yorum bulunamadı!"} ); 
+            }
+
+            comment.IsDeleted = false;
+            comment.IsApproved = true;
+            await _context.SaveChangesAsync();
+
+            return Json(new { success= true, message= "Ürün başarıyla yayına alındı!"});
 
 
+        } 
 
-        public async Task<List<Comment>> GetCommentsAsync(CommentSearchCriteria filter)
+
+        public async Task<List<CommentViewModel>> GetCommentsAsync(CommentSearchCriteria filter)
         {
             var query = _context.Comments.AsQueryable();
             List<Comment> comments = new List<Comment>();
@@ -132,8 +149,25 @@ namespace ECommerce.Areas.Admin.Controllers
             query = query.Skip(skipCount);
             query = query.Take(filter.Size);
 
+            query = query.Include(c => c.Product)
+                        .Include(c => c.User);
+
             comments = await query.ToListAsync();
-            return comments;
+
+            var commentModels = comments.Select(c => new CommentViewModel
+            {
+                Id = c.Id,
+                Text = c.Text,
+                Rating = c.Rating,
+                CreatedAt = c.CreatedAt,
+                IsApproved = c.IsApproved,
+                IsDeleted = c.IsDeleted,
+                User = c.User,
+                Product = c.Product
+
+            }).ToList();
+            return commentModels;
+            
 
 
         }
@@ -202,8 +236,24 @@ namespace ECommerce.Areas.Admin.Controllers
             query = query.Skip(skipCount);
             query = query.Take(filter.Size);
 
+            query = query.Include(c => c.Product)
+                        .Include(c => c.User);
+
             comments = await query.ToListAsync();
-            return Json(new { data = comments });
+
+            var commentModels = comments.Select(c => new CommentViewModel
+            {
+                Id = c.Id,
+                Text = c.Text,
+                Rating = c.Rating,
+                CreatedAt = c.CreatedAt,
+                IsApproved = c.IsApproved,
+                IsDeleted = c.IsDeleted,
+                User = c.User,
+                Product = c.Product
+
+            }).ToList();
+            return Json(new { data = commentModels });
 
 
 

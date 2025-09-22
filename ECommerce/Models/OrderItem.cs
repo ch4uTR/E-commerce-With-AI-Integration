@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace ECommerce.Models
 {
@@ -15,6 +16,8 @@ namespace ECommerce.Models
         public decimal UnitPrice { get; set; }
 
         public int OrderId { get; set; }
+
+        [JsonIgnore]
         public Order? Order { get; set; }
 
         public int ProductId { get; set; }

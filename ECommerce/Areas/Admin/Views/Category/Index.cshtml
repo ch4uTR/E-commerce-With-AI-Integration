@@ -4,10 +4,10 @@
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 style="color: #7fad39; margin-bottom: 0;">
-            <i class="fa fa-list"></i> Category List
+            <i class="fa fa-list"></i> Kategori Listesi
         </h2>
         <a asp-action="Create" class="btn btn-success rounded-pill" style="background-color: #7fad39; border-color: #7fad39;">
-            <i class="fa fa-plus"></i> Create New Category
+            <i class="fa fa-plus"></i> Yeni Bir Kategori Oluştur
         </a>
     </div>
 
@@ -16,8 +16,8 @@
             <thead>
                 <tr>
                     <th>Kategori İsmi</th>
-                    <th>Toplam Ürün Sayısı<i class="fa fa-dollar mb-2"></i></th>
-                    <th>Toplam Hasılat</th>
+                    <th>Toplam Ürün Sayısı</th>
+                    <th>Toplam Hasılat TL</th>
                     <th>Aksiyonlar</th>
                 </tr>
             </thead>
@@ -29,11 +29,11 @@
                         <td>@category.TotalProductCount</td>
                         <td>@category.TotalRevenue.ToString("N") TL </td>
                         <td>
-                            <a asp-action="Edit" asp-route-id="@category.Id" class="btn-xs site-btn">  <i class="fa fa-pencil-square-o"></i> Edit  </a>
+                            <a asp-action="Edit" asp-route-id="@category.Id" class="btn-xs site-btn">  <i class="fa fa-pencil-square-o"></i> Düzenle  </a>
                             <form asp-action="Delete" asp-route-id="@category.Id" method="post" style="display:inline">
-                                <button type="submit" class="btn-xs site-btn">  <i class="fa fa-trash-o"></i> Delete  </button>
+                                <button type="submit" class="btn-xs site-btn">  <i class="fa fa-trash-o"></i> Sil  </button>
                             </form>
-                            <a asp-action="Details" asp-route-id="@category.Id" class="btn-xs site-btn">  <i class="fa fa-info-circle"></i> Details  </a>
+                            <a asp-action="Details" asp-route-id="@category.Id" class="btn-xs site-btn">  <i class="fa fa-info-circle"></i> Detay  </a>
                         </td>
                     </tr>
                 }

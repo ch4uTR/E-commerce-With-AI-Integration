@@ -4,7 +4,9 @@ using ECommerce.Models;
 using ECommerce.Models.DTOs;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using System.Web;
 
 namespace ECommerce.Controllers
@@ -172,10 +174,42 @@ namespace ECommerce.Controllers
                                         .Take(4)
                                         .ToListAsync();
 
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            bool hasBought = false;
+            bool leftComment = false;
+            var loggedIn = userId != null;
+
+            if (loggedIn)
+            {
+                hasBought = await _context.OrderItems
+                                        .AnyAsync(oi => oi.Order.UserId == userId && oi.ProductId == id);
+            }
+            
+            if (hasBought)
+            {
+                leftComment = await _context.Comments
+                                        .AnyAsync(c => c.ProductId == id && c.UserId == userId);
+            }
+
+
+            var comments = await _context.Comments
+                                        .Where(c => c.ProductId == id && c.IsApproved)
+                                        .Include(c => c.User)
+                                        .Include(c => c.Product)
+                                        .Take(5)
+                                        .ToListAsync();
+
+
+
             ProductDetailsViewModel viewModel = new ProductDetailsViewModel
             {
                 Product = product,
-                RelatedProducts = relatedProducts
+                RelatedProducts = relatedProducts,
+                LoggedIn = loggedIn,
+                HasBought = hasBought,
+                LeftComment = leftComment,
+                Comments = comments
+
             };
 
             var viewedProductIds = new List<string>();

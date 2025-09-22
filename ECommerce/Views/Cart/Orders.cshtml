@@ -1,0 +1,91 @@
+﻿@model List<Order>
+
+@{
+    var orderCount = Model.Count();
+    
+
+}
+
+
+<section class="shoping-cart spad">
+    <div class="container">
+        
+            
+        <div id="empty-cart-div" style="display:@(orderCount == 0 ? "block" : "none")">
+
+            <div class="d-flex justify-content-center align-items-center">
+                <div class="col-md-6 p-4 text-center">
+                    <section>
+                        <div class="mb-4">
+                            <h2 style="color: #7fad39;"><i class="fa fa-shopping-cart"></i> @ViewData["Title"]</h2>
+                        </div>
+                        <div>
+                            <p class="lead">Görünüşe göre henüz sipariş vermemişsiniz.</p>
+                        </div>
+                        <div class="mt-4">
+                            <a asp-area="" asp-controller="Product" asp-action="Index" class="site-btn">
+                                <i class="fa fa-home"></i>Alışverişe Başla
+                            </a>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
+
+
+
+        <div id="cart-table-div" style="display:@(orderCount > 0 ? "block" : "none")">
+            <div class="row">
+            <div class="col-lg-12">
+                <div class="shoping__cart__table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th class="shoping__product">Products</th>
+                                <th>Sipariş No</th>
+                                <th>Durumu</th>
+                                <th>Tarih</th>
+                                <th>Tutar</th>
+                                <th>Eylem</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cart-table-body">
+
+                            @foreach (var order in Model)
+                                {
+                                    var orderItemsList = order.OrderItems.ToList();
+                                    var itemCount = orderItemsList.Count();
+                                    var displayCount = itemCount > 3 ? 3 : itemCount;
+                                    <tr>
+                                    <input type="hidden" class="order-id" value="@order.Id">
+                                    <td>                                          
+                                        @for (int i = 0; i < displayCount; i++)
+                                        {
+                                            <img class="order-image" src="@orderItemsList[i].Product.ImageUrl" alt="">
+                                        }                                          
+                                    </td>
+                                    <td>
+                                        <h5>@order.Id</h5>
+                                    </td>
+                                    <td>
+                                        @order.OrderStatus.Name
+                                    </td>
+                                    <td>
+                                        @order.OrderDate.ToString("dd/MM/yyyy")
+                                    </td>
+                                    <td class="shoping__cart__price">
+                                        @order.FinalAmount.ToString() TL
+                                    </td>
+                                    <td>
+                                        <a class ="btn btn-lg site-btn" asp-area="" asp-controller="Cart" asp-action="OrderDetails" asp-route-orderId=@order.Id>DETAY</a>
+                                    </td>
+                                </tr>
+                            }                       
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+       </div>
+    </div>
+</section>
+

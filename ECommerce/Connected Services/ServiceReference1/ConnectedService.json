@@ -1,0 +1,17 @@
+{
+  "ExtendedData": {
+    "inputs": [
+      "https://localhost:7090/CurrencyService.svc?wsdl"
+    ],
+    "collectionTypes": [
+      "System.Array",
+      "System.Collections.Generic.Dictionary`2"
+    ],
+    "enableDataBinding": true,
+    "namespaceMappings": [
+      "*, ServiceReference1"
+    ],
+    "targetFramework": "net9.0",
+    "typeReuseMode": "Specified"
+  }
+}

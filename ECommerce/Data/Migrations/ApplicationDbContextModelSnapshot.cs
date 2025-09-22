@@ -362,8 +362,15 @@ namespace ECommerce.Data.Migrations
                     b.Property<int>("CityId")
                         .HasColumnType("int");
 
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<decimal>("DiscountAmount")
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<bool>("IsHidden")
+                        .HasColumnType("bit");
 
                     b.Property<DateTime>("OrderDate")
                         .HasColumnType("datetime2");
@@ -382,7 +389,7 @@ namespace ECommerce.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<decimal>("TotalAmount")
+                    b.Property<decimal>("TotalTLAmount")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("UserId")

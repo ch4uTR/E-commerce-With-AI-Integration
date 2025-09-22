@@ -1,4 +1,9 @@
-﻿<div class="container mt-4">
+﻿@model List<CommentViewModel>
+@{
+    var totalComments = Model.Any() ? Model.Count() : 0;
+}
+
+<div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 style="color: #7fad39; margin-bottom: 0;">
             <i class="fa fa-comments"></i> Comment List
@@ -28,37 +33,40 @@
                 </tr>
             </thead>
             <tbody id="comment-table-body">
-                @foreach (var comment in Model)
+                
+                @if (totalComments >= 0)
                 {
-                    <tr>
-                        <td>@comment.Text</td>
-                        <td>@comment.User?.UserName</td>
-                        <td>@comment.Product.Name</td>
-                        <td>@comment.CreatedAt.ToShortDateString()</td>
-                        <td>
-                            @if (comment.IsApproved)
-                            {
-                                <span class="badge bg-success">Approved</span>
-                            }
-                            else
-                            {
-                                <span class="badge bg-warning text-dark">Pending</span>
-                            }
-                            @if (comment.IsDeleted)
-                            {
-                                <span class="badge bg-danger">Deleted</span>
-                            }
-                        </td>
-                        <td>
-                            <form  method="post" style="display:inline;">
-                                <button type="submit" class="btn btn-sm site-btn"> <i class="fa fa-check"></i> Approve </button>
-                            </form>
-                            <form asp-area="Admin" asp-controller="Comment" asp-action="Delete" asp-route-id="@comment.Id" method="post" style="display:inline;">
-                                <button type="submit" class="btn btn-sm site-btn"> <i class="fa fa-trash-o"></i> Delete </button>
-                            </form>
-                        </td>
-                    </tr>
+                    foreach (var comment in Model)
+                    {
+                        <tr>
+
+                            <td>@comment.Text</td>
+                            <td>@comment.User?.UserName</td>
+                            <td>@comment.Product.Name</td>
+                            <td>@comment.CreatedAt.ToShortDateString()</td>
+                            <td>
+                                @if (comment.IsApproved)
+                                {
+                                    <span class="badge bg-success">Approved</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning text-dark">Pending</span>
+                                }
+                                @if (comment.IsDeleted)
+                                {
+                                    <span class="badge bg-danger">Deleted</span>
+                                }
+                            </td>
+                            <td>
+                                <button data-id=@comment.Id class ="btn btn-xs site-btn"> <i class="fa fa-check"></i> Onayla </button>
+                                <button data-id=@comment.Id class="btn btn-xs site-btn"> <i class="fa fa-trash-o"></i> Sil </button>
+                                <button onclick="restoreComment(@comment.Id)" class="btn btn-xs site-btn"> <i class="fa fa-times"></i> İptal Et </button>
+                            </td>
+                        </tr>
+                    }
                 }
+               
             </tbody>
         </table>
     </div>
@@ -132,83 +140,89 @@
 @section Scripts{
 
 
-<script>
+    <script>
 
+        let filter = { SearchTerm: null, MinDate: null, MaxDate: null, CategoryId: null, ProductId: null, IsApproved: null, IsDeleted: null, Page: null, Size: null, SortBy: null };
 
-
-    //////////////// Silme işlemi için onay popup'ını göster
-
-        const deleteButtons = document.querySelectorAll("form button[type='submit']");
-
-        deleteButtons.forEach(button => {
-            button.addEventListener("click", function(event){
-                event.preventDefault();
-
-                Swal.fire({
-                    title: "Emin misiniz?",
-                    text: "Bu Yorumu silmek istediğinize emin misiniz?",
-                    icon: "warning",
-                    showCancelButton: true,
-                    confirmButtonText: "Evet, sil!",
-                    cancelButtonText: "Hayır, vazgeç"
-                }).then((result) => {
-                    if (result.isConfirmed){
-                        button.closest("form").submit();
-                    }
-                });
+        function restoreComment(commentId){
+            Swal.fire({
+                title: "Emin misiniz?",
+                text: "Bu yorumu tekrar yayına almaktan emin misiniz?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Evet, yayına al!",
+                cancelButtonText: "Hayır, vazgeç"
+            }).then(result => {
+                if (result.isConfirmed) {
+                    fetch(`/Admin/Comment/RestoreDeletedComment?commentId=${commentId}`, {
+                        method: 'POST'
+                    })
+                    .then(res => res.json())
+                    .then(res => {
+                        Swal.fire(res.success ? "Başarılı" : "Hata", res.message, res.success ? "success" : "error");
+                        if (res.success) fetchOrders();
+                    });
+                }
             });
+        }
+
+
+        function approveComment(id){
+            fetch(`/Admin/Comment/Approve/${id}`, { method: 'POST' })
+                .then(res => res.json())
+                .then(() => fetchComments());
+        }
+
+        function deleteComment(id){
+            Swal.fire({
+                title: "Emin misiniz?",
+                text: "Bu yorumu silmek istediğinize emin misiniz?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Evet, sil!",
+                cancelButtonText: "Hayır, vazgeç"
+            }).then(result => {
+                if(result.isConfirmed){
+                    fetch(`/Admin/Comment/Delete/${id}`, { method: 'POST' })
+                        .then(res => res.json())
+                        .then(() => fetchComments());
+                }
+            });
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const sortMenu = document.getElementById("sort-select");
+
+            sortMenu.addEventListener("change", (event) => {
+                filter.SortBy = event.target.value;
+                fetchComments();
+            });
+
+            document.getElementById("comment-table-body").addEventListener("click", event => {
+                const deleteBtn = event.target.closest(".delete-btn");
+                if(deleteBtn) deleteComment(deleteBtn.dataset.id);
+
+                const approveBtn = event.target.closest(".site-btn");
+                if(approveBtn && !approveBtn.classList.contains("delete-btn")) approveComment(approveBtn.dataset.id);
+            });
+
+            fetchComments();
         });
 
+        function fetchComments(){
+            const cleanFilter = {};
+            for(const key in filter){
+                if(filter[key] !== null && filter[key] !== "") cleanFilter[key] = filter[key];
+            }
 
+            const baseUrl = "/Comment/GetCommentsJSON";
+            const queryParams = new URLSearchParams(cleanFilter).toString();
+            const tableBody = document.getElementById("comment-table-body");
 
-        ///////////// Filtrele ve sırala ////////////////////
-
-        //sayfa yüklendiğinde sıralama barı, seacrh barı ve filtreler hep olacak, o sebeple başlangıçta bu eventlistenerları onlara atayabilirim
-        document.addEventListener("DOMContentLoaded", function(){
-
-            const filter = {
-                        SearchTerm : null,
-                        MinDate : null,
-                        MaxDate : null,
-                        CategoryId : null,
-                        ProductId: null,
-                        IsApproved : null,
-                        IsDeleted : null,
-                        Page : null,
-                        Size : null,
-                        SortBy : null
-            };
-            
-            const sortMenu = document.getElementById("sort-select");
-            sortMenu.addEventListener("change", function(event){
-
-                const urlParams = new URLSearchParams(window.location.search);
-
-                urlParams.forEach((value, key) => {
-                    if (filter.hasOwnProperty(key)){
-                        filter[key] = value;
-                    }
-                });
-
-                filter["SortBy"] = event.target.value;
-
-                const cleanFilter = {};
-                    for (const key in filter) {
-                        if (filter[key] !== null && filter[key] !== undefined && filter[key] !== "") {
-                            cleanFilter[key] = filter[key];
-                        }
-                    }
-
-                const baseUrl = "/Comment/GetCommentsJSON" ;
-                const queryParams = new URLSearchParams(cleanFilter).toString();
-                const tableBody = document.getElementById("comment-table-body");
-
-                fetch(`${baseUrl}?${queryParams}`)
+            fetch(`${baseUrl}?${queryParams}`)
                 .then(res => res.json())
-                .then(res =>  {
-
+                .then(res => {
                     tableBody.innerHTML = '';
-
                     res.data.forEach(comment => {
                         const row = `
                             <tr>
@@ -221,46 +235,21 @@
                                     ${comment.isDeleted ? '<span class="badge bg-danger">Deleted</span>' : ''}
                                 </td>
                                 <td>
-                                    <button onclick="approveComment(${comment.id})" class="btn-xs site-btn">
+                                    <button data-id="${comment.id}" class="btn-xs site-btn">
                                         <i class="fa fa-check"></i> Approve
                                     </button>
-                                    <button onclick="deleteComment(${comment.id})" class="btn-xs site-btn">
+                                    <button data-id="${comment.id}" class="btn-xs site-btn delete-btn">
                                         <i class="fa fa-trash-o"></i> Delete
                                     </button>
+                                    <button onclick="restoreComment(${comment.id})" class="btn btn-xs site-btn"> <i class="fa fa-times"></i> İptal Et </button>
                                 </td>
                             </tr>`;
                         tableBody.innerHTML += row;
                     });
-
-
-            });
-
-
-
-
-        });
-
-
-           
-
-
-            
-
-                    // Burada pagination UI'ını da güncelleyebilirsin
                 });
         }
 
-        function approveComment(id) {
-            fetch(`/Admin/Comment/Approve/${id}`, { method: 'POST' })
-                .then(res => res.json())
-                .then(() => fetchComments(1));
-        }
 
-        function deleteComment(id) {
-            fetch(`/Admin/Comment/Delete/${id}`, { method: 'POST' })
-                .then(res => res.json())
-                .then(() => fetchComments(1));
-        }
     </script>
 
 

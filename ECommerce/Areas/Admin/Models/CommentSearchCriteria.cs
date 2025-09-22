@@ -13,11 +13,11 @@
         public int? ProductId { get; set; }
 
         public bool? IsApproved { get; set; }
-        public bool? IsDeleted { get; set; }
+        public bool? IsDeleted { get; set; } 
 
         public int Page { get; set; } = 1;
 
-        public int Size { get; set; } = 20;
+        public int Size { get; set; } = 10;
 
         public string? SortBy { get; set; }
 

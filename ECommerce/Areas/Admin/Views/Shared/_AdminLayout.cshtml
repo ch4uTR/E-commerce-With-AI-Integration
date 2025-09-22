@@ -60,14 +60,14 @@
                                 </span>
                                 <form id="logoutForm" asp-area="Identity" asp-page="/Account/Logout" method="post" class="d-inline">
                                     <a href="javascript:document.getElementById('logoutForm').submit()" class="text-decoration-none text-dark">
-                                        <i class="fa fa-sign-out"></i> Logout
+                                        <i class="fa fa-sign-out"></i> Çıkış Yap
                                     </a>
                                 </form>
                             }
                             else
                             {
                                 <a asp-area="Identity" asp-page="/Account/Login" class="text-decoration-none text-dark">
-                                    <i class="fa fa-user me-1"></i> Login
+                                    <i class="fa fa-user me-1"></i> Giriş Yap
                                 </a>
                             }
                         </div>
@@ -87,22 +87,27 @@
                     <ul class="list-unstyled">
                         <li class="mb-2">
                             <a asp-controller="Product" asp-action="Index" class="sidebar-link d-block text-decoration-none text-dark fw-bold py-2 px-3 rounded-pill">
-                                <i class="fa fa-shopping-cart"></i> Products
+                                <i class="fa fa-shopping-cart"></i> Ürünler
+                            </a>
+                        </li>
+                        <li class="mb-2">
+                            <a asp-controller="Order" asp-action="Index" class="sidebar-link d-block text-decoration-none text-dark fw-bold py-2 px-3 rounded-pill">
+                                <i class="fa fa-truck"></i> Siparişler
                             </a>
                         </li>
                         <li class="mb-2">
                             <a asp-controller="Category" asp-action="Index" class="sidebar-link d-block text-decoration-none text-dark fw-bold py-2 px-3 rounded-pill">
-                                <i class="fa fa-tags me-2"></i> Categories
+                                <i class="fa fa-tags me-2"></i> Kategoriler
                             </a>
                         </li>
                         <li class="mb-2">
                             <a asp-controller="Comment" asp-action="Index" class="sidebar-link d-block text-decoration-none text-dark fw-bold py-2 px-3 rounded-pill">
-                                <i class="fa fa-comments me-2"></i> Comments
+                                <i class="fa fa-comments me-2"></i> Yorumlar
                             </a>                        
                         </li>
                         <li class="mb-2">
                             <a asp-controller="DiscountCoupon" asp-action="Index" class="sidebar-link d-block text-decoration-none text-dark fw-bold py-2 px-3 rounded-pill">
-                                <i class="fa fa-ticket me-2"></i> Coupons
+                                <i class="fa fa-ticket me-2"></i> Kuponlar
                             </a>
                         </li>
                         @await RenderSectionAsync("SidebarContent", required: false)

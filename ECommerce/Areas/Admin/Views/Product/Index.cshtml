@@ -9,13 +9,15 @@
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 style="color: #7fad39; margin-bottom: 0;">
-            <i class="fa fa-list"></i> Product List
+            <i class="fa fa-list"></i> Ürün Listesi
         </h2>
 
-        <div class="d-flex align-items-center>
+       
+
+        <div class="d-flex align-items-center">
             <div class="filter__sort">
-                <span>Sort By</span>
-                <select id="sort-select">
+                <span>Sırala</span>
+                <select id="sort-select" style="display: block;" class="form-select form-select-sm">
                     <option value="default">Default</option>
                     <option value="priceasc">Price: Low to High</option>
                     <option value="pricedesc">Price: High to Low</option>
@@ -24,13 +26,13 @@
                 </select>
             </div>
             <div class="filter__found">
-                <h6><span id="product-count"></span> @Model.Count() /@totalCount Products listed</h6>
+                <h6><span id="product-count"></span> @Model.Count() /@totalCount ürün listelendi</h6>
             </div>
             <a href="/Admin/Product/Create"
                class="btn btn-success rounded-pill"
                id="create-product-btn"
                style="background-color: #7fad39; border-color: #7fad39;">
-                <i class="fa fa-plus"></i> Create New Product
+                <i class="fa fa-plus"></i> Yeni Bir Ürün Oluştur
             </a>           
         </div>
     </div>
@@ -43,12 +45,12 @@
         <table class="table table-hover">
             <thead>
                 <tr>
-                    <th>Name</th>
-                    <th>Category</th>
-                    <th>Price <i class="fa fa-dollar"></i></th>
-                    <th>Total Sold</th>
-                    <th>Total Revenue</th>
-                    <th>Actions</th>
+                    <th>Ürün İsmi</th>
+                    <th>Kategori</th>
+                    <th>Ücret TL</th>
+                    <th>Toplam Satış Miktarı</th>
+                    <th>Toplam Hasılate</th>
+                    <th>Aksiyonlar</th>
                 </tr>
             </thead>
             <tbody id="product-table-body">
@@ -59,13 +61,13 @@
                         <td>@product.CategoryName</td>
                         <td>@product.Price.ToString("N")</td>
                         <td>@product.TotalSoldQuantity</td>
-                        <td>@product.TotalRevenue.ToString("N")</td>
+                        <td>@product.TotalRevenue.ToString("N") TL</td>
                         <td>
-                            <a asp-action="Edit" asp-route-id="@product.Id" class="btn-xs site-btn"> <i class="fa fa-pencil-square-o"></i> Edit </a>
+                            <a asp-action="Edit" asp-route-id="@product.Id" class="btn-xs site-btn"> <i class="fa fa-pencil-square-o"></i> Düzenle </a>
                             <form asp-action="Delete" asp-route-id="@product.Id" method="post" style="display:inline">
-                                <button type="submit" class="btn-xs site-btn"> <i class="fa fa-trash-o"></i> Delete </button>
+                                <button type="submit" class="btn-xs site-btn"> <i class="fa fa-trash-o"></i> Sil </button>
                             </form>
-                            <a asp-action="Details" asp-route-id="@product.Id" class="btn-xs site-btn"> <i class="fa fa-info-circle"></i> Details </a>
+                            <a asp-action="Details" asp-route-id="@product.Id" class="btn-xs site-btn"> <i class="fa fa-info-circle"></i> Detay </a>
                         </td>
                     </tr>
                 }

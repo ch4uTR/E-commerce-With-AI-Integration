@@ -18,11 +18,11 @@
                             <h2 style="color: #7fad39;"><i class="fa fa-shopping-cart"></i> @ViewData["Title"]</h2>
                         </div>
                         <div>
-                            <p class="lead">Your cart is empty.</p>
+                            <p class="lead">Sepetiniz boş!</p>
                         </div>
                         <div class="mt-4">
                             <a asp-area="" asp-controller="Home" asp-action="Index" class="site-btn">
-                                <i class="fa fa-home"></i> Go to Home Page
+                                <i class="fa fa-home"></i>Alışverişe devam et
                             </a>
                         </div>
                     </section>
@@ -31,7 +31,7 @@
             <div class="row">
                 <div class="col-lg-12">
                     <div class="section-title related__product__title">
-                        <h2>Related Product</h2>
+                        <h2>İlgili Ürünler</h2>
                     </div>
                 </div>
             </div>
@@ -70,9 +70,9 @@
                         <thead>
                             <tr>
                                 <th class="shoping__product">Products</th>
-                                <th>Price</th>
-                                <th>Quantity</th>
-                                <th>Total</th>
+                                <th>Fiyat</th>
+                                <th>Miktar</th>
+                                <th>Toplam Tutar</th>
                                 <th></th>
                             </tr>
                         </thead>
@@ -120,7 +120,7 @@
             <div class="col-lg-6">
                 <div class="shoping__continue">
                     <div class="shoping__discount">
-                        <h5>Discount Codes</h5>
+                        <h5>İndirim Kuponu</h5>
                         <form  id="coupon-form" action="#">
                             <input id="coupon-text" type="text" placeholder="Enter your coupon code">
                             <button id="coupon-button" type="submit" class="site-btn">APPLY COUPON</button>

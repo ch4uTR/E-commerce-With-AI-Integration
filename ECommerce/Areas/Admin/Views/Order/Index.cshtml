@@ -1,0 +1,278 @@
+﻿@model List<Order>
+
+    @{
+        var citiesDict = ViewBag.CitiesDict;
+
+    }
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 style="color: #7fad39; margin-bottom: 0;">
+            <i class="fa fa-orders"></i> Sipariş Listesi
+        </h2>
+        <div class="form-check mb-3">
+            <input class="form-check-input" type="checkbox" value="" id="show-cancelled-checkbox">
+            <label class="form-check-label" for="show-cancelled-checkbox">
+                İptal edilen siparişleri göster
+            </label>
+        </div>
+        <div class="filter__sort">
+            <span>Sırala</span>
+            <select id="sort-select" style="display: block;" class="form-select form-select-sm">
+                <option value="default">Varsayılan</option>
+                <option value="priceasc">Price: Low to High</option>
+                <option value="pricedesc">Price: High to Low</option>
+                <option value="dateasc">Tarih: En eskiden</option>
+                <option value="datedesc">Tarih: En yeniden</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="modern-table-container">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Ülke</th>
+                    <th>İl</th>
+                    <th>Tutar</th>
+                    <th>Tarih</th>
+                    <th>Sipariş Durumu</th>
+                    <th>Aksiyonlar</th>
+                </tr>
+            </thead>
+            <tbody id="order-table-body">
+                @foreach (var order in Model)
+                {
+                    <tr>
+                        <td>Türkiye</td>
+                        <td>@citiesDict[order.CityId]</td>
+                        <td>@order.FinalAmount.ToString() TL</td>
+                        <td>@order.OrderDate.ToString("dd/MM/yyyy")</td>
+                        <td>@order.OrderStatus.Name</td>
+                        <td>
+                            <a asp-area="Admin" asp-controller="Order" asp-action="Details" asp-route-orderId=@order.Id class="btn-xs site-btn">
+                                <i class="fa fa-info-circle"></i> Detay
+                            </a>
+                            @if(order.OrderStatus.Name.ToLower() == "cancelled")
+                            {
+                                <button onclick="restoreOrder(@order.Id)" class="btn-xs site-btn">
+                                    <i class="fa fa-undo"></i> Siparişi Geri Al
+                                </button>
+                            }
+                            else
+                            {
+                                <button onclick="cancelOrder(@order.Id)" class="btn-xs site-btn">
+                                    <i class="fa fa-times"></i> İptal Et
+                                </button>
+                            }  
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+<style>
+.modern-table-container {
+    background-color: #ffffff;
+    border-radius: 1rem; /* 16px */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden; /* İçerik taşmasını engeller ve köşelerin yuvarlatılmasına yardımcı olur */
+}
+
+/* Tablo başlık stili */
+.modern-table-container .table thead th {
+    background-color: #7fad39;
+    color: #ffffff;
+    font-weight: 600;
+}
+
+/* Tablo satırlarına geçiş efekti */
+.modern-table-container .table tbody tr:hover {
+    background-color: #f5f5f5; /* Hafif gri */
+}
+
+/* Buton gruplarını düzenleme */
+.modern-table-container .btn-group {
+    border-radius: 0.5rem; /* 8px */
+}
+
+/* Tabloyu daha düzenli göstermek için */
+.modern-table-container .table {
+    margin-bottom: 0;
+}
+
+.btn-xs {
+    padding: .25rem .5rem;
+    font-size: .75rem;
+    line-height: 1.5;
+    border-radius: .2rem;
+}
+
+</style>
+
+@section Scripts{
+
+
+<script>
+
+
+    ///gizli siparişleri göster
+    
+
+
+    ///Siparişi iptal et
+
+            function cancelOrder(orderId) {
+            Swal.fire({
+                title: "Emin misiniz?",
+                text: "Bu siparişi iptal etmek istediğinize emin misiniz?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Evet, iptal et!",
+                cancelButtonText: "Hayır, vazgeç"
+            }).then(result => {
+                if (result.isConfirmed) {
+                    fetch(`/Admin/Order/CancelOrder?orderId=${orderId}`, {
+                        method: 'POST'
+                    })
+                    .then(res => res.json())
+                    .then(res => {
+                        Swal.fire(res.success ? "Başarılı" : "Hata", res.message, res.success ? "success" : "error");
+                        if (res.success) fetchOrders();
+                    });
+                }
+            });
+        }
+
+
+        //sipariş iptalini geri al
+            function restoreOrder(orderId) {
+            Swal.fire({
+                title: "Emin misiniz?",
+                text: "Bu siparişi tekrar işleme almak istediğinize emin misiniz?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Evet, işleme al!",
+                cancelButtonText: "Hayır, vazgeç"
+            }).then(result => {
+                if (result.isConfirmed) {
+                    fetch(`/Admin/Order/RestoreCancelledOrder?orderId=${orderId}`, {
+                        method: 'POST'
+                    })
+                    .then(res => res.json())
+                    .then(res => {
+                        Swal.fire(res.success ? "Başarılı" : "Hata", res.message, res.success ? "success" : "error");
+                        if (res.success) fetchOrders();
+                    });
+                }
+            });
+        }
+
+
+            /////fetch i ve filter ı globale taşıdım
+                const filter = {
+                    MinDate : null,
+                    MaxDate : null,
+                    ProductId: null,
+                    UserId : null,
+                    MinPrice: null,
+                    MaxPrice: null,
+                    ShowCancelled: null,
+                    Page : null,
+                    Size : null,
+                    SortBy : null
+                };
+
+                function fetchOrders() {
+                    const urlParams = new URLSearchParams(window.location.search);
+
+                    urlParams.forEach((value, key) => {
+                        if (filter.hasOwnProperty(key)) {
+                            filter[key] = value;
+                        }
+                    });
+
+                    const cleanFilter = {};
+                    for (const key in filter) {
+                        if (filter[key] !== null && filter[key] !== undefined && filter[key] !== "") {
+                            cleanFilter[key] = filter[key];
+                        }
+                    }
+
+                    const baseUrl = "/Admin/Order/GetFilteredOrdersJSON";
+                    const queryParams = new URLSearchParams(cleanFilter).toString();
+                    const tableBody = document.getElementById("order-table-body");
+
+                    fetch(`${baseUrl}?${queryParams}`)
+                        .then(res => res.json())
+                        .then(res => {
+                            const cityDictionary = res.cityDictionary;
+                            tableBody.innerHTML = '';
+
+
+                            res.data.forEach(order => {
+                                const actionButton = order.orderStatus.name.toLowerCase() === "cancelled"
+                                    ? `<button onclick="restoreOrder(${order.id})" class="btn-xs site-btn">
+                                           <i class="fa fa-undo"></i> Siparişi Geri Al
+                                       </button>`
+                                    : `<button onclick="cancelOrder(${order.id})" class="btn-xs site-btn">
+                                           <i class="fa fa-times"></i> İptal Et
+                                       </button>`;
+
+                                const row = `
+                                    <tr>
+                                        <td>Türkiye</td>
+                                        <td>${cityDictionary[order.cityId]}</td>
+                                        <td>${order.finalAmount.toFixed(2)} TL</td>
+                                        <td>${new Date(order.orderDate).toLocaleDateString('tr-TR')}</td>
+                                        <td>${order.orderStatus.name}</td>
+                                        <td>
+                                            <a href="/Admin/Order/Details/${order.id}" class="btn-xs site-btn">
+                                                <i class="fa fa-info-circle"></i> Detay
+                                            </a>
+                                            ${actionButton}
+                                        </td>
+                                    </tr>`;
+                                tableBody.innerHTML += row;
+                            });
+                        });
+                }
+
+
+
+             ///////////// Filtrele ve sırala ////////////////////
+
+            //sayfa yüklendiğinde sıralama barı, seacrh barı ve filtreler hep olacak, o sebeple başlangıçta bu eventlistenerları onlara atayabilirim
+            document.addEventListener("DOMContentLoaded", function() {
+
+            
+
+            const sortMenu = document.getElementById("sort-select");
+            const showCancelledCheckbox = document.getElementById("show-cancelled-checkbox");
+
+            showCancelledCheckbox.addEventListener("change", function() {
+                filter.ShowCancelled = this.checked;
+                fetchOrders();
+            });
+
+            sortMenu.addEventListener("change", function(event){
+                filter.SortBy = event.target.value;
+                fetchOrders();
+            });
+
+            
+
+        });
+
+
+
+
+
+
+
+
+</script>
+}
