@@ -10,7 +10,8 @@ namespace ECommerce.Models.DTOs
         [Required]
         public string Name { get; set; }
 
-        public string? Description { get; set; }
+        [Required(ErrorMessage = "Açıklama gerekli")]
+        public string Description { get; set; }
 
         [Required(ErrorMessage = "Category is needed")]
         [Range(1, int.MaxValue)]

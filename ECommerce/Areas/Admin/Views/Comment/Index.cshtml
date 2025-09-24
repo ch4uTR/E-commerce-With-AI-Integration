@@ -1,21 +1,24 @@
 ﻿@model List<CommentViewModel>
 @{
     var totalComments = Model.Any() ? Model.Count() : 0;
+    var size = ViewBag.PageSize;
+    var totalPages = (int)Math.Ceiling((double)totalComments / size);
+    var currentPage = ViewBag.PageNumber;
 }
 
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 style="color: #7fad39; margin-bottom: 0;">
-            <i class="fa fa-comments"></i> Comment List
+            <i class="fa fa-comments"></i> Yorum Listesi
         </h2>
         <div class="filter__sort">
-            <span>Sort By</span>
+            <span>Sırala</span>
             <select id="sort-select" style="display: block;" class="form-select form-select-sm">
-                <option value="default">Default</option>
-                <option value="priceasc">Price: Low to High</option>
-                <option value="pricedesc">Price: High to Low</option>
-                <option value="totalsolddesc">Total Sold: High to Low</option>
-                <option value="totalsoldasc">Total Sold: Low to High</option>
+                <option value="default">Varsayılan</option>
+                <option value="dateAsc">Tarihe Göre: Eskiden Yeniye</option>
+                <option value="dateDesc">Tarihe Göre: Yeniden Eskiye</option>
+                <option value="totalsoldasc">Satışa Göre: Artan</option>
+                <option value="totalsolddesc">Satışa Göre: Azalan</option>
             </select>
         </div>
     </div>
@@ -24,12 +27,12 @@
         <table class="table table-hover">
             <thead>
                 <tr>
-                    <th>Comment Text</th>
-                    <th>User</th>
-                    <th>Product</th>
-                    <th>Date</th>
-                    <th>Status</th>
-                    <th>Actions</th>
+                    <th>Yorum Metni</th>
+                    <th>Kullanıcı</th>
+                    <th class="shoping__product">Ürün</th>
+                    <th>Tarih</th>
+                    <th>Durum</th>
+                    <th>Aksiyonlar</th>
                 </tr>
             </thead>
             <tbody id="comment-table-body">
@@ -40,9 +43,9 @@
                     {
                         <tr>
 
-                            <td>@comment.Text</td>
-                            <td>@comment.User?.UserName</td>
-                            <td>@comment.Product.Name</td>
+                            <td><span class="order-text">@comment.Text</span></td>
+                            <td>@comment.UserName</td>
+                            <td class="order-cell"><img class="order-image"  src="@comment.ProductImageUrl" /><span class="order-text">@comment.ProductName</span></td>
                             <td>@comment.CreatedAt.ToShortDateString()</td>
                             <td>
                                 @if (comment.IsApproved)
@@ -70,31 +73,13 @@
             </tbody>
         </table>
     </div>
-
-    @* <div class="d-flex justify-content-center mt-4">
-        <nav aria-label="Page navigation">
-            <ul class="pagination">
-                <li class="page-item @(currentPage == 1 ? "disabled" : "")">
-                    <a class="page-link" href="#" onclick="fetchComments(@(currentPage - 1))" aria-label="Previous">
-                        <span aria-hidden="true">&laquo;</span>
-                    </a>
-                </li>
-
-                @for (int i = 1; i <= totalPages; i++)
-                {
-                    <li class="page-item @(i == currentPage ? "active" : "")">
-                        <a class="page-link" href="#" onclick="fetchComments(@i)">@i</a>
-                    </li>
-                }
-
-                <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
-                    <a class="page-link" href="#" onclick="fetchComments(@(currentPage + 1))" aria-label="Next">
-                        <span aria-hidden="true">&raquo;</span>
-                    </a>
-                </li>
-            </ul>
-        </nav>
-    </div> *@
+    <div class="product__pagination">
+        @for (int i = 1; i <= totalPages; i++)
+        {
+            <a class="@(i == currentPage ? "active" : "")" data-page="@i"> @i </a>
+        }
+    </div>
+  
 </div>
 
 
@@ -142,7 +127,65 @@
 
     <script>
 
-        let filter = { SearchTerm: null, MinDate: null, MaxDate: null, CategoryId: null, ProductId: null, IsApproved: null, IsDeleted: null, Page: null, Size: null, SortBy: null };
+        var filter = {
+                SearchTerm: null,
+                MinDate: null,
+                MaxDate: null,
+                CategoryId: null,
+                ProductId: null,
+                ProductId: null,
+                IsDeleted: null,
+                Page: null
+        };
+
+        function fetchComments(pageNumber = 1){
+            const cleanFilter = {};
+            for(const key in filter){
+                if(filter[key] !== null && filter[key] !== "") cleanFilter[key] = filter[key];
+            }
+            filter.Page = pageNumber;
+
+            const baseUrl = "/Admin/Comment/GetCommentsJSON";
+            const queryParams = new URLSearchParams(cleanFilter).toString();
+            const tableBody = document.getElementById("comment-table-body");
+
+            fetch(`${baseUrl}?${queryParams}`)
+                .then(res => res.json())
+                .then(res => {
+                    tableBody.innerHTML = '';
+                    console.log(res.data);
+                    res.data.forEach(comment => {
+                        const row = `
+                            <tr>
+                                <td><span class="order-text">${comment.text}</span></td>
+                                <td>${comment.userName}</td>
+                                 <td class="order-cell"><img class="order-image"  src="${comment.productImageUrl}" /><span class="order-text">${comment.productName}</span></td>
+                                <td>${comment.createdAt ? new Date(comment.createdAt).toLocaleDateString() : ''}</td>
+                                <td>
+                                    ${comment.isApproved ? '<span class="badge bg-success">Approved</span>' : '<span class="badge bg-warning text-dark">Pending</span>'}
+                                    ${comment.isDeleted ? '<span class="badge bg-danger">Deleted</span>' : ''}
+                                </td>
+                                <td>
+                                    <button data-id="${comment.id}" class="btn-xs site-btn">
+                                        <i class="fa fa-check"></i> Approve
+                                    </button>
+                                    <button data-id="${comment.id}" class="btn-xs site-btn delete-btn">
+                                        <i class="fa fa-trash-o"></i> Delete
+                                    </button>
+                                    <button onclick="restoreComment(${comment.id})" class="btn btn-xs site-btn"> <i class="fa fa-times"></i> İptal Et </button>
+                                </td>
+                            </tr>`;
+                        tableBody.innerHTML += row;
+                    });
+                }) .catch(err =>{
+                    console.error(err);
+                    Swal.fire({
+                        title: "Hata!",
+                        text: "Yorumlar getirilirken bir hata ile karşılaşıldı",
+                        icon: "error"
+                    });
+                });
+        }
 
         function restoreComment(commentId){
             Swal.fire({
@@ -167,13 +210,13 @@
         }
 
 
-        function approveComment(id){
+        function approveComment(id, pageNumber){
             fetch(`/Admin/Comment/Approve/${id}`, { method: 'POST' })
                 .then(res => res.json())
-                .then(() => fetchComments());
+                .then(() => fetchComments(pageNumber));
         }
 
-        function deleteComment(id){
+        function deleteComment(id, pageNumber){
             Swal.fire({
                 title: "Emin misiniz?",
                 text: "Bu yorumu silmek istediğinize emin misiniz?",
@@ -185,7 +228,7 @@
                 if(result.isConfirmed){
                     fetch(`/Admin/Comment/Delete/${id}`, { method: 'POST' })
                         .then(res => res.json())
-                        .then(() => fetchComments());
+                        .then(() => fetchComments(pageNumber));
                 }
             });
         }
@@ -194,60 +237,23 @@
             const sortMenu = document.getElementById("sort-select");
 
             sortMenu.addEventListener("change", (event) => {
+                console.log("Change in sort");
                 filter.SortBy = event.target.value;
                 fetchComments();
             });
 
             document.getElementById("comment-table-body").addEventListener("click", event => {
                 const deleteBtn = event.target.closest(".delete-btn");
-                if(deleteBtn) deleteComment(deleteBtn.dataset.id);
+                if(deleteBtn) deleteComment(deleteBtn.dataset.id, filter.Page);
 
                 const approveBtn = event.target.closest(".site-btn");
-                if(approveBtn && !approveBtn.classList.contains("delete-btn")) approveComment(approveBtn.dataset.id);
+                if(approveBtn && !approveBtn.classList.contains("delete-btn")) approveComment(approveBtn.dataset.id, filter.Page);
             });
 
-            fetchComments();
+            
         });
 
-        function fetchComments(){
-            const cleanFilter = {};
-            for(const key in filter){
-                if(filter[key] !== null && filter[key] !== "") cleanFilter[key] = filter[key];
-            }
-
-            const baseUrl = "/Comment/GetCommentsJSON";
-            const queryParams = new URLSearchParams(cleanFilter).toString();
-            const tableBody = document.getElementById("comment-table-body");
-
-            fetch(`${baseUrl}?${queryParams}`)
-                .then(res => res.json())
-                .then(res => {
-                    tableBody.innerHTML = '';
-                    res.data.forEach(comment => {
-                        const row = `
-                            <tr>
-                                <td>${comment.text}</td>
-                                <td>${comment.user ? comment.user.userName : ''}</td>
-                                <td>${comment.product ? comment.product.name : ''}</td>
-                                <td>${new Date(comment.createdAt).toLocaleDateString()}</td>
-                                <td>
-                                    ${comment.isApproved ? '<span class="badge bg-success">Approved</span>' : '<span class="badge bg-warning text-dark">Pending</span>'}
-                                    ${comment.isDeleted ? '<span class="badge bg-danger">Deleted</span>' : ''}
-                                </td>
-                                <td>
-                                    <button data-id="${comment.id}" class="btn-xs site-btn">
-                                        <i class="fa fa-check"></i> Approve
-                                    </button>
-                                    <button data-id="${comment.id}" class="btn-xs site-btn delete-btn">
-                                        <i class="fa fa-trash-o"></i> Delete
-                                    </button>
-                                    <button onclick="restoreComment(${comment.id})" class="btn btn-xs site-btn"> <i class="fa fa-times"></i> İptal Et </button>
-                                </td>
-                            </tr>`;
-                        tableBody.innerHTML += row;
-                    });
-                });
-        }
+        
 
 
     </script>

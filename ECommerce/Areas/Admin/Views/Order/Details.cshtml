@@ -151,18 +151,16 @@
             var prev = document.getElementById('prev');
             var next = document.getElementById('next');
             var trak = document.getElementById('progress');
-            var step = document.getElementById('step');
 
             var currentStatusId = @Model.OrderStatusId;
 
             trak.className = 'progress-' + currentStatusId;
-            step.innerHTML = currentStatusId;
+
             
 
             next.addEventListener('click', function(){
                 var cls = parseInt(trak.className.split('-').pop());
                 cls >= 4 ? cls = 4 : cls++;
-                step.innerHTML = cls;
                 trak.className = 'progress-' + cls;
 
                 changeOrderStatus(cls)
@@ -171,7 +169,6 @@
             prev.addEventListener('click', function(){
                 var cls = parseInt(trak.className.split('-').pop());
                 cls <= 1 ? cls = 1 : cls--;
-                step.innerHTML = cls;
                 trak.className = 'progress-' + cls;
 
                 changeOrderStatus(cls)
@@ -186,6 +183,7 @@
 
         function changeOrderStatus(statusId){
 
+            console.log("order statüs değişecek");
             const orderId = document.getElementById("order-id").value;
             const url = "/Admin/Order/ChangeOrderStatus";
 

@@ -5,7 +5,11 @@ namespace ECommerce.Areas.Admin.Models
     public class AdminDashboardViewModel
     {
         public decimal TotalRevenuLast30Days { get; set; }
-        public decimal TotalOrderCountLast30Days { get; set; }
+        public int TotalOrderCountLast30Days { get; set; }
+
+        public int TotalOrderCountToday { get; set; }
+
+        public int TotalPendingOrders { get; set; }
 
         public int TotalUser { get; set; }
         public int TotalUserRegisteredLast30Days { get; set; }

@@ -67,7 +67,7 @@
                 <div class="product__details__tab">
                     <ul class="nav nav-tabs" role="tablist">
                         <li class="nav-item">
-                            <a class="nav-link active" data-toggle="tab" href="#tabs-1" role="tab" aria-selected="true">Description</a>
+                            <a class="nav-link active" data-toggle="tab" href="#tabs-1" role="tab" aria-selected="true">Açıklama</a>
                         </li>
                         <li class="nav-item" id="reviews-tab">
                             <a class="nav-link" data-toggle="tab" href="#tabs-2" role="tab" aria-selected="false">
@@ -198,8 +198,7 @@
                                     </div>
                                 </div>
                             }
-                            <div id="comments-div">
-                            </div>
+                            <div id="submitted-comments"></div>
                         </div>
                     </div>
                 </div>
@@ -247,55 +246,46 @@
 @section scripts{
     <script>
         function updateCommentDiv(commentModels) {
-            const commentDiv = document.getElementById("comments-div");
-            commentDiv.innerHTML = ``;
+            console.log(commentModels);
+
+            const submittedComentsDiv = document.getElementById("submitted-comments");
+            submittedComentsDiv.innerHTML = ``;
             
             commentModels.forEach((model) => {
                 const newDiv = document.createElement("div");
-                newDiv.classList.add("feedback-container"); // isteğe göre sınıf ekleyebilirsin
                 newDiv.style.display = "flex";
                 newDiv.style.gap = "20px";
                 newDiv.style.marginTop = "20px";
 
                 // Rating bölümü
                 const ratingDiv = document.createElement("div");
-                ratingDiv.classList.add("rating");
-
-                for (let k = 1; k <= 5; k++) {
-                    const star = document.createElement("input");
-                    star.type = "radio";
-                    star.name = `rating-${model.Id}`;
-                    star.id = `rating-${k}-${model.Id}`;
-                    star.value = k;
-                    star.checked = model.Rating === k;
-                    star.disabled = true; // kullanıcı değiştiremesin
+                ratingDiv.classList.add("product__details__rating");
+                    
+                for(let j = 1; j<= model.rating; j++){
+                    const star = document.createElement("i");
+                    star.classList.add("fa", "fa-star");
                     ratingDiv.appendChild(star);
-
-                    const label = document.createElement("label");
-                    label.htmlFor = `rating-${k}-${model.Id}`;
-                    if (k <= model.Rating) label.classList.add("active");
-                    ratingDiv.appendChild(label);
                 }
+
 
                 // Yorum kısmı
                 const commentTextDiv = document.createElement("div");
                 commentTextDiv.classList.add("comment-box");
                 commentTextDiv.style.flex = "1";
 
+
                 const commentText = document.createElement("textarea");
                 commentText.value = model.text;
+                commentText.classList.add("form-control");
+                commentText.style="width:100%; height:auto; box-sizing:border-box; padding:8px; background-color:white;"
                 commentText.readOnly = true;
-                commentText.style.width = "100%";
-                commentText.style.boxSizing = "border-box";
-                commentText.style.padding = "8px";
-                commentText.rows = 4;
 
                 commentTextDiv.appendChild(commentText);
 
                 // Yapılandırmayı birleştir
                 newDiv.appendChild(ratingDiv);
                 newDiv.appendChild(commentTextDiv);
-                commentDiv.appendChild(newDiv);
+                submittedComentsDiv.appendChild(newDiv);
             });
         }
 
@@ -648,6 +638,11 @@
             flex-wrap: wrap;
             align-items: center;
             box-shadow: 0 4px 30px rgba(0,0,0,.05);
+        }
+
+        .product__details__rating i {
+            margin-right: -2px;
+            color: #EDBB0E;
         }
 
 </style>

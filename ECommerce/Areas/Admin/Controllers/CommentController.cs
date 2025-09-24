@@ -162,8 +162,9 @@ namespace ECommerce.Areas.Admin.Controllers
                 CreatedAt = c.CreatedAt,
                 IsApproved = c.IsApproved,
                 IsDeleted = c.IsDeleted,
-                User = c.User,
-                Product = c.Product
+                UserName = c.User.UserName,
+                ProductImageUrl = c.Product.ImageUrl,
+                ProductName = c.Product.Name
 
             }).ToList();
             return commentModels;
@@ -249,8 +250,10 @@ namespace ECommerce.Areas.Admin.Controllers
                 CreatedAt = c.CreatedAt,
                 IsApproved = c.IsApproved,
                 IsDeleted = c.IsDeleted,
-                User = c.User,
-                Product = c.Product
+                UserName = c.User.UserName,
+                ProductName = c.Product.Name,
+                ProductImageUrl = c.Product.ImageUrl
+
 
             }).ToList();
             return Json(new { data = commentModels });

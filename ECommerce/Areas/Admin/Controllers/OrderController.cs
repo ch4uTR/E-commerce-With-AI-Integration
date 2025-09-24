@@ -31,6 +31,12 @@ namespace ECommerce.Areas.Admin.Controllers
 
 
             ViewBag.CitiesDict = cities.ToDictionary(c => c.Id, c => c.Name);
+
+            var totalOrders = await _context.Orders.CountAsync();
+            ViewBag.TotalOrders = totalOrders;
+            ViewBag.Size = criteria.Size;
+            ViewBag.CurrentPage = 1;
+
             var orders = await GetFilteredOrders(criteria);
 
             return View(orders);

@@ -1,7 +1,11 @@
 ﻿@model List<Order>
 
-    @{
-        var citiesDict = ViewBag.CitiesDict;
+@{
+    var citiesDict = ViewBag.CitiesDict;
+    var totalOrders = ViewBag.TotalOrders;
+    var size = ViewBag.Size;
+    var totalPages = (int)Math.Ceiling((double)totalOrders / size);
+    var currentPage = ViewBag.CurrentPage;
 
     }
 
@@ -20,10 +24,10 @@
             <span>Sırala</span>
             <select id="sort-select" style="display: block;" class="form-select form-select-sm">
                 <option value="default">Varsayılan</option>
-                <option value="priceasc">Price: Low to High</option>
-                <option value="pricedesc">Price: High to Low</option>
-                <option value="dateasc">Tarih: En eskiden</option>
-                <option value="datedesc">Tarih: En yeniden</option>
+                <option value="priceasc">Fiyata Göre: Artan</option>
+                <option value="pricedesc">Fiyata Göre: Azalan</option>
+                <option value="dateasc">Tarihe Göre: Eskiden Yeniye</option>
+                <option value="datedesc">Tarihe Göre: Yeniden Eskiye</option>
             </select>
         </div>
     </div>
@@ -70,6 +74,12 @@
                 }
             </tbody>
         </table>
+    </div>
+    <div class="product__pagination">
+        @for (int i = 1; i <= totalPages; i++)
+        {
+            <a class="@(i == currentPage ? "active" : "")" data-page="@i"> @i </a>
+        }
     </div>
 </div>
 
@@ -186,7 +196,7 @@
                     SortBy : null
                 };
 
-                function fetchOrders() {
+                function fetchOrders(pageNumber = 1) {
                     const urlParams = new URLSearchParams(window.location.search);
 
                     urlParams.forEach((value, key) => {
@@ -194,6 +204,7 @@
                             filter[key] = value;
                         }
                     });
+                    filter.Page = pageNumber;
 
                     const cleanFilter = {};
                     for (const key in filter) {
@@ -238,7 +249,23 @@
                                     </tr>`;
                                 tableBody.innerHTML += row;
                             });
+
+                            // const activePage = document.querySelector(".product__pagination a.active");
+                            // activePage.classList.remove("active");
+                            // const allPages = document.querySelectorAll(".product__pagination a");
+                            // const pageAnchor = Array.from(allPages).find(a => a.dataset.page === pageNumber);
+                            // pageAnchor.classList.add("active");
+
+                        })
+                        .catch(err =>{
+                        console.error(err);
+                            Swal.fire({
+                                title: "Hata!",
+                                text: "Siparişler getirilirken bir hata ile karşılaşıldı",
+                                icon: "error"
+                            });
                         });
+                    
                 }
 
 
@@ -263,7 +290,21 @@
                 fetchOrders();
             });
 
-            
+
+
+            //Sayfalandırma
+            const paginationDiv = document.querySelector(".product__pagination");
+            paginationDiv.addEventListener("click", function(event){
+
+                const currentPageAnchor = paginationDiv.querySelector("a.active");
+                const anchor = event.target.closest("a");
+                if (!anchor) return;
+
+                const page= anchor.dataset.page;
+                fetchOrders(page);
+                currentPageAnchor.classList.remove("active");
+                anchor.classList.add("active");
+            });
 
         });
 

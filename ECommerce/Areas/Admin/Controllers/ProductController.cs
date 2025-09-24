@@ -39,11 +39,11 @@ namespace ECommerce.Areas.Admin.Controllers
             var totalCount = _context.Products.Count();
 
 
-            //var minPrice = await _context.Products.MinAsync(p => p.Price);
-            //var maxPrice = await _context.Products.MaxAsync(p => p.Price);
+            var minPrice = await _context.Products.MinAsync(p => p.Price);
+            var maxPrice = await _context.Products.MaxAsync(p => p.Price);
 
-            //ViewBag.MinPrice = minPrice;
-            //ViewBag.MaxPrice = maxPrice;
+            ViewBag.MinPrice = minPrice;
+            ViewBag.MaxPrice = maxPrice;
             ViewBag.TotalCount = totalCount;
             ViewBag.CurrentPage = criteria.Page;
             ViewBag.PageSize = criteria.Size;
@@ -53,11 +53,6 @@ namespace ECommerce.Areas.Admin.Controllers
 
 
 
-        [HttpGet]
-        public  IActionResult CreatePArtial()
-        {
-            return PartialView("_CreatePartial");
-        }
 
         /*     -----------------------------------------------------------------------------------------------------------------------------------*/
         /*     -----------------------------------------------------------------------------------------------------------------------------------*/
@@ -71,7 +66,7 @@ namespace ECommerce.Areas.Admin.Controllers
 
             var totalCount = productsViewModels.Count();
 
-            
+
 
             // JSON verisini döndür
             return Json(new
@@ -79,7 +74,9 @@ namespace ECommerce.Areas.Admin.Controllers
                 data = productsViewModels,
                 totalCount = totalCount,
                 currentPage = criteria.Page,
-                pageSize = criteria.Size
+                pageSize = criteria.Size,
+                maxPrice = productsViewModels.Max(p => p.Price),
+                minPrice = productsViewModels.Min(p => p.Price)
             });
         }
 

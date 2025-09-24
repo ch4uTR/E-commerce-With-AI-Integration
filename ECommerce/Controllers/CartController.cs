@@ -5,6 +5,7 @@ using ECommerce.Models.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Protocol;
 using ServiceReference1;
@@ -419,9 +420,14 @@ namespace ECommerce.Controllers
             double currenyRate = 0;
             if (currency != "TRY")
             {
-                var client = new CurrencyServiceClient();
-                var proxyRates = await client.GetCurrencyRatesAsync();
-                var rate = proxyRates.FirstOrDefault(r => r.Name.ToLower() == currency.ToLower());
+                //var client = new CurrencyServiceClient();
+                //var soapRates = await client.GetCurrencyRatesAsync();
+                //var rate = soapRates.FirstOrDefault(r => r.Name.ToLower() == currency.ToLower());
+
+                using var httpClient = new HttpClient();
+                var json = await httpClient.GetStringAsync("http://localhost:5222/api/currency");
+                var restRates = JsonConvert.DeserializeObject<List<Models.CurrencyDTO>>(json);
+                var rate = restRates.FirstOrDefault(r => r.Name.ToLower() == currency.ToLower());
                 if(rate != null)
                 {
                     if (rate.Success) { totalCost /= (decimal)rate.Value;  }

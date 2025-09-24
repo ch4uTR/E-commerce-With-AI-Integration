@@ -50,17 +50,17 @@
                             <div class="filter__sort">
                                 <span>Sırala</span>
                                 <select id="sort-select">
-                                    <option value="default">Default</option>
-                                    <option value="priceasc">Price: Low to High</option>
-                                    <option value="pricedesc">Price: High to Low</option>
-                                    <option value="totalsolddesc">Total Sold: High to Low</option>
-                                    <option value="totalsoldasc">Total Sold: High to Low</option>
+                                    <option value="default">Varsayılan</option>
+                                    <option value="priceasc">Fiyata Göre: Artan</option>
+                                    <option value="pricedesc">Fiyata Göre: Azalan</option>
+                                    <option value="totalsolddesc">Toplam Satışa göre: Artan</option>
+                                    <option value="totalsoldasc">Toplam Satışa göre: Azalan</option>
                                 </select>
                             </div>
                         </div>
                         <div class="col-lg-4 col-md-4">
                             <div class="filter__found">
-                                <h6><span id="product-count"></span> @Model.Count() /@totalCount Products listed</h6>
+                                <h6><span id="product-count"></span> @Model.Count() /@totalCount ürün görüntüleniyor</h6>
                             </div>
                         </div>
                         <div class="col-lg-4 col-md-3">
@@ -95,10 +95,10 @@
                     }             
                 </div>
                 <div class="product__pagination">
-                    <a href="#">1</a>
-                    <a href="#">2</a>
-                    <a href="#">3</a>
-                    <a href="#"><i class="fa fa-long-arrow-right"></i></a>
+                    @for(int i = 1; i<= totalPages; i++)
+                    {
+                        <a class="@(i == currentPage ? "active" : "" )" data-page="@i"> @i </a>
+                    }
                 </div>
             </div>
         </div>
@@ -126,6 +126,81 @@
 
         /////////////////////////////------------SAYFA YÜKLENDİĞİNDE YAPILACAK İŞLEMLER-------////////////////////////////
         document.addEventListener("DOMContentLoaded", function(){
+
+
+
+            const paginationDiv = document.querySelector(".product__pagination");
+            paginationDiv.addEventListener("click", function(event){
+
+                const currentPageAnchor = paginationDiv.querySelector("a.active");
+                const anchor = event.target.closest("a");
+                if (!anchor) return;
+
+                const page= anchor.dataset.page;
+
+                const urlParams = new URLSearchParams(window.location.search);
+                urlParams.forEach((value,key) =>{
+                    if (filter.hasOwnProperty(key)){
+                        filter[key] = value;
+                    }
+                });
+
+                filter.Page = page;
+
+                const cleanFilter = {};
+                for (const key in filter) {
+                    if (filter[key] !== null && filter[key] !== undefined && filter[key] !== "") {
+                        cleanFilter[key] = filter[key];
+                    }
+                }
+
+                const baseUrl = "/Product/GetProductsJSON";
+                    const queryParams = new URLSearchParams(cleanFilter).toString();
+                    const productRow = document.getElementById("product-row");
+
+                    console.log(queryParams);
+
+                    fetch(`${baseUrl}?${queryParams}`)
+                        .then(res => res.json())
+                        .then(data => {
+
+                            productRow.innerHTML = ``;
+                            console.log(data);
+                            data.data.forEach(item => {
+                                const newRow = `
+                                <div class="col-lg-4 col-md-6 col-sm-6">
+                                    <div class="product__item">
+                                        <div class="product__item__pic set-bg" data-setbg="${item.imageUrl}">
+                                            <ul class="product__item__pic__hover">
+                                                <input type="hidden" class="product-id" value="${item.id}"/>
+                                                <li><a ><i class="fa fa-heart"></i></a></li>
+                                                <li><a href="#"><i class="fa fa-retweet"></i></a></li>
+                                                <li><a href="#" class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i></a></li>
+                                            </ul>
+                                        </div>
+                                        <div class="product__item__text">
+                                            <h6><a asp-area="" asp-controller="Product" asp-action="Details" asp-route-id="${item.id}">${item.productName}</a></h6>
+                                            <h5>${item.price} TL</h5>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                `;
+
+                                productRow.innerHTML += newRow;
+                                const addedDiv = productRow.lastElementChild.querySelector('.set-bg');
+                                addedDiv.style.backgroundImage = `url('${item.imageUrl}')`;
+
+                                currentPageAnchor.classList.remove("active");
+                                anchor.classList.add("active");
+
+                                });
+
+                        });
+
+
+            });
+
 
 
             ///// SIRALAMA İŞLEMİ //////////////////////////////////
@@ -156,6 +231,7 @@
                     });
                     //sortby ı değiştireyim//
                     filter["SortBy"] = event.target.value;
+                    filter["Page"] = 1;
 
 
                     const cleanFilter = {};
@@ -207,6 +283,11 @@
                                 const addedDiv = productRow.lastElementChild.querySelector('.set-bg');
                                 addedDiv.style.backgroundImage = `url('${item.imageUrl}')`; 
                                 });
+                            const activePage = document.querySelector(".product__pagination a.active");
+                            activePage.classList.remove("active");
+                            const allPages = document.querySelectorAll(".product__pagination a");
+                            const page1 = Array.from(allPages).find(a => a.dataset.page === "1");
+                            page1.classList.add("active");
 
                         });
 
@@ -305,8 +386,7 @@
                     
 
 
-                // });
-                 
+               
                 
 
 

@@ -17,12 +17,12 @@
         <div class="d-flex align-items-center">
             <div class="filter__sort">
                 <span>Sırala</span>
-                <select id="sort-select" style="display: block;" class="form-select form-select-sm">
-                    <option value="default">Default</option>
-                    <option value="priceasc">Price: Low to High</option>
-                    <option value="pricedesc">Price: High to Low</option>
-                    <option value="totalsolddesc">Total Sold: High to Low</option>
-                    <option value="totalsoldasc">Total Sold: High to Low</option>
+                <select id="sort-menu" style="display: block;" class="form-select form-select-sm">
+                    <option value="default">Varsayılan</option>
+                    <option value="priceasc">Fiayata Göre: Artan</option>
+                    <option value="pricedesc">Fiayata Göre: Azalan</option>                  
+                    <option value="totalsoldasc">Satışa Göre: Artan</option>
+                    <option value="totalsolddesc">Satışa Göre: Azalan</option>
                 </select>
             </div>
             <div class="filter__found">
@@ -49,7 +49,7 @@
                     <th>Kategori</th>
                     <th>Ücret TL</th>
                     <th>Toplam Satış Miktarı</th>
-                    <th>Toplam Hasılate</th>
+                    <th>Toplam Hasılat TL</th>
                     <th>Aksiyonlar</th>
                 </tr>
             </thead>
@@ -59,7 +59,7 @@
                     <tr>
                         <td>@product.ProductName</td>
                         <td>@product.CategoryName</td>
-                        <td>@product.Price.ToString("N")</td>
+                        <td>@product.Price.ToString("N") TL</td>
                         <td>@product.TotalSoldQuantity</td>
                         <td>@product.TotalRevenue.ToString("N") TL</td>
                         <td>
@@ -74,48 +74,29 @@
             </tbody>
         </table>
     </div>
-
-    <div class="d-flex justify-content-center mt-4">
-        <nav aria-label="Page navigation">
-            <ul class="pagination">
-                <li class="page-item @(currentPage == 1 ? "disabled" : "")">
-                    <a class="page-link" href="#" onclick="fetchProducts(@(currentPage - 1))" aria-label="Previous">
-                        <span aria-hidden="true">&laquo;</span>
-                    </a>
-                </li>
-
-                @for (int i = 1; i <= totalPages; i++)
-                {
-                    <li class="page-item @(i == currentPage ? "active" : "")">
-                        <a class="page-link" href="#" onclick="fetchProducts(@i)">@i</a>
-                    </li>
-                }
-
-                <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
-                    <a class="page-link" href="#" onclick="fetchProducts(@(currentPage + 1))" aria-label="Next">
-                        <span aria-hidden="true">&raquo;</span>
-                    </a>
-                </li>
-            </ul>
-        </nav>
+    <div class="product__pagination">
+        @for (int i = 1; i <= totalPages; i++)
+        {
+            <a class="@(i == currentPage ? "active" : "")" data-page="@i"> @i </a>
+        }
     </div>
+    
 </div>
 
 @section SidebarContent {
     <div class="sidebar__item">
-        <h4>Price</h4>
+        <h4>Fiyat</h4>
         <div class="price-range-wrap">
-            <div class="price-range ui-slider ui-corner-all ui-slider-horizontal ui-widget ui-widget-content"
-                 data-min=@ViewBag.MinPrice data-max=@ViewBag.MaxPrice>
+            <div class="price-range ui-slider ui-corner-all ui-slider-horizontal ui-widget ui-widget-content" id="min-max-div"
+                 data-min="@ViewBag.MinPrice" data-max="@ViewBag.MaxPrice">
                 <div class="ui-slider-range ui-corner-all ui-widget-header"></div>
                 <span tabindex="0" class="ui-slider-handle ui-corner-all ui-state-default"></span>
                 <span tabindex="0" class="ui-slider-handle ui-corner-all ui-state-default"></span>
             </div>
             <div class="range-slider">
                 <div class="price-input">
-                    <input type="number" id="minamount" placeholder="Min">
-                    <input type="number" id="maxamount" placeholder="Max">
-                    <button id="apply-price-filter" class="btn site-btn mt-2" onclick="">Apply</button>
+                    <input type="text" id="minamount">
+                    <input type="text" id="maxamount">
                 </div>
             </div>
         </div>
@@ -159,161 +140,278 @@
 
 @section Scripts {
     <script>
-        function fetchProducts(pageNumber = 1, sortBy = 'default', minPrice, maxPrice, categoryId, searchTerm) {
-            // 1. Filter objesi
-            const filter = {
-                page: pageNumber,
-                sortBy: sortBy,
-                minPrice: minPrice,
-                maxPrice: maxPrice,
-                categoryId: categoryId,
-                searchTerm: searchTerm
-            };
 
-            // 2. Query string'e çevir
-            const params = new URLSearchParams();
-            for (const key in filter) {
-                if (filter[key] !== undefined && filter[key] !== null && filter[key] !== "") {
-                    params.append(key, filter[key]);
+
+        document.addEventListener("DOMContentLoaded", function(){
+
+
+            const paginationDiv = document.querySelector(".product__pagination");
+            paginationDiv.addEventListener("click", function(event){
+
+                const currentPageAnchor = paginationDiv.querySelector("a.active");
+                const anchor = event.target.closest("a");
+                if (!anchor) return;
+
+                const page= anchor.dataset.page;
+
+                const urlParams = new URLSearchParams(window.location.search);
+                urlParams.forEach((value,key) =>{
+                    if (filter.hasOwnProperty(key)){
+                        filter[key] = value;
+                    }
+                });
+
+                filter.Page = page;
+
+                const cleanFilter = {};
+                for (const key in filter) {
+                    if (filter[key] !== null && filter[key] !== undefined && filter[key] !== "") {
+                        cleanFilter[key] = filter[key];
+                    }
                 }
-            }
+                console.log(cleanFilter);
 
-            // 3. URL oluştur - Razor syntax'ı değiştir
-            const baseUrl = '/Admin/Product/GetProductDetailsJSON';
-            const url = `${baseUrl}?${params.toString()}`;
-            console.log(url);
-            
-            
-            fetch(url)
-                .then(response => {
-                    if (!response.ok) throw new Error('Network response was not ok');
-                    return response.json(); 
-                })
-                .then(data => {
-                    const tableBody = document.getElementById('product-table-body');
-                    tableBody.innerHTML = '';
+                const baseUrl = "/Admin/Product/GetProductDetailsJSON";
+                const queryParams = new URLSearchParams(cleanFilter).toString();
+                const productTableBody = document.getElementById("product-table-body");
 
-                    const productCountElement = document.getElementById('product-count');
-                    productCountElement.textContent = data.totalCount || 0;
+                fetch(`${baseUrl}?${queryParams}`)
+                .then(res => res.json())
+                .then(res =>{
+                    productTableBody.innerHTML = ``;
+                    console.log(res.data)
+                    res.data.forEach(product =>{
 
-                    data.data.forEach(product => {
-                        const row = `<tr>
+
+                        const row = `
+                        <tr>
                             <td>${product.productName}</td>
                             <td>${product.categoryName}</td>
-                            <td>${product.price.toLocaleString()}</td>
+                            <td>${product.price.toLocaleString()} TL</td>
                             <td>${product.totalSoldQuantity}</td>
-                            <td>${product.totalRevenue.toLocaleString()}</td>
+                            <td>${product.totalRevenue.toLocaleString()} TL</td>
                             <td>
-                                <a href="/Admin/Product/Edit/${product.id}" class="btn-xs site-btn">
-                                    <i class="fa fa-pencil-square-o"></i> Edit
-                                </a>
-                                <form action="/Admin/Product/Delete/${product.id}" method="post" style="display:inline">
-                                    <button type="submit" class="btn-xs site-btn">
-                                        <i class="fa fa-trash-o"></i> Delete
-                                    </button>
+                                <a asp-action="Edit" asp-route-id="${product.id}" class="btn-xs site-btn"> <i class="fa fa-pencil-square-o"></i> Düzenle </a>
+                                <form asp-action="Delete" asp-route-id="${product.id}" method="post" style="display:inline">
+                                    <button type="submit" class="btn-xs site-btn"> <i class="fa fa-trash-o"></i> Sil </button>
                                 </form>
-                                <a href="/Admin/Product/Details/${product.id}" class="btn-xs site-btn">
-                                    <i class="fa fa-info-circle"></i> Details
-                                </a>
+                                <a asp-action="Details" asp-route-id="${product.id}" class="btn-xs site-btn"> <i class="fa fa-info-circle-o"></i> Detay </a>
                             </td>
-                        </tr>`;
-                        tableBody.innerHTML += row;
+                        </tr>`
+                        productTableBody.innerHTML += row;
                     });
 
-                    // Pagination'ı da güncelle
-                    updatePagination(data.currentPage, data.totalCount, data.pageSize, sortBy);
+                    currentPageAnchor.classList.remove("active");
+                    anchor.classList.add("active");
                 })
-                .catch(error => {
-                    console.error('Error:', error);
+                .catch(err =>{
+                    console.error(err);
+                    Swal.fire({
+                        title: "Hata!",
+                        text: "Ürünler getirilirken bir hata ile karşılaşıldı",
+                        icon: "error"
+                    });
                 });
-        }
-
-        function updatePagination(currentPage, totalCount, pageSize, sortBy) {
-            const totalPages = Math.ceil(totalCount / pageSize);
-            const paginationContainer = document.querySelector('.pagination');
-
-            if (!paginationContainer) return;
-
-            paginationContainer.innerHTML = '';
-
-            // Previous button
-            const prevLi = document.createElement('li');
-            prevLi.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`;
-            prevLi.innerHTML = `<a class="page-link" href="#" onclick="fetchProducts(${currentPage - 1}, '${encodeURIComponent(sortBy)}')" aria-label="Previous">
-                <span aria-hidden="true">&laquo;</span>
-            </a>`;
-            paginationContainer.appendChild(prevLi);
-
-            // Page numbers
-            for (let i = 1; i <= totalPages; i++) {
-                const pageLi = document.createElement('li');
-                pageLi.className = `page-item ${i === currentPage ? 'active' : ''}`;
-                pageLi.innerHTML = `<a class="page-link" href="#" onclick="fetchProducts(${i}, '${encodeURIComponent(sortBy)}')">${i}</a>`;
-                paginationContainer.appendChild(pageLi);
-            }
-
-            // Next button
-            const nextLi = document.createElement('li');
-            nextLi.className = `page-item ${currentPage === totalPages ? 'disabled' : ''}`;
-            nextLi.innerHTML = `<a class="page-link" href="#" onclick="fetchProducts(${currentPage + 1}, '${encodeURIComponent(sortBy)}')" aria-label="Next">
-                <span aria-hidden="true">&raquo;</span>
-            </a>`;
-            paginationContainer.appendChild(nextLi);
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            const sortSelect = document.getElementById('sort-select');
-
-            const applyPriceFilterBtn = document.getElementById('apply-price-filter');
-            const minAmountInput = document.getElementById('minamount');
-            const maxAmountInput = document.getElementById('maxamount');
 
 
 
-            sortSelect.addEventListener('change', (event) => {
-                const selectedSortBy = event.target.value;
-
-                const minPrice = minAmountInput.value || undefined;
-                const maxPrice = maxAmountInput.value || undefined;
-
-
-                console.log(selectedSortBy);
-                fetchProducts(1, selectedSortBy, minPrice, maxPrice); // İlk sayfaya geri dön ve sırala
             });
 
-            // Sayfa yüklendiğinde ürün sayısını güncelle
-            const productCountElement = document.getElementById('product-count');
-            if (productCountElement && !productCountElement.textContent.trim()) {
-                const totalCountFromViewBag = @ViewBag.TotalCount;
-                productCountElement.textContent = totalCountFromViewBag || 0;
-            }
-        });
 
-        $(document).ready(function() {
-            $('#sort-select').on('change', function() {
-                const selectedSortBy = $(this).val();
-                console.log('jQuery ile seçilen değer:', selectedSortBy);
-                fetchProducts(1, selectedSortBy);
+
+
+
+
+            var filter = {
+                page: null,
+                sortBy: null,
+                minPrice: null,
+                maxPrice: null,
+                categoryId: null,
+                searchTerm: null
+            };
+
+            //SORT MENUYE EVENT LISTENER EKLEYEREK DOKÜMAN YÜKLENDİĞİ ANDAN İTİBAREN TETİKLENEBİLİR OLSUN DEĞİŞİKLİKLERLE
+            const sortMenu = document.getElementById("sort-menu");
+            sortMenu.addEventListener("change", function(event){
+
+
+                const urlParams = new URLSearchParams(window.location.search)
+                urlParams.forEach((value,key) =>{
+                    if (filter.hasOwnProperty(key)){
+                        filter[key] = value;
+                    }
+                });
+
+                //sortby ı değiştireyim//
+                filter["sortBy"] = event.target.value;
+                filter["Page"] = 1;
+
+                const cleanFilter = {};
+                for (const key in filter) {
+                    if (filter[key] !== null && filter[key] !== undefined && filter[key] !== "") {
+                        cleanFilter[key] = filter[key];
+                    }
+                }
+                console.log(cleanFilter);
+
+                const baseUrl = "/Admin/Product/GetProductDetailsJSON";
+                const queryParams = new URLSearchParams(cleanFilter).toString();
+                const productTableBody = document.getElementById("product-table-body");
+
+                fetch(`${baseUrl}?${queryParams}`)
+                .then(res => res.json())
+                .then(res =>{
+                    productTableBody.innerHTML = ``;
+                    console.log(res.data)
+                    res.data.forEach(product =>{
+                        
+
+                        const row = `
+                        <tr>
+                            <td>${product.productName}</td>
+                            <td>${product.categoryName}</td>
+                            <td>${product.price.toLocaleString()} TL</td>
+                            <td>${product.totalSoldQuantity}</td>
+                            <td>${product.totalRevenue.toLocaleString()} TL</td>
+                            <td>
+                                <a asp-action="Edit" asp-route-id="${product.id}" class="btn-xs site-btn"> <i class="fa fa-pencil-square-o"></i> Düzenle </a>
+                                <form asp-action="Delete" asp-route-id="${product.id}" method="post" style="display:inline">
+                                    <button type="submit" class="btn-xs site-btn"> <i class="fa fa-trash-o"></i> Sil </button>
+                                </form>
+                                <a asp-action="Details" asp-route-id="${product.id}" class="btn-xs site-btn"> <i class="fa fa-info-circle-o"></i> Detay </a>
+                            </td>
+                        </tr>`
+                        productTableBody.innerHTML += row;
+                    });
+
+                    const activePage = document.querySelector(".product__pagination a.active");
+                    activePage.classList.remove("active");
+                    const allPages = document.querySelectorAll(".product__pagination a");
+                    const page1 = Array.from(allPages).find(a => a.dataset.page === "1");
+                    page1.classList.add("active");
+                })
+                .catch(err =>{
+                    console.error(err);
+                    Swal.fire({
+                        title: "Hata!",
+                        text: "Ürünler getirilirken bir hata ile karşılaşıldı",
+                        icon: "error"
+                    });
+                });
+
+
+
             });
+
+
+
+            //// Fiyat değişince tekrar istek atılacak
+
+        const priceInput = document.querySelector(".price-input")
+        priceInput.addEventListener("change", function(){
+
+            filterPriceChange();
         });
 
-        //         document.getElementById('create-product-btn').addEventListener('click', function (e) {
-        //     e.preventDefault(); // Sayfanın yenilenmesini engelle
 
-        //     fetch('/Admin/Product/CreatePartial')
-        //         .then(response => response.text())
-        //         .then(html => {
-        //             document.getElementById('dynamic-content').innerHTML = html;
-        //         })
-        //         .catch(error => console.error('Error loading create form:', error));
-        // });
+        $(".price-range").on("slidestop", function(event, ui){
+            filterPriceChange();
+        });
 
 
+        function filterPriceChange(){
+            const minAmount = document.getElementById("minamount").value;
+            const maxAmount = document.getElementById("maxamount").value;
+            console.log(minAmount)
+
+            const urlParams = new URLSearchParams(window.location.search);
+            urlParams.forEach((value,key) =>{
+                if (filter.hasOwnProperty(key)){
+                    filter[key] = value;
+                }
+            });
+
+            filter["minPrice"] = parseFloat(minAmount);
+            filter["maxPrice"] = parseFloat(maxAmount);
+            filter["page"] = 1;
+
+            const cleanFilter = {};
+            for (const key in filter) {
+                if (filter[key] !== null && filter[key] !== undefined && filter[key] !== "") {
+                    cleanFilter[key] = filter[key];
+                }
+            }
+            console.log(cleanFilter);
+            const baseUrl = "/Product/GetProductsJSON";
+            const queryParams = new URLSearchParams(cleanFilter).toString();
+
+            const minMaxDiv = document.getElementById("min-max-div");
+            const productTableBody = document.getElementById("product-table-body");
+
+            fetch(`${baseUrl}?${queryParams}`)
+            .then(res => res.json())
+            .then(res =>{
+                productTableBody.innerHTML = ``;
+                console.log(res.data)
+                minMaxDiv.dataset.min = res.minPrice;
+                minMaxDiv.dataset.max = res.maxPrice;
+                res.data.forEach(product =>{
+
+
+                    const row = `
+                    <tr>
+                        <td>${product.productName}</td>
+                        <td>${product.categoryName}</td>
+                        <td>${product.price.toLocaleString()} TL</td>
+                        <td>${product.totalSoldQuantity}</td>
+                        <td>${product.totalRevenue.toLocaleString()} TL</td>
+                        <td>
+                            <a asp-action="Edit" asp-route-id="${product.id}" class="btn-xs site-btn"> <i class="fa fa-pencil-square-o"></i> Düzenle </a>
+                            <form asp-action="Delete" asp-route-id="${product.id}" method="post" style="display:inline">
+                                <button type="submit" class="btn-xs site-btn"> <i class="fa fa-trash-o"></i> Sil </button>
+                            </form>
+                            <a asp-action="Details" asp-route-id="${product.id}" class="btn-xs site-btn"> <i class="fa fa-info-circle"></i> Detay </a>
+                        </td>
+                    </tr>`
+                    productTableBody.innerHTML += row;
+                });
+                const activePage = document.querySelector(".product__pagination a.active");
+                activePage.classList.remove("active");
+                const allPages = document.querySelectorAll(".product__pagination a");
+                const page1 = Array.from(allPages).find(a => a.dataset.page === "1");
+                page1.classList.add("active");
+
+            })
+            .catch(err =>{
+                console.error(err);
+                Swal.fire({
+                    title: "Hata!",
+                    text: "Ürünler getirilirken bir hata ile karşılaşıldı",
+                    icon: "error"
+                });
+            });
+
+        }
 
 
 
 
-        ///// delete için onay al
+
+
+
+        });
+
+
+
+
+
+
+
+
+
+
+
 
 
         const deleteButtons = document.querySelectorAll("form button[type='submit']");

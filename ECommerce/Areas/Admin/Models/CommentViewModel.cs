@@ -13,8 +13,9 @@ namespace ECommerce.Areas.Admin.Models
         public bool IsApproved { get; set; }
         public bool IsDeleted { get; set; }
 
-        public ApplicationUser User { get; set; }
-        public Product Product { get; set; }
+        public string UserName { get; set; }
+        public string ProductName { get; set; }
+        public string ProductImageUrl { get; set; }
  
     }
 }

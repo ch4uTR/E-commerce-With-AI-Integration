@@ -7,7 +7,7 @@ namespace ECommerce.Controllers
 {
     public class CurrencyController : Controller
     {
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> GetCurrencyDataAsync()
         {
 
             var client = new CurrencyServiceClient();
@@ -23,5 +23,13 @@ namespace ECommerce.Controllers
 
             return View(rates);
         }
+
+
+
+
+
+
+
+
     }
 }

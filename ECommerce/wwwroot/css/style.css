@@ -311,6 +311,13 @@
 /*----------------------------------------*/
 /* Order Image CSS
 /*----------------------------------------*/
+
+.order-cell {
+	display: flex; /* img ve metni yan yana yapar */
+	align-items: center; /* dikeyde ortalar */
+	gap: 5px; /* img ve metin arasýnda boþluk */
+}
+
 .order-image {
 	width: 50px;
 	height: 50px;
@@ -318,6 +325,10 @@
 	border-radius: 5px;
 	border: 1px solid #ddd;
 	margin-right: 3px;
+}
+
+.order-text {
+	word-break: break-word; /* metin uzun olursa satýr kýrar */
 }
 
 /*----------------------------------------*/
@@ -1454,7 +1465,7 @@ ol {
 	font-size: 16px;
 	color: #dd2222;
 	font-weight: 700;
-	max-width: 20%;
+	max-width: 40%;
 	border: none;
 	display: inline-block;
 }
@@ -1959,12 +1970,21 @@ ol {
 	transition: all, 0.3s;
 }
 
-.product__pagination a:hover,
-.blog__pagination a:hover {
-	background: #7fad39;
-	border-color: #7fad39;
-	color: #ffffff;
-}
+	.product__pagination a.active,
+	.blog__pagination a.active {
+		background: #7fad39;
+		border-color: #7fad39;
+		color: #ffffff;
+	}
+
+
+
+	.product__pagination a:hover,
+	.blog__pagination a:hover {
+		background: #7fad39;
+		border-color: #7fad39;
+		color: #ffffff;
+	}
 
 .product__pagination a:last-child,
 .blog__pagination a:last-child {
