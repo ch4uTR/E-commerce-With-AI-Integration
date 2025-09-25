@@ -11,9 +11,9 @@ namespace ECommerce.RESTService.Controllers
     {
         private readonly HttpClient _httpClient;
 
-        public CurrencyController(HttpClient httpClient)
+        public CurrencyController(IHttpClientFactory httpClientFactory)
         {
-            _httpClient = httpClient;
+            _httpClient = httpClientFactory.CreateClient("TCMB");
         }
 
 
@@ -51,19 +51,33 @@ namespace ECommerce.RESTService.Controllers
         }
 
 
-        //[HttpGet("{code")]                  //GET /api/currency/USD
-        //public async Task<CurrencyDTO> GetCurrencyByCode(string code)
-        //{
+        [HttpPost("calculate")]
+        public async Task<IActionResult> CalculateTotal(string code, double turkishLiras)
+        {
+            var url = "https://www.tcmb.gov.tr/kurlar/today.xml";
+            var  xmlString = await _httpClient.GetStringAsync(url);
+            var xml = XDocument.Parse(xmlString);
 
-        //    var url = "https://www.tcmb.gov.tr/kurlar/today.xml";
-        //    var xmlString = await _httpClient.GetStringAsync(url);
-        //    var xml = XDocument.Parse(xmlString);
+            var currencyNode= xml.Descendants("Currency")
+                                        .FirstOrDefault(node => node.Attribute("Kod")?.Value == code.ToUpper());
+            if (currencyNode == null) { return Json(new { success = false, message = "Geçersiz kur kodu", price = turkishLiras}); }
 
-        //    var currencyDTO = xml.Descendants("Currency")
-                                    
+            double currencyValue;
+            bool success = double.TryParse(currencyNode?.Element("ForexBuying")?.Value,
+                                            System.Globalization.NumberStyles.Any,
+                                            System.Globalization.CultureInfo.InvariantCulture,
+                                            out currencyValue);
 
 
-        //}
+            if (success) {
+                var price = turkishLiras / currencyValue;
+
+                return Json(new { success = true, price}); 
+            }
+
+            else { return Json(new {success = false, message = "Kurun değerine ulaşılamadı" ,price = turkishLiras}); }
+
+        }
 
 
 

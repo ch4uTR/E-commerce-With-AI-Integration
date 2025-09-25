@@ -15,7 +15,7 @@
     <meta name="keywords" content="Ogani, unica, creative, html">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>E-Commerce | Home </title>
+    <title>E-Commerce | Ana Sayfa </title>
 
 
     <!--BootStrap-->
@@ -29,6 +29,7 @@
     <!-- Css Styles -->
     <link rel="stylesheet" href="~/css/bootstrap.min.css" type="text/css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="~/css/elegant-icons.css" type="text/css">
     <link rel="stylesheet" href="~/css/nice-select.css" type="text/css">
     <link rel="stylesheet" href="~/css/jquery-ui.min.css" type="text/css">
@@ -54,7 +55,7 @@
                 <li><a href="#"><i class="fa fa-heart"></i> <span>1</span></a></li>
                 <li><a asp-area="" asp-controller="Cart" asp-action="Index" ><i class="fa fa-shopping-bag"></i> <span>3</span></a></li>
             </ul>
-            <div class="header__cart__price">item: <span>150.00</span></div>
+            <div class="header__cart__price">item: <span>0.00 TL</span></div>
         </div>
         <div class="humberger__menu__widget">
             <div class="header__top__right__language">
@@ -93,8 +94,7 @@
                     <div class="col-lg-6 col-md-6">
                         <div class="header__top__left">
                             <ul>
-                                <li><i class="fa fa-envelope"></i> enes.yildirim@std.yeditepe.edu.tr</li>
-                                <li>350 TL ve üstü ücretsiz kargo!</li>
+                                <li style="margin-left:20px;">350 TL ve üstü ücretsiz kargo!</li>
                             </ul>
                         </div>
                     </div>
@@ -103,10 +103,13 @@
                             <div class="header__top__right__auth">
                                 @if (User.Identity.IsAuthenticated)
                                 {
-                                    <a asp-area="Identity" asp-page="/Account/Manage/Index" class="me-2">
+                                    <a asp-area="Identity" asp-page="/Account/Manage/Index" class="me-3">
                                         <i class="fa fa-user"></i> Profilim
                                     </a>
-                                    <a asp-area="" asp-controller="Cart" asp-action="Orders" class="me-2">
+                                    <a asp-area="" asp-controller="Favorite" asp-action="Index" class="me-3">
+                                        <i class="fa fa-heart"></i> Favorilerim
+                                    </a>
+                                    <a asp-area="" asp-controller="Cart" asp-action="Orders" class="me-3">
                                         <i class="fa fa-shopping-cart"></i> Siparişlerim
                                     </a>
 

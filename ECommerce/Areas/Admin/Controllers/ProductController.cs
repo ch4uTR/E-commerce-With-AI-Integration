@@ -42,6 +42,15 @@ namespace ECommerce.Areas.Admin.Controllers
             var minPrice = await _context.Products.MinAsync(p => p.Price);
             var maxPrice = await _context.Products.MaxAsync(p => p.Price);
 
+            var categories = await _context.Categories
+                                .Select(c => new SelectListItem 
+                                { 
+                                    Text = c.Name,
+                                    Value = c.Id.ToString()
+                                })
+                                .ToListAsync();
+
+            ViewBag.Categories = categories; ;
             ViewBag.MinPrice = minPrice;
             ViewBag.MaxPrice = maxPrice;
             ViewBag.TotalCount = totalCount;

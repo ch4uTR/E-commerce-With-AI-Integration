@@ -350,6 +350,19 @@
 	object-fit: cover;
 }
 
+/*           -- ----           */
+
+.create-product-btn {
+	background-color: #7fad39;
+	display: block;
+	border-color: #7fad39; 
+	color:#FFF;
+	border-radius:10px;
+	padding:15px;
+	height:100%;
+	margin:0px;
+	margin-bottom:10px;
+}
 
 
 
@@ -1755,12 +1768,19 @@ ol {
 
 .filter__sort {
 	margin-bottom: 15px;
+	margin-right: 20px;
+	background: #7fad39;
+	border-radius:10px;
+	
 }
 
 .filter__sort span {
 	font-size: 16px;
-	color: #6f6f6f;
-	display: inline-block;
+	color: #FFFF;
+	background: #7fad39;
+	display:block;
+	border-radius:5px;
+	text-align: center;
 }
 
 .filter__sort .nice-select {

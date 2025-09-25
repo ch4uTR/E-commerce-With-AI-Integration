@@ -45,7 +45,7 @@
                 </div>
                 <div class="featured__controls">
                     <ul>
-                        <li class="active" data-filter="*">All</li>
+                        <li class="active" data-filter="*">Hepsi</li>
                         @foreach (var category in featuringCategories)
                         {
                             <li data-filter=".@category.Slug">@category.Name</li>
@@ -63,8 +63,7 @@
                         <input type="hidden" class="product-id" value="@product.Id"/>
                         <div class="featured__item__pic set-bg" data-setbg="@product.ImageUrl">
                             <ul class="featured__item__pic__hover">
-                                <li><a href="#"><i class="fa fa-heart"></i></a></li>
-                                <li><a href="#"><i class="fa fa-retweet"></i></a></li>
+                                <li><a class="add-to-favorites-btn"><i class="fa fa-heart"></i></a></li>                                
                                 <li><a  class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i></a></li>
                             </ul>
                         </div>
@@ -263,7 +262,55 @@
                 });
             });
 
-            /////////////////////////////////////////////////////////////////////////
+            ///////////////////////////////   FAVORİLERE EKLEME    //////////////////////////////////////////
+
+            const favoriteButtons = document.querySelectorAll(".add-to-favorites-btn");
+            console.log(favoriteButtons.length);
+            favoriteButtons.forEach(button => {
+
+                 button.addEventListener("click", (event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+
+                    const productItem = event.currentTarget.closest(".featured__item");
+                    const productId = productItem.querySelector(".product-id").value;
+                    console.log(productId);
+
+                    fetch(`/Favorite/AddItemToList?productId=${productId}`)
+                    .then(response => response.json())
+                    .then(res => {
+                        console.log("Favorilere eklendi  tetiklendi", res);
+                        if(res.success){
+                            Swal.fire({
+                                title: "Başarılı!",
+                                text: res.message,
+                                icon: "success",
+                                timer: 1500,
+                                showConfirmButton: false
+                            });
+                        }
+                        else{
+                            Swal.fire({
+                               title: "Hata!",
+                               text: res.message,
+                               icon: "error"
+                           })
+                        }
+                    })
+                    .catch(error => {
+                           console.error(error);
+                           Swal.fire({
+                               title: "Hata!",
+                               text: "Ürün favorilerinize eklenirken bir problem karşılaşıldı",
+                               icon: "error"
+                           })
+                    });
+                });
+            
+            });
+
+
+
 
 
             ///// resimlere tıklanınca detaya yönlendirme ///////////////////////

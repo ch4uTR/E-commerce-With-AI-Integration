@@ -21,6 +21,9 @@ namespace ECommerce.Models
             
         public ICollection<Comment> Comments { get; set; } = new List<Comment>();
 
+        public Cart Cart { get; set; }
+        public FavoriteList FavoriteList { get; set; }
+
 
 
     }

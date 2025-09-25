@@ -25,6 +25,13 @@ namespace ECommerce.Controllers
         }
 
 
+        [HttpPost]
+        public async Task<IActionResult> CalculatePrice(string code, decimal turkishLiras)
+        {
+
+
+        }
+
 
 
 

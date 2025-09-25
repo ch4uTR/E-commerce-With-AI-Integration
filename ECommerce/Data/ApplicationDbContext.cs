@@ -36,6 +36,11 @@ namespace ECommerce.Data
         public DbSet<Address> Addresses { get; set; }
 
 
+
+        public DbSet<FavoriteList> FavoriteLists { get; set; }
+        public DbSet<FavoriteListItem> FavoriteListItems { get; set; }
+
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);

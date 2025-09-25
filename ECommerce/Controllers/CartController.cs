@@ -344,7 +344,7 @@ namespace ECommerce.Controllers
 
 
         [HttpGet]
-        public async Task<IActionResult> GetCartDetailsJSON([FromQuery] string currency = "TRY")
+        public async Task<IActionResult> GetCartDetailsJSON()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             decimal productCost = 0;
@@ -417,26 +417,7 @@ namespace ECommerce.Controllers
             }
 
 
-            double currenyRate = 0;
-            if (currency != "TRY")
-            {
-                //var client = new CurrencyServiceClient();
-                //var soapRates = await client.GetCurrencyRatesAsync();
-                //var rate = soapRates.FirstOrDefault(r => r.Name.ToLower() == currency.ToLower());
-
-                using var httpClient = new HttpClient();
-                var json = await httpClient.GetStringAsync("http://localhost:5222/api/currency");
-                var restRates = JsonConvert.DeserializeObject<List<Models.CurrencyDTO>>(json);
-                var rate = restRates.FirstOrDefault(r => r.Name.ToLower() == currency.ToLower());
-                if(rate != null)
-                {
-                    if (rate.Success) { totalCost /= (decimal)rate.Value;  }
-                }
-  
-
-            }
-
-
+            
             return Json(new
             {
                 TotalProducts = totalProducts,
@@ -444,7 +425,6 @@ namespace ECommerce.Controllers
                 ShippingFee = shippingFee,
                 DiscountAmount = discountAmount,
                 TotalCost = totalCost,
-                Currency = currency,
                 IsThereDiscountCoupons = discountAmount > 0,
                 IsThereShippingFee = shippingFee > 0,
                 Message = shippingFee == 0 ? "Kargo ücretsiz!" : ""

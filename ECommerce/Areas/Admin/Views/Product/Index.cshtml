@@ -16,6 +16,17 @@
 
         <div class="d-flex align-items-center">
             <div class="filter__sort">
+                <span>Kategori</span>
+                <select id="category-menu" style="display: block;" class="form-select form-select-sm">
+                    <option value="" >Kategori Seçin</option>
+                    @foreach (var cat in ViewBag.Categories)
+                    {
+                        <option value="@cat.Value">@cat.Text</option>
+                    }
+                </select>
+
+            </div>
+            <div class="filter__sort">
                 <span>Sırala</span>
                 <select id="sort-menu" style="display: block;" class="form-select form-select-sm">
                     <option value="default">Varsayılan</option>
@@ -25,13 +36,10 @@
                     <option value="totalsolddesc">Satışa Göre: Azalan</option>
                 </select>
             </div>
-            <div class="filter__found">
-                <h6><span id="product-count"></span> @Model.Count() /@totalCount ürün listelendi</h6>
-            </div>
-            <a href="/Admin/Product/Create"
+            <a 
                class="btn btn-success rounded-pill"
                id="create-product-btn"
-               style="background-color: #7fad39; border-color: #7fad39;">
+               style="background-color: #7fad39; border-color: #7fad39; color:#FFF; border-radius:10px; display:block; height:100%">
                 <i class="fa fa-plus"></i> Yeni Bir Ürün Oluştur
             </a>           
         </div>
@@ -136,6 +144,14 @@
         border-radius: .2rem;
     }
 
+    .filter__sort span{
+        color: #FFFF;
+        background: #7fad39;
+        display:block;
+        border-radius:5px;
+        text-align: center;
+    }
+
 </style>
 
 @section Scripts {
@@ -143,6 +159,18 @@
 
 
         document.addEventListener("DOMContentLoaded", function(){
+
+
+
+            /// create button
+            const createButton = document.getElementById("create-product-btn");
+            createButton.addEventListener("click", function(e){
+                
+                const createProductDiv = document.getElementById("dynamic-content");           
+                createProductDiv.style.display = "block";
+            
+            });
+
 
 
             const paginationDiv = document.querySelector(".product__pagination");
@@ -231,6 +259,87 @@
                 searchTerm: null
             };
 
+
+            ///  Kategoriye göre filtreleme
+
+            const categoryMenu = document.getElementById("category-menu");
+            categoryMenu.addEventListener("change", function(event){
+
+                const urlParams = new URLSearchParams(window.location.search)
+                urlParams.forEach((value,key) =>{
+                    if (filter.hasOwnProperty(key)){
+                        filter[key] = value;
+                    }
+                });
+
+                filter["categoryId"] = event.target.value;
+                filter["Page"] = 1;
+
+                const cleanFilter = {};
+                for (const key in filter) {
+                    if (filter[key] !== null && filter[key] !== undefined && filter[key] !== "") {
+                        cleanFilter[key] = filter[key];
+                    }
+                }
+                console.log(cleanFilter);
+
+                const baseUrl = "/Admin/Product/GetProductDetailsJSON";
+                const queryParams = new URLSearchParams(cleanFilter).toString();
+                const productTableBody = document.getElementById("product-table-body");
+
+                fetch(`${baseUrl}?${queryParams}`)
+                .then(res => res.json())
+                .then(res =>{
+                    productTableBody.innerHTML = ``;
+                    console.log(res.data)
+                    res.data.forEach(product =>{
+
+
+                        const row = `
+                        <tr>
+                            <td>${product.productName}</td>
+                            <td>${product.categoryName}</td>
+                            <td>${product.price.toLocaleString()} TL</td>
+                            <td>${product.totalSoldQuantity}</td>
+                            <td>${product.totalRevenue.toLocaleString()} TL</td>
+                            <td>
+                                <a asp-action="Edit" asp-route-id="${product.id}" class="btn-xs site-btn"> <i class="fa fa-pencil-square-o"></i> Düzenle </a>
+                                <form asp-action="Delete" asp-route-id="${product.id}" method="post" style="display:inline">
+                                    <button type="submit" class="btn-xs site-btn"> <i class="fa fa-trash-o"></i> Sil </button>
+                                </form>
+                                <a asp-action="Details" asp-route-id="${product.id}" class="btn-xs site-btn"> <i class="fa fa-info-circle-o"></i> Detay </a>
+                            </td>
+                        </tr>`
+                        productTableBody.innerHTML += row;
+                    });
+
+                    const activePage = document.querySelector(".product__pagination a.active");
+                    activePage.classList.remove("active");
+                    const allPages = document.querySelectorAll(".product__pagination a");
+                    const page1 = Array.from(allPages).find(a => a.dataset.page === "1");
+                    page1.classList.add("active");
+                })
+                .catch(err =>{
+                    console.error(err);
+                    Swal.fire({
+                        title: "Hata!",
+                        text: "Ürünler getirilirken bir hata ile karşılaşıldı",
+                        icon: "error"
+                    });
+                });
+
+
+
+            });
+
+       
+
+
+
+
+
+
+
             //SORT MENUYE EVENT LISTENER EKLEYEREK DOKÜMAN YÜKLENDİĞİ ANDAN İTİBAREN TETİKLENEBİLİR OLSUN DEĞİŞİKLİKLERLE
             const sortMenu = document.getElementById("sort-menu");
             sortMenu.addEventListener("change", function(event){
@@ -306,101 +415,101 @@
 
 
 
-            //// Fiyat değişince tekrar istek atılacak
+                //// Fiyat değişince tekrar istek atılacak
 
-        const priceInput = document.querySelector(".price-input")
-        priceInput.addEventListener("change", function(){
+            const priceInput = document.querySelector(".price-input")
+            priceInput.addEventListener("change", function(){
 
-            filterPriceChange();
-        });
-
-
-        $(".price-range").on("slidestop", function(event, ui){
-            filterPriceChange();
-        });
-
-
-        function filterPriceChange(){
-            const minAmount = document.getElementById("minamount").value;
-            const maxAmount = document.getElementById("maxamount").value;
-            console.log(minAmount)
-
-            const urlParams = new URLSearchParams(window.location.search);
-            urlParams.forEach((value,key) =>{
-                if (filter.hasOwnProperty(key)){
-                    filter[key] = value;
-                }
+                filterPriceChange();
             });
 
-            filter["minPrice"] = parseFloat(minAmount);
-            filter["maxPrice"] = parseFloat(maxAmount);
-            filter["page"] = 1;
 
-            const cleanFilter = {};
-            for (const key in filter) {
-                if (filter[key] !== null && filter[key] !== undefined && filter[key] !== "") {
-                    cleanFilter[key] = filter[key];
+            $(".price-range").on("slidestop", function(event, ui){
+                filterPriceChange();
+            });
+
+
+            function filterPriceChange(){
+                const minAmount = document.getElementById("minamount").value;
+                const maxAmount = document.getElementById("maxamount").value;
+                console.log(minAmount)
+
+                const urlParams = new URLSearchParams(window.location.search);
+                urlParams.forEach((value,key) =>{
+                    if (filter.hasOwnProperty(key)){
+                        filter[key] = value;
+                    }
+                });
+
+                filter["minPrice"] = parseFloat(minAmount);
+                filter["maxPrice"] = parseFloat(maxAmount);
+                filter["page"] = 1;
+
+                const cleanFilter = {};
+                for (const key in filter) {
+                    if (filter[key] !== null && filter[key] !== undefined && filter[key] !== "") {
+                        cleanFilter[key] = filter[key];
+                    }
                 }
+                console.log(cleanFilter);
+                const baseUrl = "/Product/GetProductsJSON";
+                const queryParams = new URLSearchParams(cleanFilter).toString();
+
+                const minMaxDiv = document.getElementById("min-max-div");
+                const productTableBody = document.getElementById("product-table-body");
+
+                fetch(`${baseUrl}?${queryParams}`)
+                .then(res => res.json())
+                .then(res =>{
+                    productTableBody.innerHTML = ``;
+                    console.log(res.data)
+                    minMaxDiv.dataset.min = res.minPrice;
+                    minMaxDiv.dataset.max = res.maxPrice;
+                    res.data.forEach(product =>{
+
+
+                        const row = `
+                        <tr>
+                            <td>${product.productName}</td>
+                            <td>${product.categoryName}</td>
+                            <td>${product.price.toLocaleString()} TL</td>
+                            <td>${product.totalSoldQuantity}</td>
+                            <td>${product.totalRevenue.toLocaleString()} TL</td>
+                            <td>
+                                <a asp-action="Edit" asp-route-id="${product.id}" class="btn-xs site-btn"> <i class="fa fa-pencil-square-o"></i> Düzenle </a>
+                                <form asp-action="Delete" asp-route-id="${product.id}" method="post" style="display:inline">
+                                    <button type="submit" class="btn-xs site-btn"> <i class="fa fa-trash-o"></i> Sil </button>
+                                </form>
+                                <a asp-action="Details" asp-route-id="${product.id}" class="btn-xs site-btn"> <i class="fa fa-info-circle"></i> Detay </a>
+                            </td>
+                        </tr>`
+                        productTableBody.innerHTML += row;
+                    });
+                    const activePage = document.querySelector(".product__pagination a.active");
+                    activePage.classList.remove("active");
+                    const allPages = document.querySelectorAll(".product__pagination a");
+                    const page1 = Array.from(allPages).find(a => a.dataset.page === "1");
+                    page1.classList.add("active");
+
+                })
+                .catch(err =>{
+                    console.error(err);
+                    Swal.fire({
+                        title: "Hata!",
+                        text: "Ürünler getirilirken bir hata ile karşılaşıldı",
+                        icon: "error"
+                    });
+                });
+
             }
-            console.log(cleanFilter);
-            const baseUrl = "/Product/GetProductsJSON";
-            const queryParams = new URLSearchParams(cleanFilter).toString();
-
-            const minMaxDiv = document.getElementById("min-max-div");
-            const productTableBody = document.getElementById("product-table-body");
-
-            fetch(`${baseUrl}?${queryParams}`)
-            .then(res => res.json())
-            .then(res =>{
-                productTableBody.innerHTML = ``;
-                console.log(res.data)
-                minMaxDiv.dataset.min = res.minPrice;
-                minMaxDiv.dataset.max = res.maxPrice;
-                res.data.forEach(product =>{
-
-
-                    const row = `
-                    <tr>
-                        <td>${product.productName}</td>
-                        <td>${product.categoryName}</td>
-                        <td>${product.price.toLocaleString()} TL</td>
-                        <td>${product.totalSoldQuantity}</td>
-                        <td>${product.totalRevenue.toLocaleString()} TL</td>
-                        <td>
-                            <a asp-action="Edit" asp-route-id="${product.id}" class="btn-xs site-btn"> <i class="fa fa-pencil-square-o"></i> Düzenle </a>
-                            <form asp-action="Delete" asp-route-id="${product.id}" method="post" style="display:inline">
-                                <button type="submit" class="btn-xs site-btn"> <i class="fa fa-trash-o"></i> Sil </button>
-                            </form>
-                            <a asp-action="Details" asp-route-id="${product.id}" class="btn-xs site-btn"> <i class="fa fa-info-circle"></i> Detay </a>
-                        </td>
-                    </tr>`
-                    productTableBody.innerHTML += row;
-                });
-                const activePage = document.querySelector(".product__pagination a.active");
-                activePage.classList.remove("active");
-                const allPages = document.querySelectorAll(".product__pagination a");
-                const page1 = Array.from(allPages).find(a => a.dataset.page === "1");
-                page1.classList.add("active");
-
-            })
-            .catch(err =>{
-                console.error(err);
-                Swal.fire({
-                    title: "Hata!",
-                    text: "Ürünler getirilirken bir hata ile karşılaşıldı",
-                    icon: "error"
-                });
-            });
-
-        }
-
-
 
 
 
 
 
         });
+
+    
 
 
 
