@@ -35,6 +35,29 @@ namespace ECommerce.Areas.Admin.Controllers
 
 
 
+
+        public async Task<IActionResult> SendCommentsToLLM(int commentId)
+        {
+           var comment = await _context.Comments.FirstOrDefaultAsync(c => c.Id == commentId);
+
+            var client = new HttpClient();
+
+
+            var dto = new CommentServiceDTO 
+            { 
+                CommentId = commentId,
+                Text = comment.Text,
+            };
+
+            var url = "http://localhost:8000/classify";
+            var response = await client.PostAsJsonAsync(url, new[] { dto });
+
+            var result = await response.Content.ReadAsStringAsync();
+
+            return Json(new { result } );
+
+        }
+
         [HttpPost]
         public async Task<bool> Approve(int id)
         {
