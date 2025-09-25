@@ -49,7 +49,7 @@
                         <div class="col-lg-4 col-md-5">
                             <div class="filter__sort">
                                 <span>Sırala</span>
-                                <select id="sort-select">
+                                <select id="sort-select" class="form-select form-select-sm" style="display: block;">
                                     <option value="default">Varsayılan</option>
                                     <option value="priceasc">Fiyata Göre: Artan</option>
                                     <option value="pricedesc">Fiyata Göre: Azalan</option>
@@ -113,6 +113,27 @@
         color: #7fad39;
         font-weight: bold;
     }
+
+
+    .filter__sort span {
+        color: #FFFF;
+        background: #7fad39;
+        display: block;
+        border-radius: 5px;
+        text-align: center;
+    }
+
+    .filter__sort {
+        align-items:center;
+        text-align:center;
+        margin:0px;
+    }
+
+    .filter__sort select{
+        border-radius:10px;
+        width:100%;
+    }
+
 
 </style>
 

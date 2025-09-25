@@ -10,6 +10,9 @@ namespace ECommerce.Areas.Admin.Models
         public string Text { get; set; }
 
         public DateTime CreatedAt {  get; set; }
+
+        public bool IsReviewed { get; set; }
+        public string ReviewedBy { get; set; }
         public bool IsApproved { get; set; }
         public bool IsDeleted { get; set; }
 

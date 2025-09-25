@@ -16,6 +16,8 @@ namespace ECommerce.Models
         public int ProductId { get; set; }
         public Product? Product { get; set; }
 
+        public bool IsReviewed { get; set; } = false;
+        public string ReviewedBy { get; set; } = string.Empty;
         public bool IsApproved { get; set; } = false;
 
         public bool IsDeleted { get; set; } = false;

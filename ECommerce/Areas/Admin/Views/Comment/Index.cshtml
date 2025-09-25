@@ -48,23 +48,48 @@
                             <td class="order-cell"><img class="order-image"  src="@comment.ProductImageUrl" /><span class="order-text">@comment.ProductName</span></td>
                             <td>@comment.CreatedAt.ToShortDateString()</td>
                             <td>
-                                @if (comment.IsApproved)
+                                @if (!comment.IsReviewed)
                                 {
-                                    <span class="badge bg-success">Approved</span>
+                                    <span class="badge bg-warning">Değerlendirilmeyi Bekliyor</span>
                                 }
                                 else
                                 {
-                                    <span class="badge bg-warning text-dark">Pending</span>
+                                    if (comment.IsApproved)
+                                    {
+                                        <span class="badge bg-success">Onaylandı</span>
+                                    }
+
+                                    else if (comment.IsDeleted)
+                                    {
+                                        <span class="badge bg-info">Silindi</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger">Reddedildi</span>
+                                    }
+
                                 }
-                                @if (comment.IsDeleted)
-                                {
-                                    <span class="badge bg-danger">Deleted</span>
-                                }
+
                             </td>
                             <td>
-                                <button data-id=@comment.Id class ="btn btn-xs site-btn"> <i class="fa fa-check"></i> Onayla </button>
-                                <button data-id=@comment.Id class="btn btn-xs site-btn"> <i class="fa fa-trash-o"></i> Sil </button>
-                                <button onclick="restoreComment(@comment.Id)" class="btn btn-xs site-btn"> <i class="fa fa-times"></i> İptal Et </button>
+                                @if (!comment.IsApproved)
+                                {
+                                    <button data-id=@comment.Id class="btn btn-xs site-btn"> <i class="fa fa-check approve-btn"></i> Onayla </button>
+                                    if (comment.IsDeleted)
+                                    {
+                                        <button onclick="restoreComment(@comment.Id)" class="btn btn-xs site-btn"> <i class="fa fa-times restore-btn"></i> İptal Et </button>
+                                    }
+                                    else
+                                    {
+                                        <button data-id=@comment.Id class="btn btn-xs site-btn delte-btn"> <i class="fa fa-trash-o"></i> Sil </button>
+                                    }          
+                                }
+                                else
+                                {
+                                    <button data-id=@comment.Id class="btn btn-xs site-btn reject-btn"> <i class="fa fa-cancel reject-btn"></i> Reddet </button>
+                                    <button data-id=@comment.Id class="btn btn-xs site-btn delete-btn"> <i class="fa fa-trash-o"></i> Sil </button>
+                                }
+
                             </td>
                         </tr>
                     }
@@ -156,25 +181,47 @@
                     console.log(res.data);
                     res.data.forEach(comment => {
                         const row = `
-                            <tr>
-                                <td><span class="order-text">${comment.text}</span></td>
-                                <td>${comment.userName}</td>
-                                 <td class="order-cell"><img class="order-image"  src="${comment.productImageUrl}" /><span class="order-text">${comment.productName}</span></td>
-                                <td>${comment.createdAt ? new Date(comment.createdAt).toLocaleDateString() : ''}</td>
-                                <td>
-                                    ${comment.isApproved ? '<span class="badge bg-success">Approved</span>' : '<span class="badge bg-warning text-dark">Pending</span>'}
-                                    ${comment.isDeleted ? '<span class="badge bg-danger">Deleted</span>' : ''}
-                                </td>
-                                <td>
-                                    <button data-id="${comment.id}" class="btn-xs site-btn">
-                                        <i class="fa fa-check"></i> Approve
-                                    </button>
-                                    <button data-id="${comment.id}" class="btn-xs site-btn delete-btn">
-                                        <i class="fa fa-trash-o"></i> Delete
-                                    </button>
-                                    <button onclick="restoreComment(${comment.id})" class="btn btn-xs site-btn"> <i class="fa fa-times"></i> İptal Et </button>
-                                </td>
-                            </tr>`;
+                                   <tr>
+                                        <td><span class="order-text">${comment.text}</span></td>
+                                        <td>${comment.userName}</td>
+                                        <td class="order-cell">
+                                            <img class="order-image" src="${comment.productImageUrl}" />
+                                            <span class="order-text">${comment.productName}</span>
+                                        </td>
+                                        <td>${comment.createdAt ? new Date(comment.createdAt).toLocaleDateString() : ''}</td>
+                                        <td>
+                                            ${
+                                                comment.isReviewed
+                                                ? '<span class="badge bg-warning text-dark">Değerlendirilmeyi Bekliyor</span>'
+                                                : comment.isApproved
+                                                    ? '<span class="badge bg-success">Onaylandı</span>'
+                                                    : comment.isDeleted
+                                                        ? '<span class="badge bg-info">Silindi</span>'
+                                                        : '<span class="badge bg-danger">Reddedildi</span>'
+                                            }
+                                        </td>
+                                        <td>
+                                            ${
+                                                !comment.isApproved
+                                                ? `<button data-id="${comment.id}" class="btn btn-xs site-btn  approve-btn">
+                                                        <i class="fa fa-check"></i> Onayla
+                                                    </button>
+                                                    ${comment.isDeleted
+                                                        ? `<button onclick="restoreComment(${comment.id})" class="btn btn-xs site-btn restore-btn">
+                                                                <i class="fa fa-times "></i> İptal Et
+                                                            </button>`
+                                                        : `<button data-id="${comment.id}" class="btn btn-xs site-btn delete-btn">
+                                                                <i class="fa fa-trash-o "></i> Sil
+                                                            </button>`}`
+                                                : `<button data-id="${comment.id}" class="btn btn-xs site-btn reject-btn">
+                                                        <i class="fa fa-cancel "></i> Reddet
+                                                    </button>
+                                                    <button data-id="${comment.id}" class="btn btn-xs site-btn delete-btn">
+                                                        <i class="fa fa-trash-o "></i> Sil
+                                                    </button>`
+                                            }
+                                        </td>
+                                </tr>`;
                         tableBody.innerHTML += row;
                     });
                 }) .catch(err =>{
@@ -233,6 +280,14 @@
             });
         }
 
+        function rejectComment(id, pageNumber){
+            fetch(`/Admin/Comment/Reject/${id}`, { method: 'POST' })
+                        .then(res => res.json())
+                        .then(() => fetchComments(pageNumber));
+        }
+
+
+
         document.addEventListener("DOMContentLoaded", () => {
             const sortMenu = document.getElementById("sort-select");
 
@@ -246,8 +301,14 @@
                 const deleteBtn = event.target.closest(".delete-btn");
                 if(deleteBtn) deleteComment(deleteBtn.dataset.id, filter.Page);
 
-                const approveBtn = event.target.closest(".site-btn");
-                if(approveBtn && !approveBtn.classList.contains("delete-btn")) approveComment(approveBtn.dataset.id, filter.Page);
+                const approveBtn = event.target.closest(".approve-btn");
+                if(approveBtn) approveComment(approveBtn.dataset.id, filter.Page);
+
+                const rejectBtn = event.target.closest(".reject-btn");
+                if(rejectBtn) rejectComment(rejectBtn.dataset.id, filter.page);
+
+                const restoreBtn = event.target.closest(".restore-btn");
+                if (restoreBtn) restoreComment(restoreBtn.dataset.id, filter.page);
             });
 
             

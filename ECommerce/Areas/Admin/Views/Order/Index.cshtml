@@ -6,6 +6,7 @@
     var size = ViewBag.Size;
     var totalPages = (int)Math.Ceiling((double)totalOrders / size);
     var currentPage = ViewBag.CurrentPage;
+    var statuses = ViewBag.Statuses;
 
     }
 
@@ -19,6 +20,17 @@
             <label class="form-check-label" for="show-cancelled-checkbox">
                 İptal edilen siparişleri göster
             </label>
+        </div>
+        <div class="filter__sort">
+            <span>Sipariş Durumu</span>
+            <select id="status-select" style="display: block;" class="form-select form-select-sm">
+                <option value="">Sipariş Durumu Seçin</option>
+                @foreach (var stat in statuses)
+                {
+                    <option value=@stat.Value>@stat.Text</option>
+                }
+
+            </select>
         </div>
         <div class="filter__sort">
             <span>Sırala</span>
@@ -191,9 +203,11 @@
                     MinPrice: null,
                     MaxPrice: null,
                     ShowCancelled: null,
+                    OrderStatus: null,
                     Page : null,
                     Size : null,
                     SortBy : null
+                    
                 };
 
                 function fetchOrders(pageNumber = 1) {
@@ -279,6 +293,7 @@
 
             const sortMenu = document.getElementById("sort-select");
             const showCancelledCheckbox = document.getElementById("show-cancelled-checkbox");
+            const statusMenu =  document.getElementById("status-select");
 
             showCancelledCheckbox.addEventListener("change", function() {
                 filter.ShowCancelled = this.checked;
@@ -289,6 +304,12 @@
                 filter.SortBy = event.target.value;
                 fetchOrders();
             });
+
+            statusMenu.addEventListener("change", function(event){
+                filter.OrderStatus = event.target.value;
+                fetchOrders();
+            });
+            
 
 
 

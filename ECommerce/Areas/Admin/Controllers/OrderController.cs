@@ -28,12 +28,21 @@ namespace ECommerce.Areas.Admin.Controllers
             if (criteria == null) { criteria = new OrderFilterModel(); }
 
             var cities = await _context.Cities.ToListAsync();
+            var statuses = await _context.OrderStatuses
+                                        .Select(s => new SelectListItem
+                                        {
+                                            Text = s.Name,
+                                            Value = s.Id.ToString()
+
+                                        }).ToListAsync();
 
 
             ViewBag.CitiesDict = cities.ToDictionary(c => c.Id, c => c.Name);
+            ViewBag.Statuses = statuses;
 
             var totalOrders = await _context.Orders.CountAsync();
             ViewBag.TotalOrders = totalOrders;
+
             ViewBag.Size = criteria.Size;
             ViewBag.CurrentPage = 1;
 
@@ -97,6 +106,11 @@ namespace ECommerce.Areas.Admin.Controllers
             if (criteria.ShowCancelled.HasValue && !criteria.ShowCancelled.Value)
             {
                 filteredQuery = filteredQuery.Where(o => o.OrderStatus.Name.ToLower() != "cancelled");
+            }
+
+            if (criteria.OrderStatus.HasValue)
+            {
+                filteredQuery = filteredQuery.Where(o => o.OrderStatus.Id == criteria.OrderStatus);
             }
 
 

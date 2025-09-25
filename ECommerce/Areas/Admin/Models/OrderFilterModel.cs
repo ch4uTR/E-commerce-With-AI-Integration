@@ -15,6 +15,8 @@
 
         public bool? ShowCancelled { get; set; }
 
+        public int? OrderStatus { get; set; }
+
         public int Page { get; set; } = 1;
 
         public int Size { get; set; } = 20;

@@ -13,11 +13,13 @@ namespace ECommerce.Areas.Admin.Controllers
     [Authorize(Roles = "Admin")]
     public class CommentController : Controller
     {
-        ApplicationDbContext _context;
+        private readonly ApplicationDbContext _context;
+        private readonly HttpClient _httpClient;
 
-        public CommentController(ApplicationDbContext context)
+        public CommentController(ApplicationDbContext context, HttpClient httpClient    )
         {
             _context = context;
+            _httpClient = httpClient;
         }
 
         [HttpGet]
@@ -49,12 +51,12 @@ namespace ECommerce.Areas.Admin.Controllers
                 Text = comment.Text,
             };
 
-            var url = "http://localhost:8000/classify";
-            var response = await client.PostAsJsonAsync(url, new[] { dto });
+            var fastapiUrl = "http://localhost:8000/classify";
+            var response = await client.PostAsJsonAsync(fastapiUrl, new[] { dto });
 
-            var result = await response.Content.ReadAsStringAsync();
+            var result = await response.Content.ReadFromJsonAsync<List<CommentServiceDTO>>();
 
-            return Json(new { result } );
+            return Json(result );
 
         }
 
@@ -68,10 +70,31 @@ namespace ECommerce.Areas.Admin.Controllers
             }
 
             comment.IsApproved = true;
+            comment.IsReviewed = true;
+            comment.ReviewedBy = "ADMIN";
             await _context.SaveChangesAsync();
             return true;
 
         }
+
+        [HttpPost]
+        public async Task<bool> Reject(int id)
+        {
+            var comment = await _context.Comments.FirstOrDefaultAsync(c => c.Id == id);
+            if (comment == null)
+            {
+                return false;
+            }
+
+            comment.IsApproved = false;
+            comment.IsReviewed = true;
+            comment.ReviewedBy = "ADMIN";
+            await _context.SaveChangesAsync();
+            return true;
+
+        }
+
+
 
 
         [HttpPost]
@@ -85,9 +108,58 @@ namespace ECommerce.Areas.Admin.Controllers
 
             comment.IsDeleted = true;
             comment.IsApproved = false;
+            comment.IsReviewed = true;
+            comment.ReviewedBy = "ADMIN";
             await _context.SaveChangesAsync();
             return true;
         }
+
+
+
+        public async Task<IActionResult> ReviewWithLLM()
+        {   
+            var comments = await _context.Comments
+                                            .Where(c => !c.IsReviewed)
+                                            .Select(c => new CommentServiceDTO
+                                            {
+                                                CommentId = c.Id,
+                                                Text = c.Text,
+                                            })
+                                            .ToListAsync();
+
+            var fastApiUrl = "http://localhost:8000/classify";
+            var response = await _httpClient.PostAsJsonAsync(fastApiUrl, comments);
+            var result = await response.Content.ReadFromJsonAsync<List<CommentServiceDTO>>();
+            if (result == null)
+            {
+                return Json(new { message = "Bir problemle karşılaşıldı!" });
+            }
+
+            var commentIds = result.Select(r => r.CommentId).ToList();
+            var commentsToUpdate = await _context.Comments
+                                            .Where(c => commentIds.Contains(c.Id))
+                                            .ToListAsync();
+
+            var commentMap = commentsToUpdate.ToDictionary(c => c.Id);
+
+            foreach (var dto in result)
+            {
+                if (commentMap.TryGetValue(dto.CommentId, out var comment))
+                {
+                    comment.IsReviewed = true;
+                    comment.ReviewedBy = "LLM";
+                    comment.IsApproved = dto.IsApproved.GetValueOrDefault(false);
+                }
+            }
+
+            await _context.SaveChangesAsync();
+
+            return Json(result);
+
+
+
+        }
+
 
 
         [HttpPost]
@@ -101,6 +173,7 @@ namespace ECommerce.Areas.Admin.Controllers
 
             comment.IsDeleted = false;
             comment.IsApproved = true;
+            comment.IsReviewed = true;
             await _context.SaveChangesAsync();
 
             return Json(new { success= true, message= "Ürün başarıyla yayına alındı!"});
@@ -185,6 +258,8 @@ namespace ECommerce.Areas.Admin.Controllers
                 CreatedAt = c.CreatedAt,
                 IsApproved = c.IsApproved,
                 IsDeleted = c.IsDeleted,
+                IsReviewed = c.IsReviewed,
+                ReviewedBy = c.ReviewedBy,
                 UserName = c.User.UserName,
                 ProductImageUrl = c.Product.ImageUrl,
                 ProductName = c.Product.Name

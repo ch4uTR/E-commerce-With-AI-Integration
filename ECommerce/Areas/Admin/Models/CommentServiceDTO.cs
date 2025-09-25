@@ -4,7 +4,7 @@
     {
         public int CommentId { get; set; }
         public string Text { get; set; }
-        public bool? IsApproves { get; set; }
+        public bool? IsApproved { get; set; }
 
     }
 }
