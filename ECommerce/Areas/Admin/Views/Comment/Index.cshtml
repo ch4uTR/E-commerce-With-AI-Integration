@@ -11,14 +11,28 @@
         <h2 style="color: #7fad39; margin-bottom: 0;">
             <i class="fa fa-comments"></i> Yorum Listesi
         </h2>
+
+        <div class="filter__sort">
+            <button class="btn btn-lg site-btn " id="ai-btn">Sınıflandır</button>
+        </div>
+
+        <div class="filter__sort">
+            <button class="btn site-btn" id="sum-btn">Yorum Özeti Hazırla</button>
+        </div>
+
+        <div class="filter__sort">
+            <button class="btn site-btn" id="sum-all-btn">Tüm Yorumların Özetini Hazırla</button>
+        </div>
+
+
         <div class="filter__sort">
             <span>Sırala</span>
             <select id="sort-select" style="display: block;" class="form-select form-select-sm">
                 <option value="default">Varsayılan</option>
                 <option value="dateAsc">Tarihe Göre: Eskiden Yeniye</option>
                 <option value="dateDesc">Tarihe Göre: Yeniden Eskiye</option>
-                <option value="totalsoldasc">Satışa Göre: Artan</option>
-                <option value="totalsolddesc">Satışa Göre: Azalan</option>
+@*                 <option value="totalsoldasc">Satışa Göre: Artan</option>
+                <option value="totalsolddesc">Satışa Göre: Azalan</option> *@
             </select>
         </div>
     </div>
@@ -74,14 +88,14 @@
                             <td>
                                 @if (!comment.IsApproved)
                                 {
-                                    <button data-id=@comment.Id class="btn btn-xs site-btn"> <i class="fa fa-check approve-btn"></i> Onayla </button>
+                                    <button data-id=@comment.Id class="btn btn-xs site-btn approve-btn"> <i class="fa fa-check approve-btn"></i> Onayla </button>
                                     if (comment.IsDeleted)
                                     {
-                                        <button onclick="restoreComment(@comment.Id)" class="btn btn-xs site-btn"> <i class="fa fa-times restore-btn"></i> İptal Et </button>
+                                        <button onclick="restoreComment(@comment.Id)" class="btn btn-xs site-btn cancel-btn"> <i class="fa fa-times restore-btn"></i> İptal Et </button>
                                     }
                                     else
                                     {
-                                        <button data-id=@comment.Id class="btn btn-xs site-btn delte-btn"> <i class="fa fa-trash-o"></i> Sil </button>
+                                        <button data-id=@comment.Id class="btn btn-xs site-btn delete-btn"> <i class="fa fa-trash-o"></i> Sil </button>
                                     }          
                                 }
                                 else
@@ -180,6 +194,54 @@
                     tableBody.innerHTML = '';
                     console.log(res.data);
                     res.data.forEach(comment => {
+
+                        let buttons = ``;
+                        let span = ``;
+                        if (!comment.isReviewed) {
+                            buttons = `<button data-id="${comment.id}" class="btn btn-xs site-btn  approve-btn">
+                                                        <i class="fa fa-check"></i> Onayla
+                                                    </button>
+                                        <button data-id="${comment.id}" class="btn btn-xs site-btn reject-btn">
+                                                        <i class="fa fa-cancel "></i> Reddet
+                                                    </button>`;
+
+                            span = `<span class="badge bg-warning text-dark">Değerlendirilmeyi Bekliyor</span>`;
+                        }
+                        else{
+
+                            if (comment.isApproved){
+                                buttons = `<button data-id="${comment.id}" class="btn btn-xs site-btn reject-btn">
+                                                        <i class="fa fa-cancel "></i> Reddet
+                                                    </button>
+                                                    <button data-id="${comment.id}" class="btn btn-xs site-btn delete-btn">
+                                                        <i class="fa fa-trash-o "></i> Sil
+                                                    </button>`;
+
+                                span = '<span class="badge bg-success">Onaylandı</span>';
+                            }
+
+                            else if  (comment.isDeleted){
+                                buttons = `<button onclick="restoreComment(${comment.id})" class="btn btn-xs site-btn restore-btn">
+                                                                <i class="fa fa-times "></i> İptal Et
+                                                            </button>`
+
+
+                                span = '<span class="badge bg-info">Silindi</span>';
+                            }
+                            else{
+                                buttons = `<button data-id="${comment.id}" class="btn btn-xs site-btn  approve-btn">
+                                                        <i class="fa fa-check"></i> Onayla
+                                                    </button>
+                                           <button data-id="${comment.id}" class="btn btn-xs site-btn delete-btn">
+                                                        <i class="fa fa-trash-o "></i> Sil
+                                                    </button>`
+
+                                span = '<span class="badge bg-danger">Reddedildi</span>';
+                            }
+
+
+                        }
+
                         const row = `
                                    <tr>
                                         <td><span class="order-text">${comment.text}</span></td>
@@ -190,36 +252,12 @@
                                         </td>
                                         <td>${comment.createdAt ? new Date(comment.createdAt).toLocaleDateString() : ''}</td>
                                         <td>
-                                            ${
-                                                comment.isReviewed
-                                                ? '<span class="badge bg-warning text-dark">Değerlendirilmeyi Bekliyor</span>'
-                                                : comment.isApproved
-                                                    ? '<span class="badge bg-success">Onaylandı</span>'
-                                                    : comment.isDeleted
-                                                        ? '<span class="badge bg-info">Silindi</span>'
-                                                        : '<span class="badge bg-danger">Reddedildi</span>'
-                                            }
+                                            ${span}
                                         </td>
                                         <td>
-                                            ${
-                                                !comment.isApproved
-                                                ? `<button data-id="${comment.id}" class="btn btn-xs site-btn  approve-btn">
-                                                        <i class="fa fa-check"></i> Onayla
-                                                    </button>
-                                                    ${comment.isDeleted
-                                                        ? `<button onclick="restoreComment(${comment.id})" class="btn btn-xs site-btn restore-btn">
-                                                                <i class="fa fa-times "></i> İptal Et
-                                                            </button>`
-                                                        : `<button data-id="${comment.id}" class="btn btn-xs site-btn delete-btn">
-                                                                <i class="fa fa-trash-o "></i> Sil
-                                                            </button>`}`
-                                                : `<button data-id="${comment.id}" class="btn btn-xs site-btn reject-btn">
-                                                        <i class="fa fa-cancel "></i> Reddet
-                                                    </button>
-                                                    <button data-id="${comment.id}" class="btn btn-xs site-btn delete-btn">
-                                                        <i class="fa fa-trash-o "></i> Sil
-                                                    </button>`
-                                            }
+                                            
+
+                                            ${buttons}
                                         </td>
                                 </tr>`;
                         tableBody.innerHTML += row;
@@ -287,6 +325,146 @@
         }
 
 
+                function reviewWithLLM() {
+            // Loading modal aç
+            Swal.fire({
+                title: "Yorumlar inceleniyor...",
+                html: "Lütfen bekleyin",
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            fetch("/Admin/Comment/ReviewWithLLM")
+                .then(res => res.json())
+                .then(res => {
+                    Swal.close(); // loading'i kapat
+                    if (res.success) {
+                        Swal.fire({
+                            title: "Başarılı!",
+                            text: res.message,
+                            icon: "success"
+                        });
+                        fetchComments(1);
+                    } else {
+                        Swal.fire({
+                            title: "Hata!",
+                            text: res.message,
+                            icon: "error"
+                        });
+                    }
+                })
+                .catch(err => {
+                    Swal.close(); // loading'i kapatmayı unutma
+                    console.error(err);
+                    Swal.fire({
+                        title: "Hata!",
+                        text: "Yorumlar sınıflandırılırken bir problemle karşılaşıldı",
+                        icon: "error"
+                    });
+                });
+        }
+
+
+        function summarizeWithLLM(){
+            // Loading modal açıyoruz
+            Swal.fire({
+                title: "Ürün özetleri hazırlanıyor...",
+                html: "Lütfen bekleyin",
+                allowOutsideClick: false, // kullanıcı tıklayarak kapatamasın
+                didOpen: () => {
+                    Swal.showLoading(); // loading spinner
+                }
+            });
+
+            fetch("/Admin/Comment/Summarize")
+            .then(res => res.json())
+            .then(res => {
+                Swal.close(); // loading'i kapatıyoruz
+                if (res.success){
+                    Swal.fire({
+                        title: "Başarılı!",
+                        text: res.message,
+                        icon: "success"
+                    });
+                    fetchComments(1);
+                }
+                else{
+                    Swal.fire({
+                        title: "Hata!",
+                        text: res.message,
+                        icon: "error"
+                    });
+                }
+            })
+            .catch(err => {
+                Swal.close(); // loading'i kapatmayı unutma
+                console.error(err);
+                Swal.fire({
+                    title: "Hata!",
+                    text: "Ürün özetleri hazırlanırken bir problemle karşılaşıldı",
+                    icon: "error"
+                });
+            });
+
+        }
+
+
+            function summarizeAllWithLLM() {
+            // Önce kullanıcıya emin misin diye soralım
+            Swal.fire({
+                title: "Emin misiniz?",
+                text: "Bu işlem uzun sürebilir. Devam etmek istiyor musunuz?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Evet, devam et",
+                cancelButtonText: "Hayır, iptal et"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Loading modal açıyoruz
+                    Swal.fire({
+                        title: "Tüm ürün özetleri hazırlanıyor...",
+                        html: "Lütfen bekleyin",
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    fetch("/Admin/Comment/SummarizeAll")
+                        .then(res => res.json())
+                        .then(res => {
+                            Swal.close();
+                            if (res.success) {
+                                Swal.fire({
+                                    title: "Başarılı!",
+                                    text: res.message,
+                                    icon: "success"
+                                });
+                                fetchComments(1);
+                            } else {
+                                Swal.fire({
+                                    title: "Hata!",
+                                    text: res.message,
+                                    icon: "error"
+                                });
+                            }
+                        })
+                        .catch(err => {
+                            Swal.close();
+                            console.error(err);
+                            Swal.fire({
+                                title: "Hata!",
+                                text: "Ürün özetleri hazırlanırken bir problemle karşılaşıldı",
+                                icon: "error"
+                            });
+                        });
+                }
+            });
+        }
+
+
 
         document.addEventListener("DOMContentLoaded", () => {
             const sortMenu = document.getElementById("sort-select");
@@ -310,6 +488,20 @@
                 const restoreBtn = event.target.closest(".restore-btn");
                 if (restoreBtn) restoreComment(restoreBtn.dataset.id, filter.page);
             });
+
+
+            document.getElementById("ai-btn").addEventListener("click", function(){
+                reviewWithLLM();
+            });
+
+            document.getElementById("sum-btn").addEventListener("click", function(){
+                summarizeWithLLM();
+            });
+
+            document.getElementById("sum-all-btn").addEventListener("click", function(){
+                summarizeAllWithLLM();
+            });
+
 
             
         });

@@ -234,6 +234,12 @@ namespace ECommerce.Areas.Admin.Controllers
 
 
 
+
+
+
+
+
+
         public async Task<List<ProductViewModel>> GetFilteredAndPagedProductsAsync(ProductSearchCriteria criteria)
         {
 

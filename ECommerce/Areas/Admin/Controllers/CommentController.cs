@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace ECommerce.Areas.Admin.Controllers
 {
@@ -36,29 +37,6 @@ namespace ECommerce.Areas.Admin.Controllers
         }
 
 
-
-
-        public async Task<IActionResult> SendCommentsToLLM(int commentId)
-        {
-           var comment = await _context.Comments.FirstOrDefaultAsync(c => c.Id == commentId);
-
-            var client = new HttpClient();
-
-
-            var dto = new CommentServiceDTO 
-            { 
-                CommentId = commentId,
-                Text = comment.Text,
-            };
-
-            var fastapiUrl = "http://localhost:8000/classify";
-            var response = await client.PostAsJsonAsync(fastapiUrl, new[] { dto });
-
-            var result = await response.Content.ReadFromJsonAsync<List<CommentServiceDTO>>();
-
-            return Json(result );
-
-        }
 
         [HttpPost]
         public async Task<bool> Approve(int id)
@@ -132,7 +110,7 @@ namespace ECommerce.Areas.Admin.Controllers
             var result = await response.Content.ReadFromJsonAsync<List<CommentServiceDTO>>();
             if (result == null)
             {
-                return Json(new { message = "Bir problemle karşılaşıldı!" });
+                return Json(new { success = false, message = "Bir problemle karşılaşıldı!" });
             }
 
             var commentIds = result.Select(r => r.CommentId).ToList();
@@ -154,12 +132,101 @@ namespace ECommerce.Areas.Admin.Controllers
 
             await _context.SaveChangesAsync();
 
-            return Json(result);
+      
+
+            return Json(new { success = true, message = "Yorumlar başarıyla sınıflandırıldı" });
 
 
 
         }
 
+
+
+        public async Task<IActionResult> Summarize()
+        {
+            var summaries = await _context.Comments
+                                             .Include(c => c.Product)
+                                             .Where(c => c.IsApproved && string.IsNullOrEmpty(c.Product.Summary)) 
+                                             .GroupBy(c => c.ProductId) 
+                                             .Select(g => new CommentSummaryDTO
+                                             {
+                                                 ProductId = g.Key,
+                                                 Comments = g.Select(c => c.Text).ToList(), 
+                                                Description = g.FirstOrDefault().Product.Description
+                                             })
+                                             .ToListAsync();
+
+
+            var fastApiUrl = "http://localhost:8000/summarize";
+            var response = await _httpClient.PostAsJsonAsync(fastApiUrl, summaries);
+            var result = await response.Content.ReadFromJsonAsync<List<CommentSummaryResponseDTO>>();
+
+            var productIds =  result.Select(r => r.ProductId).ToList();
+            var products = await _context.Products
+                                                .Where(p => productIds.Contains(p.Id))
+                                                .ToListAsync();
+            var productMap = products.ToDictionary(p => p.Id);
+
+            foreach (var dto in result)
+            {
+                if (productMap.TryGetValue(dto.ProductId, out var product))
+                {
+                    product.Summary = dto.Summary;
+                    product.SummaryAddedBy = "LLM";
+
+                }
+            }
+
+            await _context.SaveChangesAsync();
+
+
+
+            return Json(new { success = true, message = "Ürünlerin özetleri başarıyla getirildi" });
+
+        }
+
+
+        public async Task<IActionResult> SummarizeAll()
+        {
+            var summaries = await _context.Comments
+                                             .Where(c => c.IsApproved)
+                                             .GroupBy(c => c.ProductId)
+                                             .Select(g => new CommentSummaryDTO
+                                             {
+                                                 ProductId = g.Key,
+                                                 Comments = g.Select(c => c.Text).ToList(),
+                                                 Description = g.FirstOrDefault().Product.Description
+                                             })
+                                             .ToListAsync();
+
+
+            var fastApiUrl = "http://localhost:8000/summarize";
+            var response = await _httpClient.PostAsJsonAsync(fastApiUrl, summaries);
+            var result = await response.Content.ReadFromJsonAsync<List<CommentSummaryResponseDTO>>();
+
+            var productIds = result.Select(r => r.ProductId).ToList();
+            var products = await _context.Products
+                                                .Where(p => productIds.Contains(p.Id))
+                                                .ToListAsync();
+            var productMap = products.ToDictionary(p => p.Id);
+
+            foreach (var dto in result)
+            {
+                if (productMap.TryGetValue(dto.ProductId, out var product))
+                {
+                    product.Summary = dto.Summary;
+                    product.SummaryAddedBy = "LLM";
+
+                }
+            }
+
+            await _context.SaveChangesAsync();
+
+
+
+            return Json(new { success = true, message = "Ürünlerin özetleri başarıyla getirildi" });
+
+        }
 
 
         [HttpPost]
@@ -241,9 +308,9 @@ namespace ECommerce.Areas.Admin.Controllers
                 query = query.OrderBy(c => c.CreatedAt);
             }
 
-            int skipCount = (filter.Page - 1) * filter.Size;
-            query = query.Skip(skipCount);
-            query = query.Take(filter.Size);
+            //int skipCount = (filter.Page - 1) * filter.Size;
+            //query = query.Skip(skipCount);
+            //query = query.Take(filter.Size);
 
             query = query.Include(c => c.Product)
                         .Include(c => c.User);
@@ -331,9 +398,9 @@ namespace ECommerce.Areas.Admin.Controllers
                 query = query.OrderBy(c => c.CreatedAt);
             }
 
-            int skipCount = (filter.Page - 1) * filter.Size;
-            query = query.Skip(skipCount);
-            query = query.Take(filter.Size);
+            //int skipCount = (filter.Page - 1) * filter.Size;
+            //query = query.Skip(skipCount);
+            //query = query.Take(filter.Size);
 
             query = query.Include(c => c.Product)
                         .Include(c => c.User);
@@ -346,6 +413,7 @@ namespace ECommerce.Areas.Admin.Controllers
                 Text = c.Text,
                 Rating = c.Rating,
                 CreatedAt = c.CreatedAt,
+                IsReviewed = c.IsReviewed,
                 IsApproved = c.IsApproved,
                 IsDeleted = c.IsDeleted,
                 UserName = c.User.UserName,

@@ -163,6 +163,7 @@ namespace ECommerce.Controllers
             }
 
             var product = await _context.Products.FirstOrDefaultAsync(p => p.Id == id);
+            var summary = product?.Summary;
             if (product is null)
             {
                 return NotFound();
@@ -200,7 +201,7 @@ namespace ECommerce.Controllers
                                         .ToListAsync();
 
 
-
+            
             ProductDetailsViewModel viewModel = new ProductDetailsViewModel
             {
                 Product = product,
@@ -208,7 +209,8 @@ namespace ECommerce.Controllers
                 LoggedIn = loggedIn,
                 HasBought = hasBought,
                 LeftComment = leftComment,
-                Comments = comments
+                Comments = comments,
+                Summary = summary ?? ""
 
             };
 

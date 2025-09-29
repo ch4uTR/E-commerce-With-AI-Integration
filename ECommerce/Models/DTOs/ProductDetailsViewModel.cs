@@ -8,6 +8,7 @@
         public bool? HasBought { get; set; }
         public bool? LeftComment { get; set; }
 
+        public string Summary { get; set; }
         public string FirstName { get; set; }
         public List<Product> RelatedProducts { get; set; } = new List<Product>();
         public List<Comment> Comments { get; set; } = new List<Comment>();

@@ -14,7 +14,10 @@ namespace ECommerce.Models
 
         [Required]
         [StringLength(1000)]
-        public string? Description { get; set; } 
+        public string? Description { get; set; }
+
+        public string? Summary { get; set; }
+        public string? SummaryAddedBy { get; set; }
 
         public string? ImageUrl { get; set; }
 

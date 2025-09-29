@@ -116,6 +116,7 @@
                             }
                             <div class="checkout__order__total">Toplam <span id="total-span"> @price TL</span></div>
                             <input type="hidden" asp-for="Currency" id="currency-input"/>
+                            
 
                             <div class="checkout__input__checkbox">
                                 <label for="contract">
@@ -192,6 +193,14 @@
         document.addEventListener("DOMContentLoaded", function() {
 
 
+            const totalSpan = document.getElementById("total-span");
+
+            let tlString = totalSpan.textContent;
+
+            tlString = tlString.replace(" TL", "");
+            tlString = tlString.replace(",", ".");
+
+            const turkishLiras = parseFloat(tlString);
 
             // Döviz seçeneklerini göster
             const currencyCheckbox = document.getElementById("currency");
@@ -208,6 +217,7 @@
                         currencyDiv.style.display = "none"; // animasyon bitince tamamen gizle
                         currencyDiv.removeEventListener('transitionend', handler);
                     });
+                    totalSpan.textContent = `${turkishLiras} TL`;
                 }
             });
 
@@ -231,38 +241,45 @@
             radios.forEach(item => {
                 
                 item.addEventListener("click", function() {
-                    const currency = item.value;
+                    console.log(turkishLiras);
 
-                    const hiddenCurrencyInput = document.getElementById("currency-input");
-                    hiddenCurrencyInput.value = currency;
+                    const code = item.value;
 
-                    console.log(currency);
-                    updateTotal(currency);
+
+                    fetch("/Currency/CalculatePrice", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            code: code,
+                            turkishLiras: turkishLiras
+                        })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+
+                        let code = data.code;
+                        let price = data.price;
+                        const currencyInput = document.getElementById("currency-input");
+                        currencyInput.value = code;
+                        totalSpan.textContent = `${code} ${price.toFixed(2)}`;
+
+                    
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        Swal.fire({
+                            title: "Hata!",
+                            text: "Döviz değerine ulaşılırken hata File karşılaşıldı",
+                            icon: "error"
+                        });
+                    });
+
+
                 });
             });
 
-            // Toplam değerini dövize göre getir fonskiyoneu
-            function updateTotal(curr){
-                const totalSpan = document.getElementById("total-span");
-
-                const totalBaseUrl = "/Cart/GetCartDetailsJSON";
-                fetch(`${totalBaseUrl}?currency=${curr}`)
-                .then(res => res.json())
-                .then(res =>{
-
-                    totalSpan.textContent = `${parseFloat(res.totalCost).toFixed(2)} ${res.currency}`;
-                })
-                .catch(err => {
-                    console.error(err);
-                    Swal.fire({
-                        title: "Hata!",
-                        text: "Döviz değerine ulaşılırken hata File karşılaşıldı",
-                        icon: "error"
-                    });
-                });
-
-                
-            }
 
 
 

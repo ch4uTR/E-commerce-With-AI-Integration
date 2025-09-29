@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using ServiceReference1;
+using ECommerce.Models.DTOs;
 
 namespace ECommerce.Controllers
 {
@@ -25,12 +26,21 @@ namespace ECommerce.Controllers
         }
 
 
-        //[HttpPost]
-        //public async Task<IActionResult> CalculatePrice(string code, decimal turkishLiras)
-        //{
+        [HttpPost]
+        public async Task<IActionResult> CalculatePrice([FromBody] CurrencyRequest request)
+        {
+
+            var httpClient = new HttpClient();
+
+            var url = "http://localhost:5222/api/currency/calculate";
+
+            var response = await httpClient.PostAsJsonAsync(url, request);
+
+            var result = await response.Content.ReadFromJsonAsync<CurrencyResponse>();
+            return Json(result);
 
 
-        //}
+        }
 
 
 

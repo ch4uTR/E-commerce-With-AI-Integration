@@ -52,16 +52,28 @@ namespace ECommerce.RESTService.Controllers
 
 
         [HttpPost("calculate")]
-        public async Task<IActionResult> CalculateTotal(string code, double turkishLiras)
+        public async Task<IActionResult> CalculateTotal([FromBody] CurrencyRequest request)
         {
             var url = "https://www.tcmb.gov.tr/kurlar/today.xml";
             var  xmlString = await _httpClient.GetStringAsync(url);
             var xml = XDocument.Parse(xmlString);
 
             var currencyNode= xml.Descendants("Currency")
-                                        .FirstOrDefault(node => node.Attribute("Kod")?.Value == code.ToUpper());
-            if (currencyNode == null) { return Json(new { success = false, message = "Geçersiz kur kodu", price = turkishLiras}); }
+                                        .FirstOrDefault(node => node.Attribute("Kod")?.Value == request.Code.ToUpper());
 
+            CurrencyResponse currencyResponse = null;
+            if (currencyNode == null) {
+                currencyResponse = new CurrencyResponse {
+                    Code = request.Code,
+                    TurkishLiras = request.TurkishLiras,
+                    CurrencyRate = null,
+                    Price = null
+                };
+                return Json(currencyResponse);
+            }
+
+           
+            
             double currencyValue;
             bool success = double.TryParse(currencyNode?.Element("ForexBuying")?.Value,
                                             System.Globalization.NumberStyles.Any,
@@ -70,12 +82,31 @@ namespace ECommerce.RESTService.Controllers
 
 
             if (success) {
-                var price = turkishLiras / currencyValue;
+                var price = request.TurkishLiras / currencyValue;
 
-                return Json(new { success = true, price}); 
+                currencyResponse = new CurrencyResponse
+                {
+                    Code = request.Code,
+                    TurkishLiras = request.TurkishLiras,
+                    CurrencyRate = currencyValue,
+                    Price = price
+
+                };
+                return Json(currencyResponse);
             }
 
-            else { return Json(new {success = false, message = "Kurun değerine ulaşılamadı" ,price = turkishLiras}); }
+            else {
+
+                currencyResponse = new CurrencyResponse
+                {
+                    Code = request.Code,
+                    TurkishLiras = request.TurkishLiras,
+                    CurrencyRate = null,
+                    Price = null
+                };
+
+                return Json(currencyResponse);
+            }
 
         }
 
