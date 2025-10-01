@@ -63,8 +63,14 @@ namespace ECommerce.Controllers
             else
             {
                 var recentProducts = await _context.Products
-                                                    .Where(p => viewedProductIds.Contains(p.Id))
-                                                    .ToListAsync();
+                                   .Where(p => viewedProductIds.Contains(p.Id))
+                                   .ToListAsync();
+
+                
+                recentProducts = viewedProductIds
+                                 .Select(id => recentProducts.First(p => p.Id == id))
+                                 .ToList();
+
                 if (recentProducts.Count() < 6)
                 {
                     var randomProducts = await _context.Products

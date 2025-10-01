@@ -31,15 +31,15 @@
                     <div class="product__details__rating">
                         @for (int i = 0; i < fullstars; i++)
                         {
-                            <i class="fa fa-star"></i>
+                            <i class="fas fa-star" style="color: #FFD43B;"></i>
                         }
                         @if (halfstar)
                         {
-                            <i class="fa fa-star-half-o"></i>
+                            <i class="fas fa-star-half-alt"></i>
                         }
                         @for (int i = fullstars + (halfstar ? 1 : 0); i < 5; i++)
                         {
-                            <i class="fa fa-star-o"></i>
+                            <i class="far fa-star" style="color: #FFD43B;"></i>
                         }
                         <span>(@(comments.Any() ? comments.Count() : 0) değerlendirme)</span>
                     </div>

@@ -6,7 +6,7 @@
             <div class="card p-4 shadow-sm rounded-4 border-0">
                 <div class="card-header border-0 rounded-4 text-center mb-4" style="background-color: #7fad39; color: white;">
                     <h3 class="mb-0">
-                        <i class="fa fa-plus-circle"></i> Create New Product
+                        <i class="fa fa-plus-circle"></i> Yeni Ürün Ekle
                     </h3>
                 </div>
 
@@ -14,41 +14,41 @@
                     <form method="post" asp-controller="Product" asp-action="Create" enctype="multipart/form-data">
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label asp-for="Name" class="form-label">Name</label>
+                                <label asp-for="Name" class="form-label">İsim</label>
                                 <input asp-for="Name" class="form-control rounded-pill">
                                 <span asp-validation-for="Name" class="text-danger"></span>
                             </div>
 
                             <div class="col-md-6 mb-3">
-                                <label asp-for="Price" class="form-label">Price</label>
+                                <label asp-for="Price" class="form-label">Fiyat</label>
                                 <input asp-for="Price" type="number" class="form-control rounded-pill">
                                 <span asp-validation-for="Price" class="text-danger"></span>
                             </div>
                         </div>
 
                         <div class="mb-3">
-                            <label asp-for="Description" class="form-label">Description</label>
+                            <label asp-for="Description" class="form-label">Açıklama</label>
                             <textarea asp-for="Description" class="form-control" rows="4"></textarea>
                             <span asp-validation-for="Description" class="text-danger"></span>
                         </div>
 
                         <div class="mb-3">
-                            <label asp-for="CategoryId" class="form-label">Category</label>
+                            <label asp-for="CategoryId" class="form-label">Kategori</label>
                             <select asp-for="CategoryId" asp-items="ViewBag.Categories" class="form-control rounded-pill">
-                                <option value="">Select a category</option>
+                                <option value="">Bir Kategori Seç</option>
                             </select>
                             <span asp-validation-for="CategoryId" class="text-danger"></span>
                         </div>
 
                         <div class="mb-3">
-                            <label asp-for="ImageFile" class="form-label">Upload a photo</label>
+                            <label asp-for="ImageFile" class="form-label">Fotoğraf yükle</label>
                             <input type="file" class="form-control" asp-for="ImageFile">
                         </div>
 
                         <div class="d-flex justify-content-end mt-4 gap-2">
-    <button type="submit" class="site-btn btn-xs">Create</button>
-    <a class="site-btn btn-xs" asp-action="Index">Products</a>          
-</div
+                            <button type="submit" class="site-btn btn-xs">Oluştur</button>
+                            <a class="site-btn btn-xs" asp-action="Index">Ürünler</a>          
+                        </div>
                     </form>
                 </div>
             </div>

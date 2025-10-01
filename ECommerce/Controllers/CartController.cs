@@ -195,6 +195,7 @@ namespace ECommerce.Controllers
                                     .Include(o => o.OrderItems)
                                         .ThenInclude(oi => oi.Product)
                                     .Where(o => o.UserId == userId)
+                                    .OrderByDescending(o => o.OrderDate)
                                     .ToListAsync();
 
             return View(orders);
@@ -242,6 +243,12 @@ namespace ECommerce.Controllers
         public async Task<IActionResult> AddItemToCart([FromBody] AddCartDTO request)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Json(new { success = false, message = "Önce giriş yapmalısınız" , code = "not_logged_in"});
+            }
+                
             var cart = await _context.Carts
                                 .Include(c => c.CartItems)
                                 .FirstOrDefaultAsync(c => c.UserId == userId);
@@ -249,7 +256,9 @@ namespace ECommerce.Controllers
             var product = await _context.Products.FirstOrDefaultAsync(p => p.Id == request.ProductId);
 
 
-            if (product == null) { return NotFound(); }
+            if (product == null) {
+                return Json(new { success = false, message = "Ürün bulunamadı." });
+            }
 
             if (cart == null)
             {
@@ -284,7 +293,7 @@ namespace ECommerce.Controllers
             }
 
             await _context.SaveChangesAsync();
-            return Ok(new { message = "Ürün sepetinize başarıyla eklendi", totalItems = cart.CartItems.Sum(ci => ci.Quantity) });
+            return Json(new { success = true, message = "Ürün sepetinize başarıyla eklendi", totalItems = cart.CartItems.Sum(ci => ci.Quantity) });
         }
 
 

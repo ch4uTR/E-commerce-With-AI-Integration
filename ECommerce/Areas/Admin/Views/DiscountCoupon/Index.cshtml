@@ -7,10 +7,10 @@
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 style="color: #7fad39; margin-bottom: 0;">
-            <i class="fa fa-gift"></i> Discount Coupons
+            <i class="fa fa-gift"></i> İndirim Kuponları
         </h2>
         <a asp-action="Create" class="btn btn-success rounded-pill" style="background-color: #7fad39; border-color: #7fad39;">
-            <i class="fa fa-plus"></i> Create New Coupon
+            <i class="fa fa-plus"></i> Yeni Kupon Oluştur
         </a>
     </div>
 
@@ -18,12 +18,12 @@
         <table class="table table-hover">
             <thead>
                 <tr>
-                    <th>Name</th>
-                    <th>Discount Amount</th>
-                    <th>Discount %</th>
-                    <th>Expires At</th>
-                    <th>Usage</th>
-                    <th>Actions</th>
+                    <th>İsim</th>
+                    <th>İndirim Miktarı</th>
+                    <th>İndirim %</th>
+                    <th>Geçerlilik Tarihi</th>
+                    <th>Kullanım Sayısı</th>
+                    <th>Aksiyonlar</th>
                 </tr>
             </thead>
             <tbody>
@@ -37,15 +37,15 @@
                         <td>@coupon.UsedCount / @coupon.UsageLimit</td>
                         <td>
                             <a asp-action="Edit" asp-route-id="@coupon.Id" class="btn-xs site-btn">
-                                <i class="fa fa-pencil-square-o"></i> Edit
+                                <i class="fa fa-pencil-square-o"></i> Düzenle
                             </a>
                             <form asp-action="Delete" asp-route-id="@coupon.Id" method="post" style="display:inline">
                                 <button type="submit" class="btn-xs site-btn">
-                                    <i class="fa fa-trash-o"></i> Delete
+                                    <i class="fa fa-trash-o"></i> Sil
                                 </button>
                             </form>
                             <a asp-action="Details" asp-route-id="@coupon.Id" class="btn-xs site-btn">
-                                <i class="fa fa-info-circle"></i> Details
+                                <i class="fa fa-info-circle"></i> Detaylar
                             </a>
                         </td>
                     </tr>

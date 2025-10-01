@@ -1,4 +1,5 @@
 using Ecommerce.Models;
+using ECommerce.Areas.Admin.Controllers;
 using ECommerce.Data;
 using ECommerce.Models;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -37,6 +38,7 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddHttpClient();
 
 builder.Services.AddRazorPages();
+builder.Services.AddSignalR();
 
 var app = builder.Build();
 
@@ -74,7 +76,7 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
 
-
+app.MapHub<NotificationHub>("/notificationHub");
 
 
 

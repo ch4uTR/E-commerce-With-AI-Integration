@@ -4,6 +4,7 @@ using ECommerce.Models;
 using ECommerce.Models.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -16,11 +17,19 @@ namespace ECommerce.Areas.Admin.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly HttpClient _httpClient;
+        private readonly IHubContext<NotificationHub> _hubContext;
+        private readonly ILogger<CommentController> _logger;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
 
-        public CommentController(ApplicationDbContext context, HttpClient httpClient    )
+
+        public CommentController(ApplicationDbContext context, HttpClient httpClient, IHubContext<NotificationHub> hubContext, ILogger<CommentController> logger, IServiceScopeFactory serviceScopeFactory)
         {
             _context = context;
             _httpClient = httpClient;
+            _hubContext = hubContext;
+            _logger = logger;
+            _serviceScopeFactory = serviceScopeFactory;
+
         }
 
         [HttpGet]
@@ -186,45 +195,70 @@ namespace ECommerce.Areas.Admin.Controllers
         }
 
 
-        public async Task<IActionResult> SummarizeAll()
+        public IActionResult SummarizeAll()
         {
-            var summaries = await _context.Comments
-                                             .Where(c => c.IsApproved)
-                                             .GroupBy(c => c.ProductId)
-                                             .Select(g => new CommentSummaryDTO
-                                             {
-                                                 ProductId = g.Key,
-                                                 Comments = g.Select(c => c.Text).ToList(),
-                                                 Description = g.FirstOrDefault().Product.Description
-                                             })
-                                             .ToListAsync();
-
-
-            var fastApiUrl = "http://localhost:8000/summarize";
-            var response = await _httpClient.PostAsJsonAsync(fastApiUrl, summaries);
-            var result = await response.Content.ReadFromJsonAsync<List<CommentSummaryResponseDTO>>();
-
-            var productIds = result.Select(r => r.ProductId).ToList();
-            var products = await _context.Products
-                                                .Where(p => productIds.Contains(p.Id))
-                                                .ToListAsync();
-            var productMap = products.ToDictionary(p => p.Id);
-
-            foreach (var dto in result)
+            _ = Task.Run(async () =>
             {
-                if (productMap.TryGetValue(dto.ProductId, out var product))
+
+                using var scope = _serviceScopeFactory.CreateScope();
+                var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                var hubContext = scope.ServiceProvider.GetRequiredService<IHubContext<NotificationHub>>();
+                var logger = scope.ServiceProvider.GetRequiredService<ILogger<CommentController>>();
+
+                var httpClientFactory = scope.ServiceProvider.GetRequiredService<IHttpClientFactory>();
+                var httpClient = httpClientFactory.CreateClient();
+                try
                 {
-                    product.Summary = dto.Summary;
-                    product.SummaryAddedBy = "LLM";
+
+                    var summaries = await context.Comments
+                                                 .Where(c => c.IsApproved)
+                                                 .GroupBy(c => c.ProductId)
+                                                 .Select(g => new CommentSummaryDTO
+                                                 {
+                                                     ProductId = g.Key,
+                                                     Comments = g.Select(c => c.Text).ToList(),
+                                                     Description = g.FirstOrDefault().Product.Description
+                                                 })
+                                                 .ToListAsync();
+
+
+                    var fastApiUrl = "http://localhost:8000/summarize";
+                    var response = await httpClient.PostAsJsonAsync(fastApiUrl, summaries);
+                    var result = await response.Content.ReadFromJsonAsync<List<CommentSummaryResponseDTO>>();
+
+                    var productIds = result.Select(r => r.ProductId).ToList();
+                    var products = await context.Products
+                                                        .Where(p => productIds.Contains(p.Id))
+                                                        .ToListAsync();
+                    var productMap = products.ToDictionary(p => p.Id);
+
+                    foreach (var dto in result)
+                    {
+                        if (productMap.TryGetValue(dto.ProductId, out var product))
+                        {
+                            product.Summary = dto.Summary;
+                            product.SummaryAddedBy = "LLM";
+
+                        }
+                    }
+
+                    await context.SaveChangesAsync();
+
+
+
+                    await hubContext.Clients.All.SendAsync("SummarizeCompleted", "Ürünlerin özetleri hazır!");
 
                 }
-            }
+                catch(Exception ex)
+                {
+                    logger.LogError(ex, "SummarizeAll Sırasında bir hata oluştu!");
+                }
 
-            await _context.SaveChangesAsync();
+                
+            });
 
+            return Json(new { success = true, message = "Özetleme işlemi başlatıldı, tamamlandığında bilgilendirileceksiniz." });
 
-
-            return Json(new { success = true, message = "Ürünlerin özetleri başarıyla getirildi" });
 
         }
 

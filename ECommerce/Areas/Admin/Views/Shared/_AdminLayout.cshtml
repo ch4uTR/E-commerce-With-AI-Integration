@@ -37,6 +37,9 @@
     <script src="~/js/owl.carousel.min.js"></script>
     <script src="~/js/main.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.7/signalr.min.js"></script>
+
+ 
 
 
     <!--BootStrap-->
@@ -66,7 +69,8 @@
             <div class="row align-items-center py-2">
                 <div class="col-lg-6 col-md-6">
                     <div class="header__logo">
-                        <a asp-area="Admin" asp-controller="Home" asp-action="Index" class="admin-link"><h4 style="color: #7fad39;"><i class="fa fa-cogs"></i> Admin Panel</h4></a>
+                        <a asp-area="" asp-controller="Admin" asp-action="Index"><img src="~/img/logo.png" style="border-right:20px;" alt=""></a>
+                        <a asp-area="Admin" asp-controller="Home" asp-action="Index" class="admin-link" style="border-left:20px"><h4 style="color: #7fad39; border-left:20px;"><i class="fa fa-cogs"></i> Admin Panel</h4></a>
                     </div>
                 </div>
 
@@ -170,6 +174,7 @@
     <script src="~/js/mixitup.min.js"></script>
     <script src="~/js/owl.carousel.min.js"></script>
     <script src="~/js/main.js"></script>
+    
 
 
 </body>
@@ -188,4 +193,19 @@
 
 
 </style>
+
+
+
+<script>
+    const connection = new signalR.HubConnectionBuilder()
+        .withUrl("/notificationHub")
+        .build();
+
+    connection.on("SummarizeCompleted", (message) => {
+        Swal.fire("Bilgilendirme", message, "success");
+    });
+
+    connection.start().catch(err => console.error(err));
+</script>
+
 </html>

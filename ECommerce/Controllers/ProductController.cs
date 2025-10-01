@@ -45,6 +45,7 @@ namespace ECommerce.Controllers
             ViewBag.TotalCount = totalCount;
             ViewBag.CurrentPage = criteria.Page;
             ViewBag.PageSize = criteria.Size;
+            ViewBag.PageName = "Mağaza";
 
             return View(productsViewModels);
 
@@ -216,24 +217,45 @@ namespace ECommerce.Controllers
 
             var viewedProductIds = new List<string>();
             var cookies = Request.Cookies["recentlyViewed"];
+
             if (cookies != null)
             {
-                viewedProductIds = cookies.Split(',').ToList();
-                var lastViewedProductsNumber = viewedProductIds.Count();
-                if (lastViewedProductsNumber > 6) { viewedProductIds = viewedProductIds.Skip(lastViewedProductsNumber - 6).Take(6).ToList(); }
-
+                viewedProductIds = cookies.Split(',').Distinct().ToList();
             }
-            viewedProductIds.Insert(0, id.ToString());
-            var updatedCookieValue = string.Join(",", viewedProductIds);
 
+            
+            viewedProductIds.Remove(id.ToString());
+            viewedProductIds.Insert(0, id.ToString());
+
+            
+            if (viewedProductIds.Count < 6)
+            {
+                var currentIds = viewedProductIds.Select(int.Parse).ToList();
+                var randomProducts = await _context.Products
+                    .Where(p => !currentIds.Contains(p.Id))
+                    .OrderBy(p => Guid.NewGuid())
+                    .Take(6 - viewedProductIds.Count)
+                    .ToListAsync();
+
+                viewedProductIds.AddRange(randomProducts.Select(p => p.Id.ToString()));
+            }
+
+            
+            if (viewedProductIds.Count > 6)
+            {
+                viewedProductIds = viewedProductIds.Take(6).ToList();
+            }
+
+            
+            var updatedCookieValue = string.Join(",", viewedProductIds);
             var cookieOptions = new CookieOptions
             {
                 Expires = DateTime.UtcNow.AddDays(30),
                 HttpOnly = true,
                 Path = "/"
             };
-
             Response.Cookies.Append("recentlyViewed", updatedCookieValue, cookieOptions);
+
 
 
             return View(viewModel);

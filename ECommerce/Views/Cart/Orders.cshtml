@@ -2,7 +2,16 @@
 
 @{
     var orderCount = Model.Count();
-    
+    var orderNames = new Dictionary<string, string>
+    {
+        {"Pending" , "İşleme alındı"},
+        {"Processing" , "Hazırlanıyor"},
+        {"Shipped" , "Kargoya verildi"},
+        {"Delivered", "Teslim edildi"},
+        {"Cancelled" , "İptal edildi"}
+
+
+    };
 
 }
 
@@ -55,6 +64,11 @@
                                 {
                                     var orderItemsList = order.OrderItems.ToList();
                                     var itemCount = orderItemsList.Count();
+                                    
+                                    var status = orderNames.ContainsKey(order.OrderStatus.Name)
+                                            ? orderNames[order.OrderStatus.Name]
+                                            : order.OrderStatus.Name;
+                                            
                                     var displayCount = itemCount > 3 ? 3 : itemCount;
                                     <tr>
                                     <input type="hidden" class="order-id" value="@order.Id">
@@ -67,8 +81,9 @@
                                     <td>
                                         <h5>@order.Id</h5>
                                     </td>
-                                    <td>
-                                        @order.OrderStatus.Name
+                                    <td>    
+                                            @status
+                                            
                                     </td>
                                     <td>
                                         @order.OrderDate.ToString("dd/MM/yyyy")

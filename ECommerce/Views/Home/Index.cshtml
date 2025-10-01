@@ -236,10 +236,21 @@
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ ProductId: productId })
                         })
-                    .then(response => response.json())
+                    .then(response => {
+                         if(response.redirected){
+                            Swal.fire({
+                                    title: "Giriş Yapmalısınız!",
+                                    text: "Sepete ürün ekleyebilmek için önce giriş yapmalısınız",
+                                    icon: "info"
+                            });
+                            return null;
+                         }
+                         return response.json();
+                    })
                     .then(data => {
+                        if (!data) { return; }
                         console.log("Sepet güncellendi", data);
-                        if(data.message){
+                        if(data.success){
                             Swal.fire({
                                 title: "Başarılı!",
                                 text: data.message,
@@ -247,6 +258,13 @@
                                 timer: 1500,
                                 showConfirmButton: false
                             });
+                        }
+                        else{
+                            Swal.fire({
+                               title: "Hata!",
+                               text: data.message,
+                               icon: "error"
+                           })
                         }
                         window.updateCartDiv();
                     })
@@ -256,7 +274,7 @@
                                title: "Hata!",
                                text: "Ürün eklenemedi",
                                icon: "error"
-                           })
+                           });
                     });
 
                 });
@@ -303,7 +321,7 @@
                                title: "Hata!",
                                text: "Ürün favorilerinize eklenirken bir problem karşılaşıldı",
                                icon: "error"
-                           })
+                           });
                     });
                 });
             
@@ -323,7 +341,7 @@
                         const featuredItem = event.target.closest(".featured__item");
                         const productId = featuredItem.querySelector(".product-id").value;
 
-                        window.location.href = `/Product/Details/${productId}`
+                        window.location.href = `/Product/Details/${productId}`;
 
                     });
 
